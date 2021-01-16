@@ -36,12 +36,12 @@ For examples refer to testing/testing.jl, note that it expect a particular struc
 
 Which is the one present in the repo.
 
-### References
+## References
 
 [GADGET2](https://wwwmpa.mpa-garching.mpg.de/gadget/)
 
 [GADGET4](https://wwwmpa.mpa-garching.mpg.de/gadget4/)
 
-### No guarantee
+## No guarantee
 
 This script may break at any moment, and some functions are intended for data produce by GADGET3 which is not a public code. So no guaranties are given.
