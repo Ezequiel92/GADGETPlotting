@@ -24,16 +24,15 @@ NOTE: Some of the pipeline functions may produce by default a large number of im
 Each function is documented within the script, where the docstring explains each function, its arguments and its returns.
 For examples refer to testing/testing.jl, note that it expect a particular structure of its files, namely:
 
-	.
-	│
-	├── gadget_plotting.jl
-	└── test                    
-        ├── results 
-		│	├── ...
-		│	└── ...
-		├── testing.jl
-		├── Manifest.toml
-		└── Project.toml
+    .
+    ├── gadget_plotting.jl
+    ├── testing  
+        ├── results
+        │    ├── ...
+        │    └── ...
+        ├── testing.jl
+        ├── Manifest.toml 
+        └── Project.toml
 
 Which is the one present in the repo.
 
