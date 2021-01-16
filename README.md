@@ -27,8 +27,8 @@ For examples refer to testing/testing.jl, note that it expect a particular struc
 	.
 	│
 	├── gadget_plotting.jl
-	└── testing
-		├── results
+	└── test                    
+        ├── results 
 		│	├── ...
 		│	└── ...
 		├── testing.jl
@@ -46,5 +46,3 @@ Which is the one present in the repo.
 ### No guarantee
 
 This script may break at any moment, and some functions are intended for data produce by GADGET3 which is not a public code. So no guaranties are given.
-
-
