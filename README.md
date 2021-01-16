@@ -26,10 +26,10 @@ For examples refer to testing/testing.jl, note that it expect a particular struc
 
     .
     ├── gadget_plotting.jl
-    ├── testing  
+    └── testing  
         ├── results
-        │    ├── ...
-        │    └── ...
+        │   ├── ...
+        │   └── ...
         ├── testing.jl
         ├── Manifest.toml 
         └── Project.toml
