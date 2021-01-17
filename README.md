@@ -1,8 +1,8 @@
 # GADGET Plotting
 
-Julia script for creating figures, GIFs and videos from the data produce by a GAGET3/4 simulation.
+Julia script for creating figures, GIFs and videos from the data produce by a GAGET2/3/4 simulation.
 
-- It only works with the traditional output format (binary data) which is the default in GADGET3 (SnapFormat=1) and a compatibility option in GADGET4 (legacy format selected with SnapFormat=1 too).
+- It only works with the traditional output format (binary data) which is the default in GADGET2/3 (SnapFormat=1) and a compatibility option in GADGET4 (legacy format selected with SnapFormat=1 too).
 - It is just a script intended to be included as is (`include("GADGETPlotting.jl")`), it is not a module nor a package.
 - A small testing data set is provided in test_snapshots/.
 - The testing script testing.jl shows examples for every function, how to import the script, and provides a sanity check, as it should run without errors.
