@@ -22,6 +22,7 @@ NOTE: Despite what is mention above, being this a simple script, every function 
 ## Documentation
 
 Each function is documented within the script, where a docstring explains the functionality, the arguments and the returns.
+
 For examples on how to use the functions refer to testing.jl, note that it expect the simple file structure present in this repo, namely:
 
     .
