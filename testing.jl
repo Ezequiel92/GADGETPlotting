@@ -1,10 +1,10 @@
 ########################################################################################
-# Testing script for gadget_plotting.jl, it can be run as is, and it shouldn't trow any errors.
-# It expects to find gadget_plotting.jl one directory up, and a directory named results/,
-# for storing the testing files, in its same directory.
+# Testing script for GADGETPlotting.jl, it can be run as is, and it shouldn't throw 
+# any errors. It expects to find GADGETPlotting.jl one directory up, and a directory 
+# named results/, for storing the testing files, in its same directory.
 ########################################################################################
 
-include("../gadget_plotting.jl")
+include("GADGETPlotting.jl")
 
 "Base path for the directories where the figures and animations will be saved."
 const BASE_OUT_PATH = "results/"  
@@ -23,6 +23,8 @@ const SIM_COSMO = 0
 
 "Frame rate for the animations."                   
 const FPS = 4    
+
+mkdir(BASE_OUT_PATH)
 
 ########################################################################################
 # TEST OF DATA ACQUISITION FUNCTIONS.
@@ -122,7 +124,14 @@ savefig(BASE_OUT_PATH * "test_densityProfilePlot.png")
 metallicityProfilePlot(pos, gas_mass, gas_z, 1 * UnitfulAstro.Myr, bins=100)
 savefig(BASE_OUT_PATH * "test_metallicityProfilePlot.png")
 
-sfrTxtPlot(SNAP_PATH, SNAP_NAME, 1, [4, 6], title="run_A_01", bins=50, scale=[:identity, :log10], sim_cosmo=SIM_COSMO)
+sfrTxtPlot( SNAP_PATH, 
+            SNAP_NAME, 
+            1, 
+            [4, 6], 
+            title="run_A_01", 
+            bins=50, 
+            scale=[:identity, :log10], 
+            sim_cosmo=SIM_COSMO)
 savefig(BASE_OUT_PATH * "test_sfrTxtPlot.png")
 
 ########################################################################################
@@ -219,7 +228,7 @@ println(relative(fig2D, 0.5, 0.5))
 fig3D = surface(rand(100, 100))
 println(relative(fig3D, 0.5, 0.5, 0.5))
 
-makeVideo(BASE_OUT_PATH * "scatter/images", ".png", BASE_OUT_PATH, "test_video", FPS)
+makeVideo(BASE_OUT_PATH * "scatter_grid/images", ".png", BASE_OUT_PATH, "test_video", FPS)
 
 x_data = [1:1000...]
 y_data = rand(1000)
@@ -247,15 +256,16 @@ plot(r, z, lw=3, xlabel="Distance / $(pos["unit"])", ylabel="Z / Zsun", legend=f
 savefig(BASE_OUT_PATH * "test_metallicityProfile.png")
 
 ########################################################################################
+# DELETE ALL GENERATED TESTING FILES.
+########################################################################################
+
+rm(BASE_OUT_PATH, recursive=true)
+println("Everything worked just fine!!")
+
+########################################################################################
 # EXTRA TESTS.
 # This functions when executed should trow an error.
 ########################################################################################
 
 # massData(snap_files[21], "unobtainium", sim_cosmo=SIM_COSMO)
 # zData(snap_files[21], "unobtainium", sim_cosmo=SIM_COSMO)
-
-########################################################################################
-# DELETE ALL GENERATED TESTING FILES.
-########################################################################################
-
-# rm(BASE_OUT_PATH, recursive=true)
