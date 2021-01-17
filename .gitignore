@@ -1,2 +1,3 @@
 # Test files
-test_snapshots/*
+test_snapshots/snap_*
+test_snapshots/sfr.txt
