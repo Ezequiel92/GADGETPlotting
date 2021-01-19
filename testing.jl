@@ -24,7 +24,7 @@ const SIM_COSMO = 0
 "Frame rate for the animations."                   
 const FPS = 4    
 
-mkdir(BASE_OUT_PATH)
+mkpath(BASE_OUT_PATH)
 
 ########################################################################################
 # TEST OF DATA ACQUISITION FUNCTIONS.
@@ -93,6 +93,15 @@ for c in color
     savefig(BASE_OUT_PATH * "test_densityMapPlot_" * string(c) * ".png")
 end
 
+starMapPlot(pos, plane="XY")
+savefig(BASE_OUT_PATH * "test_starMapPlot_XY.png")
+
+starMapPlot(pos, plane="XZ")
+savefig(BASE_OUT_PATH * "test_starMapPlot_XZ.png")
+
+starMapPlot(pos)
+savefig(BASE_OUT_PATH * "test_starMapPlot_All.png")
+
 gasStarEvolutionPlot(time_series, pos, 21)
 savefig(BASE_OUT_PATH * "test_gasStarEvolutionPlot.png")
 
@@ -156,6 +165,15 @@ densityMapPipeline( SNAP_NAME,
                     plane="All",
                     sim_cosmo=SIM_COSMO,
                     region_size=BOX_SIZE)
+
+starMapPipeline(SNAP_NAME, 
+                SNAP_PATH, 
+                BASE_OUT_PATH, 
+                "star_anim", 
+                FPS,
+                plane="All",
+                sim_cosmo=SIM_COSMO,
+                region_size=BOX_SIZE)
 
 gasStarEvolutionPipeline(   SNAP_NAME,
                             SNAP_PATH, 
@@ -267,5 +285,5 @@ println("Everything worked just fine!!")
 # This functions when executed should trow an error.
 ########################################################################################
 
-# massData(snap_files[21], "unobtainium", sim_cosmo=SIM_COSMO)
-# zData(snap_files[21], "unobtainium", sim_cosmo=SIM_COSMO)
+massData(snap_files[21], "unobtainium", sim_cosmo=SIM_COSMO)
+zData(snap_files[21], "unobtainium", sim_cosmo=SIM_COSMO)

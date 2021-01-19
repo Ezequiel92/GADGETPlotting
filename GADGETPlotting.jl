@@ -4,8 +4,8 @@
 
 using GadgetIO, GadgetUnits, SPHtoGrid, SPHKernels
 using Unitful, UnitfulAstro
-using Plots, StatsPlots.PlotMeasures, LaTeXStrings
-using Glob, FileIO, VideoIO, DelimitedFiles
+using Plots, StatsPlots.PlotMeasures, AverageShiftedHistograms
+using Glob, FileIO, VideoIO, DelimitedFiles, LaTeXStrings
 
 "Hₒ = 100 km s^(-1) Mpc^(-1) in Gyr^(-1)"
 const HUBBLE_CONST = 0.102201
@@ -13,7 +13,8 @@ const HUBBLE_CONST = 0.102201
 """
 Solar metallicity.
 
-M. Asplund et al. (2009). The Chemical Composition of the Sun. Annual Review of Astronomy and Astrophysics, 47(1), 481–522. https://doi.org/10.1146/annurev.astro.46.060407.145222
+    M. Asplund et al. (2009). The Chemical Composition of the Sun. Annual Review of Astronomy 
+    and Astrophysics, 47(1), 481–522. https://doi.org/10.1146/annurev.astro.46.060407.145222
 """
 const SOLAR_METALLICITY = 0.0134
 
@@ -23,8 +24,7 @@ const SOLAR_METALLICITY = 0.0134
 
 """
 	uglyUnitDeserialization(unit::Unitful.FreeUnits)::String
-	
-Cast `unit` to a String. If given a plain String it will return it unchanged.
+ast `unit` to a String. If given a plain String it will return it unchanged.
 
 # Arguments 
 - `unit::Unitful.FreeUnits`: Unit to be deserialize.
@@ -44,7 +44,11 @@ function uglyUnitDeserialization(unit::Unitful.FreeUnits)::String
 end
 
 """
-	relative(p::Plots.Plot, rx::Float64, ry::Float64, rz::Union{Float64,Nothing}=nothing)::Union{Tuple{Float64,Float64},Tuple{Float64,Float64,Float64}}
+    relative(   p::Plots.Plot, 
+                rx::Float64, 
+                ry::Float64, 
+                rz::Union{Float64,Nothing}=nothing)::Union{ Tuple{Float64,Float64},
+                                                            Tuple{Float64,Float64,Float64}}
     
 Give the absolute coordinates for a Plot given relative ones.
 
@@ -61,7 +65,7 @@ function relative(  p::Plots.Plot,
                     rx::Float64, 
                     ry::Float64, 
                     rz::Union{Float64,Nothing}=nothing)::Union{Tuple{Float64,Float64},Tuple{Float64,Float64,Float64}}
-        
+    
     xlims = Plots.xlims(p) 
     ylims = Plots.ylims(p)
     
@@ -78,7 +82,11 @@ function relative(  p::Plots.Plot,
 end
 
 """
-	makeVideo(source_path::String, source_format::String, video_path::String, video_name::String, frame_rate::Int64)::Nothing
+    makeVideo(  source_path::String, 
+                source_format::String, 
+                video_path::String, 
+                video_name::String, 
+                frame_rate::Int64)::Nothing
 	
 Make a MP4 video from a stack of images. 
 
@@ -115,7 +123,9 @@ function makeVideo(	source_path::String,
 end
 
 """
-	smoothWindow(x_data::Array{T,1} where T <: Real, y_data::Array{T,1} where T <: Real, bins::Int64)::Tuple{Array{Float64,1},Array{Float64,1}}
+    smoothWindow(   x_data::Array{T,1} where T <: Real, 
+                    y_data::Array{T,1} where T <: Real, 
+                    bins::Int64)::Tuple{Array{Float64,1},Array{Float64,1}}
 
 Separate the range of values of `x_data` in `bins` contiguous windows, and replaces 
 every value within the window with the mean in order to smooth out the data. 
@@ -142,7 +152,7 @@ function smoothWindow(  x_data::Array{T,1} where T <: Real,
     start = minimum(x_data)
     # Widths of the smoothing windows.
     width = (maximum(x_data) - start) / bins
-
+    
     for i in 1:bins
         # Find the indices of the `x_data` and `y_data` which fall within window i.
         idx = findall(x -> start + width * (i - 1) <= x < start + width * i, x_data)
@@ -151,12 +161,15 @@ function smoothWindow(  x_data::Array{T,1} where T <: Real,
         smooth_x_data[i] = sum(x_data[idx]) / length(idx)
         smooth_y_data[i] = sum(y_data[idx]) / length(idx)
     end
-
+    
     return smooth_x_data, smooth_y_data
 end
 
 """
-	densityProfile(mass_data::Array{Float64,1}, distance_data::Array{Float64,1}, r_max::Float64, bins::Int64)::Tuple{Array{Float64,1},Array{Float64,1}}
+    densityProfile( mass_data::Array{Float64,1}, 
+                    distance_data::Array{Float64,1}, 
+                    r_max::Float64, 
+                    bins::Int64)::Tuple{Array{Float64,1},Array{Float64,1}}
 	
 Compute a density profile, up to a radius `r_max`. 
 
@@ -182,7 +195,7 @@ function densityProfile(mass_data::Array{Float64,1},
 
     # Width of each spherical shell used to calculate the density within.
     width = r_max / bins
-
+    
     for i in 1:bins
         # Indices of `mass_data` and `distance_data` within window i.
         idx = findall(x -> width * (i - 1) <= x < width * i, distance_data)
@@ -192,7 +205,7 @@ function densityProfile(mass_data::Array{Float64,1},
             y_data[i] = 0
         else
             total_mass = sum(mass_data[idx])
-            volume = 4/3 * π * width^3 * (3 * i * i - 3 * i + 1)
+            volume = 4 / 3 * π * width^3 * (3 * i * i - 3 * i + 1)
             
             # Mean distance for window i.
             x_data[i] = sum(distance_data[idx]) / length(idx)
@@ -201,12 +214,16 @@ function densityProfile(mass_data::Array{Float64,1},
             y_data[i] = total_mass / volume
         end
     end
-
+    
     return x_data, y_data
 end
 
 """
-	metallicityProfile(mass_data::Array{Float64,1}, distance_data::Array{Float64,1}, z_data::Array{Float64,1}, r_max::Float64, bins::Int64)::Tuple{Array{Float64,1},Array{Float64,1}}
+    metallicityProfile( mass_data::Array{Float64,1}, 
+                        distance_data::Array{Float64,1}, 
+                        z_data::Array{Float64,1}, 
+                        r_max::Float64, 
+                        bins::Int64)::Tuple{Array{Float64,1},Array{Float64,1}}
 	
 Compute a metallicity profile, up to a radius `r_max` and normalize to the solar metallicity.
 
@@ -235,7 +252,7 @@ function metallicityProfile(mass_data::Array{Float64,1},
 
     # Width of each spherical shell used to calculate the metallicity within.
     width = r_max / bins
-
+    
     for i in 1:bins
         # Indices of `mass_data`, `distance_data` and `z_data` within window i.
         idx = findall(x -> width * (i - 1) <= x < width * i, distance_data)
@@ -254,7 +271,7 @@ function metallicityProfile(mass_data::Array{Float64,1},
             y_data[i] = (total_z / total_mass) / SOLAR_METALLICITY
         end
     end
-
+    
     return x_data, y_data
 end
 
@@ -290,7 +307,7 @@ function getSnapshots(  base_name::String,
     
 	# Get the number of files per snapshot.
     num_files = read_header(first(file_list)).num_files
-
+    
     if num_files > 1
         # If there are multiple files per snapshot, delete the trailing .n.
         map!(x -> rsplit(x, "."; limit=2)[1], file_list, file_list)
@@ -300,7 +317,7 @@ function getSnapshots(  base_name::String,
 	
 	# Get the numbers that characterize each snapshot.
     numbers = map(x -> rsplit(x, base_name * '_'; limit=2)[2], file_list)
-
+    
     return Dict("numbers" => tuple(numbers...), "snap_files" => tuple(file_list...))
 end
 
@@ -337,7 +354,7 @@ function timeSeriesData(sim_files::Tuple{Vararg{String}};
                         mass_unit::Unitful.FreeUnits=UnitfulAstro.Msun, 
                         time_unit::Unitful.FreeUnits=UnitfulAstro.Myr, 
                         sfr_unit::Unitful.FreeUnits=UnitfulAstro.Msun / UnitfulAstro.yr)::Dict{String,Any}
-
+    
     time_series = Dict( "scale_factor" => [],       # Dimensionless.
                         "redshift" => [],           # Dimensionless.
                         "clock_time" => [],         # `time_unit`.
@@ -375,7 +392,7 @@ function timeSeriesData(sim_files::Tuple{Vararg{String}};
                                         "star_frac" => "Stars fraction", 	                   
                                         "gas_bar_frac" => "Baryonic gas fraction)",                  
                                         "star_bar_frac" => "Baryonic star fraction"))
-
+    
     for (index, snapshot) in enumerate(sim_files)
         header = read_header(snapshot)
 
@@ -419,7 +436,7 @@ function timeSeriesData(sim_files::Tuple{Vararg{String}};
 				dm_mass = ustrip(Float64, mass_unit, dm_mass * GU.m_cgs)
 			else
 				# In the case that there are no dark matter particles.
-				dm_mass = 0.0
+dm_mass = 0.0
 			end
 		   
 			# Total mass of stars in `mass_unit`.
@@ -531,7 +548,7 @@ function timeSeriesData(sim_files::Tuple{Vararg{String}};
         push!(time_series["gas_bar_frac"], gas_mass / baryonic_mass)
         push!(time_series["star_bar_frac"], star_mass / baryonic_mass)
     end
-
+    
     return time_series
 end
 
@@ -750,8 +767,9 @@ Get the mass of the particles at a specific time step.
 - `sim_cosmo::Int64=0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
-- `mass_unit::Unitful.FreeUnits=UnitfulAstro.Msun`: Unit of mass to be used in the output, all available mass units in
-  Unitful and UnitfulAstro can be used, e.g. UnitfulAstro.Msun, which is the default.
+- `mass_unit::Unitful.FreeUnits=UnitfulAstro.Msun`: Unit of mass to be used in the output, 
+  all available mass units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.Msun, which is the default.
 
 # Returns
 - A dictionary with three entries.
@@ -777,12 +795,12 @@ function massData(  snapshot::String,
     # Select type of particle.
     if type == "gas"
         type_num = 0
-    elseif type == "dark_matter"
+        elseif type == "dark_matter"
         type_num = 1
-    elseif type == "stars"
+        elseif type == "stars"
         type_num = 4
     else
-        error("Particle type '$type' not supported. The supported types are 'gas', 'dark_matter' and 'stars'")
+        error("Particle type '$type ' not supported. The supported types are 'gas', 'dark_matter' and 'stars'")
     end
 
 	if block_present(snapshot, "MASS")
@@ -844,10 +862,10 @@ function zData( snapshot::String,
     # Select type of particle.
     if type == "gas"
         type_num = 0
-    elseif type == "stars"
+        elseif type == "stars"
         type_num = 4
     else
-        error("Particle type '$type' not supported. The supported types are 'gas' and 'stars'")
+        error("Particle type '$type ' not supported. The supported types are 'gas' and 'stars'")
     end
 
     if block_present(snapshot, "Z")
@@ -856,7 +874,7 @@ function zData( snapshot::String,
             z = read_snap(snapshot, "Z", type_num)
 
             # Initialize output array.
-            Z = Array{Float64}(undef, size(z,1))
+            Z = Array{Float64}(undef, size(z, 1))
             for i in 1:size(z, 1)
                 # Considers all elements but the ones at position 1 and 7, i.e. H and He.
                 z_tot = sum(z[i, [2,3,4,5,6,8,9,10,11,12]])
@@ -864,7 +882,7 @@ function zData( snapshot::String,
                 z_tot = @. ustrip(Float64, mass_unit, z_tot * GU.m_cgs)
 
                 Z[i] = z_tot
-            end
+        end
 		else 
 			# In the case that there are no particles.
 			Z = [Inf]
@@ -1124,7 +1142,11 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
 end
 
 """
-    densityMapPlot(position_data::Dict{String,Any}, mass_data::Dict{String,Any}, hsml_data::Dict{String,Any}, density_data::Dict{String,Any}; <keyword arguments>)::Plots.Plot
+    densityMapPlot( position_data::Dict{String,Any}, 
+                    mass_data::Dict{String,Any}, 
+                    hsml_data::Dict{String,Any}, 
+                    density_data::Dict{String,Any}; 
+                    <keyword arguments>)::Plots.Plot
 
 Make a plot of the gas density in the XY, XZ and/or YZ planes. 
 
@@ -1148,12 +1170,12 @@ with a range of ± `position_data["box_size"]`.
 # Returns
 The figure outputted by Plots.jl.
 """
-function densityMapPlot( position_data::Dict{String,Any}, 
-                            mass_data::Dict{String,Any}, 
-                            hsml_data::Dict{String,Any}, 
-                            density_data::Dict{String,Any}; 
-                            plane::String="All", 
-                            color::Symbol=:inferno)::Plots.Plot
+function densityMapPlot(position_data::Dict{String,Any}, 
+                        mass_data::Dict{String,Any}, 
+                        hsml_data::Dict{String,Any}, 
+                        density_data::Dict{String,Any}; 
+                        plane::String="All", 
+                        color::Symbol=:inferno)::Plots.Plot
 
     # Resolution in pixels for the binning of the grid.
     resolution = 1000 
@@ -1180,9 +1202,14 @@ function densityMapPlot( position_data::Dict{String,Any},
 	last_color = color_scheme[1]
 	
     # Spline kernel used inside GADGET3.
-    #
-	# Monaghan, J. J., & Lattanzio, J. C. (1985). A refined particle method for astrophysical problems. Astronomy and Astrophysics, 149(1), 135–143. https://ui.adsabs.harvard.edu/abs/1985A&A...149..135M
-	# Springel, V. (2005). The cosmological simulation code gadget-2. Monthly Notices of the Royal Astronomical Society, 364(4), 1105–1134. https://doi.org/10.1111/j.1365-2966.2005.09655.x
+    # 
+    #   Monaghan, J. J., & Lattanzio, J. C. (1985). A refined particle method for 
+    #   astrophysical problems. Astronomy and Astrophysics, 149(1), 135–143. 
+    #   https://ui.adsabs.harvard.edu/abs/1985A&A...149..135M
+    # 
+    #   Springel, V. (2005). The cosmological simulation code gadget-2. Monthly Notices 
+    #   of the Royal Astronomical Society, 364(4), 1105–1134. 
+    #   https://doi.org/10.1111/j.1365-2966.2005.09655.x
     kernel = Cubic()
 
     # Makes sure that all the units are consistent.
@@ -1194,7 +1221,7 @@ function densityMapPlot( position_data::Dict{String,Any},
     ρ = @. ustrip(Float64, mass_unit / length_unit^3, density_data["gas_density"] * density_data["unit"])
 	
 	# Unit as a String for the axes labels.
-    l_unit = uglyUnitDeserialization(position_data["unit"])
+    l_unit = uglyUnitDeserialization(length_unit)
 
     if plane == "XY" || plane == "All"
         sph_density = log10.(sphMapping(pos, 
@@ -1239,7 +1266,7 @@ function densityMapPlot( position_data::Dict{String,Any},
         xz_plot = plane_plot = heatmap( xy_binning, xy_binning, sph_density, 
                                         aspect_ratio=1, 
                                         ylim=(-box_limits, box_limits), 
-                                        size=(1000, 1000),
+                                        size=(1040, 1040),
                                         right_margin=25px,
                                         framestyle=:box,
                                         xlabel="x / $l_unit",
@@ -1271,7 +1298,7 @@ function densityMapPlot( position_data::Dict{String,Any},
         yz_plot = plane_plot = heatmap( xy_binning, xy_binning, sph_density, 
                                         aspect_ratio=1, 
                                         ylim=(-box_limits, box_limits), 
-                                        size=(1000, 1000),
+                                        size=(1040, 1040),
                                         right_margin=25px,
                                         framestyle=:box,
                                         xlabel="y / $l_unit",
@@ -1305,7 +1332,175 @@ function densityMapPlot( position_data::Dict{String,Any},
 end
 
 """
-    gasStarEvolutionPlot(time_series::Dict{String,Any}, position_data::Dict{String,Any}, index::Int64)::Plots.Plot
+    starMapPlot(position_data::Dict{String,Any}; <keyword arguments>)::Plots.Plot
+
+Make a plot of the star density in the XY, XZ and/or YZ planes. 
+
+The axes are in the units `position_data["unit"]`, 
+with a range of ± `position_data["box_size"]`.
+
+# Arguments
+- `position_data::Dict{String,Any}`: Return value of the positionData function.
+- `plane::String="All"`: String indicating which plane will be plotted. 
+  "XY" -> XY plane alone.
+  "XZ" -> XZ plane alone.
+  "YZ" -> YZ plane alone.
+  "All" -> The three planes in a single 1x3 figure.
+- `color::Symbol=:inferno`: Color scheme for the figure. 
+  Any one from ColorSchemes.jl can be used. Some good ones are :batlow, :bone, :CMRmap, 
+  :grayC, :seaborn_rocket_gradient, :YlOrRd_9 and :inferno, which is the default.
+
+# Returns
+The figure outputted by Plots.jl.
+"""
+function starMapPlot(   position_data::Dict{String,Any}; 
+                        plane::String="All", 
+                        color::Symbol=:inferno)::Plots.Plot
+
+    # Get the position data.
+    pos = position_data["stars"] 
+
+    if position_data["periodic"]
+		# For periodic boundary conditions.
+		box_limits = (position_data["box_size"] / 2) * 0.95
+	else
+		# For vacuum boundary conditions.
+		box_limits = position_data["box_size"] * 1.05
+    end
+
+    # If there are stars.
+    dataQ = !isempty(pos)
+    if dataQ
+        # If stars already formed.
+        x, y, z = pos[:,1], pos[:,2], pos[:,3]
+    else
+        # If they didn't.
+        x, y, z =   range(-box_limits, stop=box_limits, length=10), 
+                    range(-box_limits, stop=box_limits, length=10), 
+                    zero(rand(10,10))        
+    end
+
+    # Unit as a String for the axes labels.
+    l_unit = uglyUnitDeserialization(position_data["unit"])
+
+    # Resolution in pixels for the binning of the grid.
+    resolution = 1000 
+
+    color_scheme = cgrad(color)
+	last_color = color_scheme[1]
+	
+    if plane == "XY" || plane == "All"
+        if dataQ
+            density_xy = xyz(ash(   x, y, 
+                                    rngx=extendrange(x, 0.5, resolution), 
+                                    rngy=extendrange(y, 0.5, resolution)))
+            heatmap(density_xy[1], density_xy[2], log10.(density_xy[3]))
+        else
+            heatmap(x, y, z)
+        end
+            
+        xy_plot = plane_plot = heatmap!(aspect_ratio=1, 
+                                        xlim=(-box_limits, box_limits), 
+                                        ylim=(-box_limits, box_limits), 
+                                        size=(1040, 1040),
+                                        right_margin=25px,
+                                        framestyle=:box,
+                                        xlabel="x / $l_unit",
+                                        ylabel="y / $l_unit",
+                                        title="XY plane",
+                                        fontfamily="Computer Modern", 
+                                        xtickfontsize=30,
+                                        ytickfontsize=30,
+                                        xguidefontsize=35,
+                                        yguidefontsize=35,
+                                        titlefont=35,
+                                        colorbar=false,
+                                        background_color_inside=last_color,
+                                        c=color_scheme
+                                    )
+    end
+
+    if plane == "XZ" || plane == "All"
+        if dataQ
+            density_xz = xyz(ash(   x, z, 
+                                    rngx=extendrange(x, 0.5, resolution), 
+                                    rngy=extendrange(y, 0.5, resolution)))
+            heatmap(density_xz[1], density_xz[2], log10.(density_xz[3]))
+        else
+            heatmap(x, y, z)
+        end
+            
+        xz_plot = plane_plot = heatmap!(aspect_ratio=1, 
+                                        xlim=(-box_limits, box_limits), 
+                                        ylim=(-box_limits, box_limits), 
+                                        size=(1040, 1040),
+                                        right_margin=25px,
+                                        framestyle=:box,
+                                        xlabel="x / $l_unit",
+                                        ylabel="z / $l_unit",
+                                        title="XZ plane",
+                                        fontfamily="Computer Modern",
+                                        xtickfontsize=30,
+                                        ytickfontsize=30,
+                                        xguidefontsize=35,
+                                        yguidefontsize=35,
+                                        titlefont=35,
+                                        colorbar=false,
+                                        background_color_inside=last_color,
+                                        c=color_scheme
+                                    )
+    end
+
+    if plane == "YZ" || plane == "All"
+        if dataQ
+            density_yz = xyz(ash(   y, z, 
+                                    rngx=extendrange(x, 0.5, resolution), 
+                                    rngy=extendrange(y, 0.5, resolution)))
+            heatmap(density_yz[1], density_yz[2], log10.(density_yz[3]))
+        else
+            heatmap(x, y, z)
+        end
+            
+        yz_plot = plane_plot = heatmap!(aspect_ratio=1, 
+                                        xlim=(-box_limits, box_limits), 
+                                        ylim=(-box_limits, box_limits),  
+                                        size=(1040, 1040),
+                                        right_margin=25px,
+                                        framestyle=:box,
+                                        xlabel="y / $l_unit",
+                                        ylabel="z / $l_unit",
+                                        title="YZ plane", 
+                                        fontfamily="Computer Modern",
+                                        xtickfontsize=30,
+                                        ytickfontsize=30,
+                                        xguidefontsize=35,
+                                        yguidefontsize=35,
+                                        titlefont=35,
+                                        colorbar=false,
+                                        background_color_inside=last_color,
+                                        c=color_scheme 
+                                    )
+    end
+    
+    if plane != "All"
+        # Plot a single plane.
+        return plane_plot
+    else
+        # Plot the three planes together.
+        return heatmap( xy_plot, xz_plot, yz_plot, 
+                        layout=(1, 3), 
+                        size=(3000, 1000),
+                        left_margin=55px,
+                        top_margin=-20px,
+                        bottom_margin=20px
+                    )
+    end  
+end
+
+"""
+    gasStarEvolutionPlot(   time_series::Dict{String,Any}, 
+                            position_data::Dict{String,Any}, 
+                            index::Int64)::Plots.Plot
 
 Makes 3 plots (in a single figure with a 1x2 layout) of the position of the particles 
 in the XY plane, the baryonic fractional mass and the SFR. The first two for stars and gas.
@@ -1457,7 +1652,7 @@ function gasStarEvolutionPlot(  time_series::Dict{String,Any},
 				xguidefontsize=25,
 				yguidefontsize=25,
                 legendfontsize=25                    
-            )
+    )
 end
 
 """
@@ -1572,7 +1767,7 @@ function timeSeriesPlot(time_series::Dict{String,Any};
                 xguidefontsize=25,
                 yguidefontsize=25,
                 legendfontsize=30
-            )
+    )
 end
 
 """
@@ -1686,7 +1881,7 @@ function scaleFactorSeriesPlot( time_series::Dict{String,Any};
                 xguidefontsize=25,
                 yguidefontsize=25,
                 legendfontsize=30
-            )
+    )
 end
 
 """
@@ -1800,11 +1995,15 @@ function redshiftSeriesPlot(time_series::Dict{String,Any};
                 xguidefontsize=25,
                 yguidefontsize=25,
                 legendfontsize=30
-            )
+    )
 end
 
 """
-    compareSimulationsPlot(x_quantity::String, y_quantity::String, labels::Array{String,2}, data::Tuple{Vararg{Dict{String,Any}}}; <keyword arguments>)::Plots.Plot
+    compareSimulationsPlot( x_quantity::String, 
+                            y_quantity::String, 
+                            labels::Array{String,2}, 
+                            data::Tuple{Vararg{Dict{String,Any}}}; 
+                            <keyword arguments>)::Plots.Plot
 
 Make a plot comparing `y_quantity` vs. `x_quantity` for several simulations.
 
@@ -1892,7 +2091,7 @@ function compareSimulationsPlot(x_quantity::String,
         end
     elseif x_quantity == "sfr"
         unit = uglyUnitDeserialization(data[1]["units"]["sfr"])
-
+            
         if x_factor != 0
             xlabel *= replace(replace(unit, "M⊙" => L"$\ / \, \left(10^{%$x_factor} \, \mathrm{M_{\odot} \,"), "^-1" => L"^{-1}}\right)$")
         else
@@ -1900,7 +2099,7 @@ function compareSimulationsPlot(x_quantity::String,
         end
     elseif x_quantity == "gas_mass" || x_quantity == "dm_mass" || x_quantity == "star_mass"
         unit = uglyUnitDeserialization(data[1]["units"]["mass"])
-
+            
         if x_factor != 0
             xlabel *= replace(unit, "M⊙" => L"\ / \, \left(10^{%$x_factor} \, \mathrm{M}_{\odot}\right)")
         else
@@ -1921,7 +2120,7 @@ function compareSimulationsPlot(x_quantity::String,
         end
     elseif y_quantity == "sfr"
         unit = uglyUnitDeserialization(data[1]["units"]["sfr"])
-
+            
         if y_factor != 0
             ylabel *= replace(replace(unit, "M⊙" => L"$\ / \, \left(10^{%$y_factor} \, \mathrm{M_{\odot} \,"), "^-1" => L"^{-1}}\right)$")
         else
@@ -1929,7 +2128,7 @@ function compareSimulationsPlot(x_quantity::String,
         end
     elseif y_quantity == "gas_mass" || y_quantity == "dm_mass" || y_quantity == "star_mass"
         unit = uglyUnitDeserialization(data[1]["units"]["mass"])
-
+            
         if y_factor != 0
             ylabel *= replace(unit, "M⊙" => L"\ / \, \left(10^{%$y_factor} \, \mathrm{M}_{\odot}\right)")
         else
@@ -1962,11 +2161,13 @@ function compareSimulationsPlot(x_quantity::String,
                 background_color_legend=nothing,
                 ticklabel_shift=".1cm",
                 extra_kwargs=:subplot
-            )
+    )
 end
 
 """
-    densityHistogramPlot(density_data::Dict{String,Any}, time::Unitful.Quantity; <keyword arguments>)::Plots.Plot
+    densityHistogramPlot(   density_data::Dict{String,Any}, 
+                            time::Unitful.Quantity; 
+                            <keyword arguments>)::Plots.Plot
 
 Make an histogram of the densities of the gas particles.
 
@@ -2023,11 +2224,14 @@ function densityHistogramPlot(  density_data::Dict{String,Any},
                         ticklabel_shift=".1cm",
                         add="\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$time_unit};",
                         extra_kwargs=:subplot
-                    )
+    )
 end
 
 """
-    densityProfilePlot(position_data::Dict{String,Any}, mass_data::Dict{String,Any}, time::Unitful.Quantity; <keyword arguments>)::Plots.Plot
+    densityProfilePlot( position_data::Dict{String,Any}, 
+                        mass_data::Dict{String,Any}, 
+                        time::Unitful.Quantity; 
+                        <keyword arguments>)::Plots.Plot
 
 Make a density profile plot for a given time step.
 
@@ -2116,11 +2320,15 @@ function densityProfilePlot(position_data::Dict{String,Any},
                 ticklabel_shift=".1cm",
                 add="\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$time_unit};",
                 extra_kwargs=:subplot
-            )
+    )
 end
 
 """
-    metallicityProfilePlot(position_data::Dict{String,Any}, mass_data::Dict{String,Any}, z_data::Dict{String,Any}, time::Unitful.Quantity; <keyword arguments>)::Plots.Plot
+    metallicityProfilePlot( position_data::Dict{String,Any}, 
+                            mass_data::Dict{String,Any}, 
+                            z_data::Dict{String,Any}, 
+                            time::Unitful.Quantity; 
+                            <keyword arguments>)::Plots.Plot
 
 Make a metallicity profile plot for a given time step.
 
@@ -2210,7 +2418,11 @@ end
 
 
 """
-    sfrTxtPlot(source_path::String, snap_name::String, x_axis::Int64, y_axis::Array{Int64,1}; <keyword arguments>)::Plots.Plot
+    sfrTxtPlot( source_path::String, 
+                snap_name::String, 
+                x_axis::Int64, 
+                y_axis::Array{Int64,1}; 
+                <keyword arguments>)::Plots.Plot
 
 Make a plot of column `y_axis` vs. column `x_axis` from the sfr.txt present in `source_path`, 
 with consistent units.
@@ -2280,8 +2492,8 @@ function sfrTxtPlot(source_path::String,
     data = sfrTxtData(source_path, snap_name; sim_cosmo, mass_unit, time_unit, sfr_unit)
     
     # Parameter configuration of the figure.
-    figure = plot(  xscale = scale[1],
-                    yscale = scale[2],
+    figure = plot(  xscale=scale[1],
+                    yscale=scale[2],
                     xlabel=labels[x_axis],
                     ylabel=labels[y_axis[1]],
                     title=title,
@@ -2311,7 +2523,7 @@ function sfrTxtPlot(source_path::String,
             deleteat!(y_data, x_data .<= 0)
             filter!(x -> x >  0, x_data)
         end
-
+            
         if scale[2] == :log10
             deleteat!(x_data, y_data .<= 0)
             filter!(x -> x >  0, y_data)
@@ -2320,10 +2532,10 @@ function sfrTxtPlot(source_path::String,
         # Filter data points < `min_filter`.
         deleteat!(y_data, x_data .< min_filter[1])
         filter!(x -> x > min_filter[1], x_data)
-
+            
         deleteat!(x_data, y_data .< min_filter[2])
         filter!(x -> x > min_filter[2], y_data)
-
+            
         plot!(  figure, x_data, y_data, 
                 label="Column $y_type", 
                 lw=3, 
@@ -2342,7 +2554,12 @@ end
 ########################################################################################
 
 """
-    scatterGridPipeline(snap_name::String, source_path::String, base_output_path::String, anim_name::String, frame_rate::Int64; <keyword arguments>)::Nothing
+    scatterGridPipeline(snap_name::String, 
+                        source_path::String, 
+                        base_output_path::String, 
+                        anim_name::String, 
+                        frame_rate::Int64; 
+                        <keyword arguments>)::Nothing
 
 Save the results of the scatterGridPlot function as one image per snapshot, 
 and then generate a GIF and video animating the images. 
@@ -2397,7 +2614,7 @@ function scatterGridPipeline(   snap_name::String,
                                     length_unit=length_unit, 
                                     box_size=region_size
                                 )
-
+            
         figure = scatterGridPlot(positions)
         savefig(figure, base_output_path * "scatter_grid/images/" * snap_name * "_" * snap_numbers[i] * format)
     end
@@ -2420,7 +2637,12 @@ function scatterGridPipeline(   snap_name::String,
 end
 
 """
-    densityMapPipeline(snap_name::String, source_path::String, base_output_path::String, anim_name::String, frame_rate::Int64; <keyword arguments>)::Nothing
+    densityMapPipeline( snap_name::String, 
+                        source_path::String, 
+                        base_output_path::String, 
+                        anim_name::String, 
+                        frame_rate::Int64; 
+                        <keyword arguments>)::Nothing
 
 Save the results of the densityMapPlot function as one image per snapshot, 
 and then generate a GIF and a video animating the images. 
@@ -2484,7 +2706,7 @@ function densityMapPipeline(snap_name::String,
         mass = massData(snapshot, "gas", sim_cosmo=sim_cosmo)
         density = densityData(snapshot; sim_cosmo=sim_cosmo)
         hsml = hsmlData(snapshot; sim_cosmo=sim_cosmo)
-
+            
         figure = densityMapPlot(pos, mass, hsml, density, plane=plane)
         savefig(figure, base_output_path * "density_map/images/" * snap_name * "_" * snap_numbers[i] * format)
     end
@@ -2507,7 +2729,101 @@ function densityMapPipeline(snap_name::String,
 end
 
 """
-    gasStarEvolutionPipeline(snap_name::String, source_path::String, base_output_path::String, anim_name::String, frame_rate::Int64; <keyword arguments>)::Nothing
+    starMapPipeline(snap_name::String, 
+                    source_path::String, 
+                    base_output_path::String, 
+                    anim_name::String, 
+                    frame_rate::Int64; 
+                    <keyword arguments>)::Nothing
+
+Save the results of the starMapPlot function as one image per snapshot, 
+and then generate a GIF and a video animating the images. 
+
+# Arguments
+- `snap_name::String`: Base name of the target snapshots.
+- `source_path::String`: Path where the target snapshots are located.
+- `base_output_path::String`: Path of parent directory for storing the figures.
+  The images will be stored in `base_output_path`star_map/images/ and will be named
+  `snap_name`_XXX`format` where XXX is the number of the snapshot. The GIF and the 
+  video will be stored in `base_output_path`star_map/.
+- `anim_name::String`: Name of the generated video and GIF, without the extension.
+- `frame_rate::Int64`: Frame rate of the output video and GIF.
+- `plane::String="All"`: Indicates which plane will be plotted. 
+  "XY" -> XY plane alone.
+  "XZ" -> XZ plane alone.
+  "YZ" -> YZ plane alone.
+  "All" -> The three planes in a single 1x3 figure.
+- `step::Int64=1`: Step used to traverse the list of snapshots. The default is 1, 
+  i.e. all snapshots will be plotted.
+- `sim_cosmo::Int64=0`: Value of the GADGET variable ComovingIntegrationOn: 
+  0 -> Newtonian simulation (static universe).
+  1 -> Cosmological simulation (expanding universe).
+- `length_unit::Unitful.FreeUnits=UnitfulAstro.kpc`: Unit of length to be used in the output, 
+  all available length units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.kpc, which is the default.
+- `region_size::Unitful.Quantity=1000UnitfulAstro.kpc`: Size of the plotting region 
+  if vacuum boundary conditions were used. It has to have units, e.g. 1000UnitfulAstro.kpc, 
+  which is the default. Its units don't have to be the same as `length_unit`.
+- `format::String=".png"`: File format of the output figure. All formats supported by GR 
+  can be used, namely ".pdf", ".ps", ".svg" and ".png", which is the default. 
+"""
+function starMapPipeline(   snap_name::String, 
+                            source_path::String, 
+                            base_output_path::String, 
+                            anim_name::String, 
+                            frame_rate::Int64;
+                            plane::String="All",
+                            step::Int64=1,
+                            sim_cosmo::Int64=0,
+                            length_unit::Unitful.FreeUnits=UnitfulAstro.kpc,
+                            region_size::Unitful.Quantity=1000UnitfulAstro.kpc,
+                            format::String=".png")::Nothing
+
+    # Get the simulation data.
+    sim = getSnapshots(snap_name, source_path)
+    sim_files = sim["snap_files"]
+    snap_numbers = sim["numbers"]
+
+    # Create a directory to store the figures, if it doesn't exist.
+    mkpath(base_output_path * "star_map/images/")
+
+    # Generate and store the plots.
+    animation = @animate for i in 1:step:length(sim_files)
+        snapshot = sim_files[i]
+        pos = positionData( snapshot, 
+                            sim_cosmo=sim_cosmo, 
+                            length_unit=length_unit, 
+                            box_size=region_size
+                        )
+            
+        figure = starMapPlot(pos, plane=plane)
+        savefig(figure, base_output_path * "star_map/images/" * snap_name * "_" * snap_numbers[i] * format)
+    end
+
+    # Make the GIF.
+    gif(animation, 
+        base_output_path * "star_map/" * anim_name * ".gif", 
+        fps=frame_rate
+    )
+
+    # Make de video.
+    makeVideo(  base_output_path * "star_map/images/", 
+                format, 
+                base_output_path * "star_map/", 
+                anim_name, 
+                frame_rate
+            )
+
+    return nothing
+end
+
+"""
+    gasStarEvolutionPipeline(   snap_name::String, 
+                                source_path::String, 
+                                base_output_path::String, 
+                                anim_name::String, 
+                                frame_rate::Int64; 
+                                <keyword arguments>)::Nothing
 
 Save the results of the gasStarEvolutionPlot for the last snapshot as one image and 
 generate a GIF and a video animating the whole evolution from all snapshots. 
@@ -2608,7 +2924,11 @@ function gasStarEvolutionPipeline(  snap_name::String,
 end
 
 """
-    evolutionSummaryPipeline(snap_name::String, source_path::String, base_output_path::String, fig_name::String; <keyword arguments>)::Nothing
+    evolutionSummaryPipeline(   snap_name::String, 
+                                source_path::String, 
+                                base_output_path::String, 
+                                fig_name::String; 
+                                <keyword arguments>)::Nothing
 
 Produce up to three figures summarizing the time evolution of the simulation.
 
@@ -2685,7 +3005,14 @@ function evolutionSummaryPipeline(  snap_name::String,
 end
 
 """
-    compareSimulationsPipeline(source_path::Array{String,1}, base_output_path::String, snap_name::Array{String,1}, labels::Array{String,2}, fig_name::String, x_quantity::String, y_quantity::String; <keyword arguments>)::Nothing
+    compareSimulationsPipeline( source_path::Array{String,1}, 
+                                base_output_path::String, 
+                                snap_name::Array{String,1}, 
+                                labels::Array{String,2}, 
+                                fig_name::String, 
+                                x_quantity::String, 
+                                y_quantity::String; 
+                                <keyword arguments>)::Nothing
 
 Make a figure comparing `y_quantity` vs. `x_quantity` for several simulations.
 
@@ -2794,7 +3121,12 @@ function compareSimulationsPipeline(source_path::Array{String,1},
 end
 
 """
-    densityHistogramPipeline(snap_name::String, source_path::String, base_output_path::String, anim_name::String, frame_rate::Int64; <keyword arguments>)::Nothing
+    densityHistogramPipeline(   snap_name::String, 
+                                source_path::String, 
+                                base_output_path::String, 
+                                anim_name::String, 
+                                frame_rate::Int64; 
+                                <keyword arguments>)::Nothing
 
 Save the results of the densityHistogramPlot function as one image per snapshot, 
 and then generate a GIF and a video animating the images. 
@@ -2851,7 +3183,7 @@ function densityHistogramPipeline(  snap_name::String,
     for i in 1:step:length(sim_files)
         snapshot = sim_files[i]
         density = densityData(snapshot; sim_cosmo=sim_cosmo)
-
+            
         figure = densityHistogramPlot(  density, 
                                         time_data["clock_time"][i] * time_unit; 
                                         factor, 
@@ -2877,7 +3209,13 @@ function densityHistogramPipeline(  snap_name::String,
 end
 
 """
-    densityProfilePipeline(snap_name::String, source_path::String, base_output_path::String, anim_name::String, frame_rate::Int64, type::String; <keyword arguments>)::Nothing
+    densityProfilePipeline( snap_name::String, 
+                            source_path::String, 
+                            base_output_path::String, 
+                            anim_name::String, 
+                            frame_rate::Int64, 
+                            type::String; 
+                            <keyword arguments>)::Nothing
 
 Save the results of the densityProfilePlot function in one image per snapshot,
 and then generate a GIF and a video animating the images. 
@@ -2950,7 +3288,7 @@ function densityProfilePipeline(snap_name::String,
     mkpath(base_output_path * "density_profile/image/")
 
     # Generate and store the plots.
-    #animation = @animate 
+    # animation = @animate 
     for i in 1:step:length(sim_files)
         snapshot = sim_files[i]
         positions = positionData(   snapshot; 
@@ -2958,7 +3296,7 @@ function densityProfilePipeline(snap_name::String,
                                     length_unit, 
                                     box_size=region_size)
         mass = massData(snapshot, type; sim_cosmo)
-
+            
         figure = densityProfilePlot(positions,
                                     mass, 
                                     time_data["clock_time"][i] * time_unit;
@@ -2966,7 +3304,7 @@ function densityProfilePipeline(snap_name::String,
                                     factor,
                                     region_factor,
                                     density_unit)
-
+            
         savefig(figure, base_output_path * "density_profile/image/" * snap_name * "_" * snap_numbers[i] * format)
     end
 
@@ -2988,7 +3326,13 @@ function densityProfilePipeline(snap_name::String,
 end
 
 """
-    metallicityProfilePipeline(snap_name::String, source_path::String, base_output_path::String, anim_name::String, frame_rate::Int64, type::String; <keyword arguments>)::Nothing
+    metallicityProfilePipeline( snap_name::String, 
+                                source_path::String, 
+                                base_output_path::String, 
+                                anim_name::String, 
+                                frame_rate::Int64, 
+                                type::String; 
+                                <keyword arguments>)::Nothing
 
 Save the results of the metallicityProfilePlot function in one image per snapshot,
 and then generate a GIF and a video animating the images. 
@@ -3063,14 +3407,14 @@ function metallicityProfilePipeline(snap_name::String,
                                     box_size=region_size)
         mass = massData(snapshot, type; sim_cosmo)
         metallicities = zData(snapshot, type; sim_cosmo)
-
+            
         figure = metallicityProfilePlot(positions,
                                         mass, 
                                         metallicities,
                                         time_data["clock_time"][i] * time_unit;
                                         bins,
                                         region_factor)
-
+            
         savefig(figure, base_output_path * "metallicity_profile/image/" * snap_name * "_" * snap_numbers[i] * format)
     end
 
