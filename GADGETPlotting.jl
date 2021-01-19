@@ -1346,6 +1346,9 @@ with a range of ± `position_data["box_size"]`.
   "XZ" -> XZ plane alone.
   "YZ" -> YZ plane alone.
   "All" -> The three planes in a single 1x3 figure.
+- `region_factor::Float64=1.0`: Multiplicative factor for the plotting region. 
+  It will scale `positions["box_size"]` if vacuum boundary conditions were used, and
+  it will scale `positions["box_size"] / 2` if periodic boundary conditions were used.
 - `color::Symbol=:inferno`: Color scheme for the figure. 
   Any one from ColorSchemes.jl can be used. Some good ones are :batlow, :bone, :CMRmap, 
   :grayC, :seaborn_rocket_gradient, :YlOrRd_9 and :inferno, which is the default.
@@ -1355,11 +1358,11 @@ The figure outputted by Plots.jl.
 """
 function starMapPlot(   position_data::Dict{String,Any}; 
                         plane::String="All", 
+                        region_factor::Float64=1.0,
                         color::Symbol=:inferno)::Plots.Plot
 
     # Get the position data.
     pos = position_data["stars"] 
-
     if position_data["periodic"]
 		# For periodic boundary conditions.
 		box_limits = (position_data["box_size"] / 2) * 0.95
@@ -1367,6 +1370,12 @@ function starMapPlot(   position_data::Dict{String,Any};
 		# For vacuum boundary conditions.
 		box_limits = position_data["box_size"] * 1.05
     end
+    box_limits *= region_factor
+
+    # Resolution in pixels for the binning of the grid.
+    resolution = 1000 
+    # Discretization of the plotting region.
+    xy_binnig = range(-box_limits, stop=box_limits, length=resolution)
 
     # If there are stars.
     dataQ = !isempty(pos)
@@ -1375,16 +1384,11 @@ function starMapPlot(   position_data::Dict{String,Any};
         x, y, z = pos[:,1], pos[:,2], pos[:,3]
     else
         # If they didn't.
-        x, y, z =   range(-box_limits, stop=box_limits, length=10), 
-                    range(-box_limits, stop=box_limits, length=10), 
-                    zero(rand(10,10))        
+        x, y, z =   xy_binnig, xy_binnig, zero(rand(resolution, resolution))        
     end
 
     # Unit as a String for the axes labels.
     l_unit = uglyUnitDeserialization(position_data["unit"])
-
-    # Resolution in pixels for the binning of the grid.
-    resolution = 1000 
 
     color_scheme = cgrad(color)
 	last_color = color_scheme[1]
@@ -1392,8 +1396,8 @@ function starMapPlot(   position_data::Dict{String,Any};
     if plane == "XY" || plane == "All"
         if dataQ
             density_xy = xyz(ash(   x, y, 
-                                    rngx=extendrange(x, 0.5, resolution), 
-                                    rngy=extendrange(y, 0.5, resolution)))
+                                    rngx=xy_binnig, 
+                                    rngy=xy_binnig))
             heatmap(density_xy[1], density_xy[2], log10.(density_xy[3]))
         else
             heatmap(x, y, z)
@@ -1423,8 +1427,8 @@ function starMapPlot(   position_data::Dict{String,Any};
     if plane == "XZ" || plane == "All"
         if dataQ
             density_xz = xyz(ash(   x, z, 
-                                    rngx=extendrange(x, 0.5, resolution), 
-                                    rngy=extendrange(y, 0.5, resolution)))
+                                    rngx=xy_binnig, 
+                                    rngy=xy_binnig))
             heatmap(density_xz[1], density_xz[2], log10.(density_xz[3]))
         else
             heatmap(x, y, z)
@@ -1454,8 +1458,8 @@ function starMapPlot(   position_data::Dict{String,Any};
     if plane == "YZ" || plane == "All"
         if dataQ
             density_yz = xyz(ash(   y, z, 
-                                    rngx=extendrange(x, 0.5, resolution), 
-                                    rngy=extendrange(y, 0.5, resolution)))
+                                    rngx=xy_binnig, 
+                                    rngy=xy_binnig))
             heatmap(density_yz[1], density_yz[2], log10.(density_yz[3]))
         else
             heatmap(x, y, z)
@@ -2755,6 +2759,9 @@ and then generate a GIF and a video animating the images.
   "All" -> The three planes in a single 1x3 figure.
 - `step::Int64=1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
+- `region_factor::Float64=1.0`: Multiplicative factor for the plotting region. 
+  It will scale `positions["box_size"]` if vacuum boundary conditions were used, and
+  it will scale `positions["box_size"] / 2` if periodic boundary conditions were used.
 - `sim_cosmo::Int64=0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
@@ -2774,6 +2781,7 @@ function starMapPipeline(   snap_name::String,
                             frame_rate::Int64;
                             plane::String="All",
                             step::Int64=1,
+                            region_factor::Float64=1.0,
                             sim_cosmo::Int64=0,
                             length_unit::Unitful.FreeUnits=UnitfulAstro.kpc,
                             region_size::Unitful.Quantity=1000UnitfulAstro.kpc,
@@ -2796,7 +2804,7 @@ function starMapPipeline(   snap_name::String,
                             box_size=region_size
                         )
             
-        figure = starMapPlot(pos, plane=plane)
+        figure = starMapPlot(pos; plane, region_factor)
         savefig(figure, base_output_path * "star_map/images/" * snap_name * "_" * snap_numbers[i] * format)
     end
 
