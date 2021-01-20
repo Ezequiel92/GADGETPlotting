@@ -3013,9 +3013,9 @@ function evolutionSummaryPipeline(  snap_name::String,
 end
 
 """
-    compareSimulationsPipeline( source_path::Array{String,1}, 
-                                base_output_path::String, 
-                                snap_name::Array{String,1}, 
+    compareSimulationsPipeline( snap_name::Array{String,1},
+                                source_path::Array{String,1}, 
+                                base_output_path::String,  
                                 labels::Array{String,2}, 
                                 fig_name::String, 
                                 x_quantity::String, 
@@ -3044,11 +3044,11 @@ function, namely:
 - "star_bar_frac" (Baryonic star fraction)
 
 # Arguments
+- `snap_name::Array{String,1}`: Base names of the target snapshots, e.g. [snap1, snap2, ...].
 - `source_path::Array{String,1}`: Paths where the target snapshots are located, 
   one for each simulation, e.g. [path1, path2, ...].
 - `base_output_path::String`: Path of parent directory for storing the figure.
-  The image will be stored in `base_output_path`compare_simulations/.
-- `snap_name::Array{String,1}`: Base names of the target snapshots, e.g. [snap1, snap2, ...].
+  The image will be stored in `base_output_path` `folder`.
 - `labels::Array{String,2}`: Labels for the different simulations, e.g. [label1 label2 ...].
 - `fig_name::String`: Base name for the figure. The file will be named
   `fig_name`_`y_quantity`_vs_`x_quantity` `format`.
@@ -3076,12 +3076,13 @@ function, namely:
   the corresponding axis will be scaled by 10^10. The default is 0, i.e. no scaling.
 - `title::String=""`: Title for the figure. If an empty string is given
   no title is printed, which is the default.
+- `folder::String=""`: Name of the folder where the figures will be saved.
 - `format::String=".png"`: File format of the output figure. All formats supported by pgfplotsx 
   can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
 """
-function compareSimulationsPipeline(source_path::Array{String,1},
+function compareSimulationsPipeline(snap_name::Array{String,1}, 
+                                    source_path::Array{String,1},
                                     base_output_path::String,
-                                    snap_name::Array{String,1}, 
                                     labels::Array{String,2},
                                     fig_name::String,
                                     x_quantity::String,
@@ -3095,6 +3096,7 @@ function compareSimulationsPipeline(source_path::Array{String,1},
                                     x_factor::Int64=0, 
                                     y_factor::Int64=0,
                                     title::String="",
+                                    folder::String="",
                                     format::String=".png")::Nothing
 
     time_series = []
@@ -3109,7 +3111,7 @@ function compareSimulationsPipeline(source_path::Array{String,1},
     end
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(base_output_path * "compare_simulations/")
+    mkpath(base_output_path * folder)
 
     file_name = fig_name * "_" * y_quantity * "_vs_" * x_quantity * format
 	
@@ -3123,7 +3125,7 @@ function compareSimulationsPipeline(source_path::Array{String,1},
                                     title, 
                                     log_scale,
                                     smooth_data)
-    savefig(figure, base_output_path * "compare_simulations/" * file_name)
+    savefig(figure, base_output_path * folder * file_name)
 
     return nothing
 end
