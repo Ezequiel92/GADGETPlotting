@@ -1,7 +1,6 @@
 ########################################################################################
-# Testing script for GADGETPlotting.jl, it can be run as is, and it shouldn't throw 
-# any errors. It expects to find GADGETPlotting.jl one directory up, and a directory 
-# named results/, for storing the testing files, in its same directory.
+# Testing script for GADGETPlotting.jl, it can be run as is, and it shouldn't 
+# throw any errors.
 ########################################################################################
 
 include("GADGETPlotting.jl")
@@ -73,9 +72,9 @@ println()
 sfrtxtdata = sfrTxtData(SNAP_PATH, SNAP_NAME, sim_cosmo=SIM_COSMO)
 display(sfrtxtdata)
 
-# #######################################################################################
+########################################################################################
 # TEST OF PLOTTING FUNCTIONS.
-# #######################################################################################
+########################################################################################
 
 scatterGridPlot(pos)
 savefig(BASE_OUT_PATH * "test_scatterGridPlot.png")
@@ -106,6 +105,7 @@ gasStarEvolutionPlot(time_series, pos, 21)
 savefig(BASE_OUT_PATH * "test_gasStarEvolutionPlot.png")
 
 pgfplotsx()
+
 timeSeriesPlot(time_series, mass_factor=0, number_factor=4)
 savefig(BASE_OUT_PATH * "test_timeSeriesPlot.png")
 
@@ -148,6 +148,7 @@ savefig(BASE_OUT_PATH * "test_sfrTxtPlot.png")
 ########################################################################################
 
 gr()
+
 scatterGridPipeline(SNAP_NAME, 
                     SNAP_PATH, 
                     BASE_OUT_PATH, 
@@ -184,6 +185,7 @@ gasStarEvolutionPipeline(   SNAP_NAME,
                             region_size=BOX_SIZE)
 
 pgfplotsx()
+
 evolutionSummaryPipeline(   SNAP_NAME, 
                             SNAP_PATH,  
                             BASE_OUT_PATH, 
@@ -192,14 +194,15 @@ evolutionSummaryPipeline(   SNAP_NAME,
                             mass_factor=10, 
                             number_factor=4)
 
-compareSimulationsPipeline( [SNAP_PATH, SNAP_PATH],
-                            BASE_OUT_PATH,
-                            [SNAP_NAME, SNAP_NAME],   
+compareSimulationsPipeline( [SNAP_NAME, SNAP_NAME],
+                            [SNAP_PATH, SNAP_PATH],
+                            BASE_OUT_PATH, 
                             ["sim1" "sim2"], 
                             "compare",
                             "star_mass",
                             "sfr",
                             x_factor=10,
+                            folder="compare_simulations/",
                             title="SFMS relation")
 
 densityHistogramPipeline(   SNAP_NAME, 
@@ -252,38 +255,37 @@ x_data = [1:1000...]
 y_data = rand(1000)
 x_smooth, y_smooth = smoothWindow(x_data, y_data, 50)
 plot(x_data, y_data, seriestype=:scatter, legend=false)
-plot!(x_smooth, y_smooth, seriestype=:line, lw=3)
+plot!(x_smooth, y_smooth, seriestype=:line, lw=2)
 savefig(BASE_OUT_PATH * "test_smoothWindow.png")
 
 positions = pos["gas"]
 distances = sqrt.(positions[:,1].^2 .+ positions[:,2].^2 .+  positions[:,3].^2)
 box_size = ustrip(Float64, unit(BOX_SIZE), BOX_SIZE)
 r, ρ = densityProfile(gas_mass["mass"], distances, box_size, 80)
-plot(   r, ρ, 
-        lw=3, 
-        xlabel="Distance / $(pos["unit"])", 
-        ylabel="ρ / $(gas_mass["unit"]) $(pos["unit"])^(-3)", 
-        legend=false)
+plot(r, ρ, lw=2, xlabel="r / $(pos["unit"])", ylabel=L"\rho", legend=false)
 savefig(BASE_OUT_PATH * "test_densityProfile.png")
 
 positions = pos["gas"]
 distances = sqrt.(positions[:,1].^2 .+ positions[:,2].^2 .+  positions[:,3].^2)
-size = ustrip(Float64, unit(BOX_SIZE), BOX_SIZE)
+box_size = ustrip(Float64, unit(BOX_SIZE), BOX_SIZE)
 r, z = metallicityProfile(gas_mass["mass"], distances, gas_z["Z"], box_size, 80)
-plot(r, z, lw=3, xlabel="Distance / $(pos["unit"])", ylabel="Z / Zsun", legend=false)
+plot(r, z, lw=2, xlabel="r / $(pos["unit"])", ylabel="Z / Zsun", legend=false)
 savefig(BASE_OUT_PATH * "test_metallicityProfile.png")
+
+
+println("Everything worked just fine!!")
+
 
 ########################################################################################
 # DELETE ALL GENERATED TESTING FILES.
 ########################################################################################
 
-rm(BASE_OUT_PATH, recursive=true)
-println("Everything worked just fine!!")
+# rm(BASE_OUT_PATH, recursive=true)
 
 ########################################################################################
 # EXTRA TESTS.
-# This functions when executed should trow an error.
+# This functions when executed should throw an error.
 ########################################################################################
 
-massData(snap_files[21], "unobtainium", sim_cosmo=SIM_COSMO)
-zData(snap_files[21], "unobtainium", sim_cosmo=SIM_COSMO)
+# massData(snap_files[21], "unobtainium", sim_cosmo=SIM_COSMO)
+# zData(snap_files[21], "unobtainium", sim_cosmo=SIM_COSMO)

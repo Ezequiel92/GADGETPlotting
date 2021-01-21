@@ -24,7 +24,8 @@ const SOLAR_METALLICITY = 0.0134
 
 """
 	uglyUnitDeserialization(unit::Unitful.FreeUnits)::String
-ast `unit` to a String. If given a plain String it will return it unchanged.
+	
+Cast `unit` to a String. If given a plain String it will return it unchanged.
 
 # Arguments 
 - `unit::Unitful.FreeUnits`: Unit to be deserialize.
@@ -293,7 +294,7 @@ Organize the GADGET output files, grouping them by snapshot in an iterator.
 # Returns
 - A dictionary with two entries. 
 	- Key "numbers" => A tuple of Strings representing the numbers 
-    that characterize each snapshots.
+    that characterize each snapshot.
     - Key "snap_files" => A tuple of Strings with the paths to files, one file per 
     snapshot, as follows: 
     (`source_path` `base_name`_001 ... `source_path` `base_name`_NNN) 
@@ -309,7 +310,7 @@ function getSnapshots(  base_name::String,
     num_files = read_header(first(file_list)).num_files
     
     if num_files > 1
-        # If there are multiple files per snapshot, delete the trailing .n.
+        # If there are multiple files per snapshot, delete the trailing '.n'.
         map!(x -> rsplit(x, "."; limit=2)[1], file_list, file_list)
 		# And delete duplicates.
 		unique!(file_list)
@@ -389,7 +390,7 @@ function timeSeriesData(sim_files::Tuple{Vararg{String}};
                                         "star_mass" => "Total star mass", 		               
                                         "gas_frac" => "Gas fraction", 		                
                                         "dm_frac" => "Dark matter fraction", 		                
-                                        "star_frac" => "Stars fraction", 	                   
+                                        "star_frac" => "Star fraction", 	                   
                                         "gas_bar_frac" => "Baryonic gas fraction)",                  
                                         "star_bar_frac" => "Baryonic star fraction"))
     
@@ -579,7 +580,7 @@ Gets the coordinates of the different particles at a specific time step.
     or (0, `header.boxsize`) if periodic boundary conditions were used.
 	Notice how the side length of the region is 2 * `box_size` for vacuum boundary 
 	conditions and `header.boxsize` for periodic boundary conditions.
-	- Key "periodic" => A boolean indicating the type of boundary condition.
+	- Key "periodic" => A Boolean indicating the type of boundary condition.
 	false -> vacuum boundary condition.
 	true -> periodic boundary condition.
 	- Key "unit" => The length unit used, i.e. is a pass-through of `length_unit`. 
@@ -1031,8 +1032,8 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
 		dm_size = stars_size * 3.0
 	end
 	
-	# Unit as a String for the axes labels.
-    unit = uglyUnitDeserialization(position_data["unit"])
+	# Unit for the axis's labels.
+    unit = position_data["unit"]
 
     # Plots of the XY plane.
     pl_gas_x_y = scatter(   gas_x, gas_y, 
@@ -1042,7 +1043,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                             markercolor=:blueviolet,
                             background_color_inside=:black,
                             xlims=(-gas_size, gas_size),
-                            ylims=(-gas_size, gas_size),
+                            ylims=(-gas_size, gas_size)
                         )
     pl_dm_x_y = scatter(dm_x, dm_y, 
                         title="Dark matter - XY plane", 
@@ -1051,7 +1052,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                         markercolor=:darkgrey,
                         background_color_inside=:black,
                         xlims=(-dm_size, dm_size),
-                        ylims=(-dm_size, dm_size),
+                        ylims=(-dm_size, dm_size)
                     )
     pl_stars_x_y = scatter( stars_x, stars_y, 
                             title="Stars - XY plane", 
@@ -1060,7 +1061,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                             markercolor=:darkorange2,
                             background_color_inside=:black,
                             xlims=(-stars_size, stars_size),
-                            ylims=(-stars_size, stars_size),
+                            ylims=(-stars_size, stars_size)
                         )
 
     # Plots of the XZ plane.
@@ -1071,7 +1072,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                             markercolor=:blueviolet,
                             background_color_inside=:black,
                             xlims=(-gas_size, gas_size),
-                            ylims=(-gas_size, gas_size),
+                            ylims=(-gas_size, gas_size)
                         )
     pl_dm_x_z = scatter(dm_x, dm_z, 
                         title="Dark matter - XZ plane", 
@@ -1080,7 +1081,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                         markercolor=:darkgrey,
                         background_color_inside=:black,
                         xlims=(-dm_size, dm_size),
-                        ylims=(-dm_size, dm_size),
+                        ylims=(-dm_size, dm_size)
                     )
     pl_stars_x_z = scatter( stars_x, stars_z, 
                             title="Stars - XZ plane", 
@@ -1089,7 +1090,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                             markercolor=:darkorange2,
                             background_color_inside=:black,
                             xlims=(-stars_size, stars_size),
-                            ylims=(-stars_size, stars_size),
+                            ylims=(-stars_size, stars_size)
                         )
 
     # Plots of the YZ plane.
@@ -1100,7 +1101,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                             markercolor=:blueviolet,
                             background_color_inside=:black,
                             xlims=(-gas_size, gas_size),
-                            ylims=(-gas_size, gas_size),
+                            ylims=(-gas_size, gas_size)
                         )
     pl_dm_y_z = scatter(dm_y, dm_z, 
                         title="Dark matter - YZ plane", 
@@ -1109,7 +1110,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                         markercolor=:darkgrey,
                         background_color_inside=:black,
                         xlims=(-dm_size, dm_size),
-                        ylims=(-dm_size, dm_size),
+                        ylims=(-dm_size, dm_size)
                     )
     pl_stars_y_z = scatter( stars_y, stars_z, 
                             title="Stars - YZ plane", 
@@ -1118,7 +1119,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                             markercolor=:darkorange2,
                             background_color_inside=:black,
                             xlims=(-stars_size, stars_size),
-                            ylims=(-stars_size, stars_size),
+                            ylims=(-stars_size, stars_size)
                         )
 
     # Final figure containing the nine plots.
@@ -1219,9 +1220,6 @@ function densityMapPlot(position_data::Dict{String,Any},
     mass = mass_data["mass"]
     hsml = @. ustrip(Float64, length_unit, hsml_data["gas_hsml"] * hsml_data["unit"]) 
     ρ = @. ustrip(Float64, mass_unit / length_unit^3, density_data["gas_density"] * density_data["unit"])
-	
-	# Unit as a String for the axes labels.
-    l_unit = uglyUnitDeserialization(length_unit)
 
     if plane == "XY" || plane == "All"
         sph_density = log10.(sphMapping(pos, 
@@ -1237,8 +1235,8 @@ function densityMapPlot(position_data::Dict{String,Any},
                                         size=(1040, 1040),
                                         right_margin=25px,
                                         framestyle=:box,
-                                        xlabel="x / $l_unit",
-                                        ylabel="y / $l_unit",
+                                        xlabel="x / $length_unit",
+                                        ylabel="y / $length_unit",
                                         title="XY plane",
                                         fontfamily="Computer Modern", 
                                         xtickfontsize=30,
@@ -1269,8 +1267,8 @@ function densityMapPlot(position_data::Dict{String,Any},
                                         size=(1040, 1040),
                                         right_margin=25px,
                                         framestyle=:box,
-                                        xlabel="x / $l_unit",
-                                        ylabel="z / $l_unit",
+                                        xlabel="x / $length_unit",
+                                        ylabel="z / $length_unit",
                                         title="XZ plane",
                                         fontfamily="Computer Modern",
                                         xtickfontsize=30,
@@ -1301,8 +1299,8 @@ function densityMapPlot(position_data::Dict{String,Any},
                                         size=(1040, 1040),
                                         right_margin=25px,
                                         framestyle=:box,
-                                        xlabel="y / $l_unit",
-                                        ylabel="z / $l_unit",
+                                        xlabel="y / $length_unit",
+                                        ylabel="z / $length_unit",
                                         title="YZ plane", 
                                         fontfamily="Computer Modern",
                                         xtickfontsize=30,
@@ -1387,8 +1385,8 @@ function starMapPlot(   position_data::Dict{String,Any};
         x, y, z =   xy_binnig, xy_binnig, zero(rand(resolution, resolution))        
     end
 
-    # Unit as a String for the axes labels.
-    l_unit = uglyUnitDeserialization(position_data["unit"])
+    # Unit for the axis's labels.
+    l_unit = position_data["unit"]
 
     color_scheme = cgrad(color)
 	last_color = color_scheme[1]
@@ -1524,12 +1522,11 @@ function gasStarEvolutionPlot(  time_series::Dict{String,Any},
                                 position_data::Dict{String,Any}, 
                                 index::Int64)::Plots.Plot
 
-    # Unit formatting for the axes labels.
-    time_unit = uglyUnitDeserialization(time_series["units"]["time"])
+    # Unit formatting for the axis's labels.
+    time_unit = time_series["units"]["time"]
+    length_unit = position_data["unit"]
     sfr_unit = uglyUnitDeserialization(time_series["units"]["sfr"])
-
     sfr_unit = replace(replace(sfr_unit, "M⊙" => "\\left(\\textrm{M}_{\\odot} \\, \\textrm{"), "^-1" => "}^{-1}\\right)")
-    length_unit = uglyUnitDeserialization(position_data["unit"])
     
 	if position_data["periodic"]
 		# For periodic boundary conditions.
@@ -1557,7 +1554,7 @@ function gasStarEvolutionPlot(  time_series::Dict{String,Any},
     baryonic_frac = [reduced_gas reduced_stars]
     
 	clock = round(reduced_time[end], digits=2)  # Data for the time stamp.
-    t_end = ceil(t[end]) * 1.025                # Upper limit for time axis labes.
+    t_end = ceil(t[end]) * 1.025                # Upper limit for time axis labels.
     sfr_end = ceil(maximum(sfr)) * 1.05         # Upper limit for SFR axis labels.
     
     # Separation in x and y components to manage the case of no particles.
@@ -1638,7 +1635,7 @@ function gasStarEvolutionPlot(  time_series::Dict{String,Any},
 
     annotate!(  pl_galaxy_pos, 
                 relative(pl_galaxy_pos, 0.5, 0.95)..., 
-                Plots.text("$clock $time_unit", "Courier", 25, :white, :center))
+                Plots.text("$clock $time_unit", "Courier Bold", 25, :white, :center))
 
     l = @layout [a{0.5w} grid(2, 1)]
 
@@ -1683,9 +1680,9 @@ function timeSeriesPlot(time_series::Dict{String,Any};
     
     pgfplotsx()
 
-    # Unit formatting for the axes labels.
+    # Unit formatting for the axis's labels.
+    time_unit = time_series["units"]["time"]
     mass_unit = uglyUnitDeserialization(time_series["units"]["mass"])
-    time_unit = uglyUnitDeserialization(time_series["units"]["time"])
     sfr_unit = uglyUnitDeserialization(time_series["units"]["sfr"])
 
     if mass_factor != 0
@@ -1710,7 +1707,7 @@ function timeSeriesPlot(time_series::Dict{String,Any};
     baryonic_frac = [time_series["gas_bar_frac"] time_series["star_bar_frac"]]
 
     pl_number = plot(   t, number,
-                        xlabel="t / $(time_unit)",
+                        xlabel="t / $time_unit",
                         ylabel=ylabel_num,
                         label=["Gas" "Stars"],
                         c=[:blueviolet :darkorange2],
@@ -1723,7 +1720,7 @@ function timeSeriesPlot(time_series::Dict{String,Any};
                     )
 
     pl_mass = plot( t, mass,
-                    xlabel="t / $(time_unit)",
+                    xlabel="t / $time_unit",
                     ylabel=L"Total mass %$mass_unit",
                     label=["Gas" "Stars"],
                     c=[:blueviolet :darkorange2],
@@ -1736,7 +1733,7 @@ function timeSeriesPlot(time_series::Dict{String,Any};
                 )
 
     pl_frac = plot( t, baryonic_frac, 
-                    xlabel="t / $(time_unit)",
+                    xlabel="t / $time_unit",
                     ylabel="Fractional baryonic mass",
                     label=["Gas" "Stars"],
                     c=[:blueviolet :darkorange2],
@@ -1749,7 +1746,7 @@ function timeSeriesPlot(time_series::Dict{String,Any};
                 )
 
     pl_sfr = plot(  t, sfr,
-                    xlabel="t / $(time_unit)",
+                    xlabel="t / $time_unit",
                     ylabel=L"SFR %$sfr_unit",
                     legend=false,
                     linecolor=:darkorange2,
@@ -1798,7 +1795,7 @@ function scaleFactorSeriesPlot( time_series::Dict{String,Any};
 
     pgfplotsx()
 
-    # Unit formatting for the axes labels.
+    # Unit formatting for the axis's labels.
     mass_unit = uglyUnitDeserialization(time_series["units"]["mass"])
     sfr_unit = uglyUnitDeserialization(time_series["units"]["sfr"])
 
@@ -1912,7 +1909,7 @@ function redshiftSeriesPlot(time_series::Dict{String,Any};
 
     pgfplotsx()
 
-    # Unit formatting for the axes labels.
+    # Unit formatting for the axis's labels.
     mass_unit = uglyUnitDeserialization(time_series["units"]["mass"])
     sfr_unit = uglyUnitDeserialization(time_series["units"]["sfr"])
 
@@ -2026,7 +2023,7 @@ can be any magnitude used in the timeSeriesData function, namely:
 - "star_mass" (Total star mass)		               
 - "gas_frac" (Gas fraction)		                
 - "dm_frac" (Dark matter fraction)		                
-- "star_frac" (Stars fraction)	                   
+- "star_frac" (Star fraction)	                   
 - "gas_bar_frac" (Baryonic gas fraction)                  
 - "star_bar_frac" (Baryonic star fraction)
 
@@ -2086,7 +2083,7 @@ function compareSimulationsPlot(x_quantity::String,
 
     # Unit formatting for the x axis.
     if x_quantity == "clock_time"
-        unit = uglyUnitDeserialization(data[1]["units"]["time"])
+        unit = data[1]["units"]["time"]
 		
 		if x_factor != 0   		
 			xlabel *= L"\ / \, \left(10^{%$x_factor} \, \mathrm{%$unit}\right)"
@@ -2115,7 +2112,7 @@ function compareSimulationsPlot(x_quantity::String,
 	
 	# Unit formatting for the y axis.
     if y_quantity == "clock_time"
-        unit = uglyUnitDeserialization(data[1]["units"]["time"])
+        unit = data[1]["units"]["time"]
 		
 		if y_factor != 0   		
 			ylabel *= L"\ / \, \left(10^{%$y_factor} \, \mathrm{%$unit}\right)"
@@ -2173,7 +2170,7 @@ end
                             time::Unitful.Quantity; 
                             <keyword arguments>)::Plots.Plot
 
-Make an histogram of the densities of the gas particles.
+Make a histogram of the densities of the gas particles.
 
 # Arguments
 - `density_data::Dict{String,Any}`: Return value of the densityData function.
@@ -2211,7 +2208,7 @@ function densityHistogramPlot(  density_data::Dict{String,Any},
 
     # Magnitude and unit for the time stamp.
     clock = round(ustrip(time), digits=2)
-    time_unit = uglyUnitDeserialization(unit(time))
+    time_unit = unit(time)
 
     # Final figure.
     return histogram(   ρ, 
@@ -2295,7 +2292,7 @@ function densityProfilePlot(position_data::Dict{String,Any},
 
     # Magnitude and unit for the time stamp.
     clock = round(ustrip(time), digits=2)
-    time_unit = uglyUnitDeserialization(unit(time))
+    time_unit = unit(time)
 
     # Unit formatting for the y axis label.
     ylabel = L"\rho \ / \,"
@@ -2305,12 +2302,9 @@ function densityProfilePlot(position_data::Dict{String,Any},
         ylabel *= replace(mass_unit, "M⊙" => L"$\left(\mathrm{M_{\odot} \, %$length_unit^{-3}}\right)$")
     end
 
-    # Unit as a String for the x axis label.
-    x_unit = uglyUnitDeserialization(length_unit)
-
     # Final figure.
     return plot(r, ρ, 
-                xlabel="r / $x_unit",
+                xlabel="r / $length_unit",
                 ylabel=ylabel,
                 framestyle=:box,
                 size=(1200, 800),
@@ -2364,8 +2358,8 @@ function metallicityProfilePlot(position_data::Dict{String,Any},
     masses = mass_data["mass"]
     metallicity = z_data["Z"]
 
-    mass_unit = uglyUnitDeserialization(mass_data["unit"])
-    z_unit = uglyUnitDeserialization(z_data["unit"])
+    mass_unit = mass_data["unit"]
+    z_unit = z_data["unit"]
     if mass_unit != z_unit
         error("The mass units '$mass_unit' should be the same as the metallicity units '$z_unit'")
     end
@@ -2392,18 +2386,14 @@ function metallicityProfilePlot(position_data::Dict{String,Any},
 
     # Magnitude and unit for the time stamp.
     clock = round(ustrip(time), digits=2)
-    time_unit = uglyUnitDeserialization(unit(time))
+    time_unit = unit(time)
 
     # Unit formatting for the y axis label.
     ylabel = L"\mathrm{Z} \ / \ \mathrm{Z_{\odot}}"
 
-
-    # Unit as a String for the x axis label.
-    x_unit = uglyUnitDeserialization(length_unit)
-
     # Final figure.
     return plot(r, z, 
-                xlabel="r / $x_unit",
+                xlabel="r / $length_unit",
                 ylabel=ylabel,
                 framestyle=:box,
                 size=(1200, 800),
@@ -2413,7 +2403,7 @@ function metallicityProfilePlot(position_data::Dict{String,Any},
                 xtickfontsize=28,
                 ytickfontsize=28,
                 xguidefontsize=32,
-                yguidefontsize=32,
+                yguidefontsize=36,
                 ticklabel_shift=".1cm",
                 add="\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$time_unit};",
                 extra_kwargs=:subplot
@@ -2479,13 +2469,12 @@ function sfrTxtPlot(source_path::String,
 
     pgfplotsx()
 
-    # Unit formatting for the axes labels.
-    str_time_unit = uglyUnitDeserialization(time_unit)
+    # Unit formatting for the axis's labels.
     str_mass_unit = replace(uglyUnitDeserialization(mass_unit), "M⊙" => L"\, / \mathrm{M}_{\odot}")
     str_sfr_unit = replace(replace(uglyUnitDeserialization(sfr_unit), "M⊙" => L"$\, / \ \left(\mathrm{M_{\odot} \,"), "^-1" => L"^{-1}}\right)$")
 
-    # Strings fot the legends.
-    labels = [  "t / $str_time_unit",
+    # Strings for the legends.
+    labels = [  "t / $time_unit",
                 "Mass $str_mass_unit",
                 "SFR $str_sfr_unit",
                 "SFR $str_sfr_unit",
@@ -3039,7 +3028,7 @@ function, namely:
 - "star_mass" (Total star mass)		               
 - "gas_frac" (Gas fraction)		                
 - "dm_frac" (Dark matter fraction)		                
-- "star_frac" (Stars fraction)	                   
+- "star_frac" (Star fraction)	                   
 - "gas_bar_frac" (Baryonic gas fraction)                  
 - "star_bar_frac" (Baryonic star fraction)
 
@@ -3076,7 +3065,8 @@ function, namely:
   the corresponding axis will be scaled by 10^10. The default is 0, i.e. no scaling.
 - `title::String=""`: Title for the figure. If an empty string is given
   no title is printed, which is the default.
-- `folder::String=""`: Name of the folder where the figures will be saved.
+- `folder::String=""`: Name of the folder where the figures will be saved. It must have 
+  a trailing forward slash.
 - `format::String=".png"`: File format of the output figure. All formats supported by pgfplotsx 
   can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
 """
