@@ -17,7 +17,7 @@ There are four tiers of functions:
 - PLOTTING FUNCTIONS: These are only for internal use. They take data in the format outputted by the data acquisition functions and return plot objects.
 - PIPELINE FUNCTIONS: These are the ones intended to be externally used. They take the location of the snapshot files, and configuration parameters, and produce a series of figures/gif/videos automatically. Some of these functions may produce by default a large number of images (but it can be configured to do less), and they may take a long time to run, especially if the function uses the `pgfplotsx` backend of [Plots.jl](https://github.com/JuliaPlots/Plots.jl).
 
-NOTE: Despite what is mention above, being this a simple script, every function is exposed. So all can be used, as it is shown in testing.jl. Only two global constants and no data structures are defined (discounting what the dependencies may bring to the namespace).
+NOTE: Despite what was mention above, being this a simple script, every function is exposed. So all can be used, as it is shown in testing.jl. Only two global constants and no data structures are defined.
 
 ## Documentation
 
