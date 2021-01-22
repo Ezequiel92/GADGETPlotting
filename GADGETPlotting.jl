@@ -1635,7 +1635,7 @@ function gasStarEvolutionPlot(  time_series::Dict{String,Any},
 
     annotate!(  pl_galaxy_pos, 
                 relative(pl_galaxy_pos, 0.5, 0.95)..., 
-                Plots.text("$clock $time_unit", "Courier Bold", 25, :white, :center))
+                text("$clock $time_unit", "Courier Bold", 25, :white, :center))
 
     l = @layout [a{0.5w} grid(2, 1)]
 

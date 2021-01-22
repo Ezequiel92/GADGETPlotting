@@ -104,16 +104,14 @@ savefig(BASE_OUT_PATH * "test_starMapPlot_All.png")
 gasStarEvolutionPlot(time_series, pos, 21)
 savefig(BASE_OUT_PATH * "test_gasStarEvolutionPlot.png")
 
-pgfplotsx()
-
 timeSeriesPlot(time_series, mass_factor=0, number_factor=4)
-savefig(BASE_OUT_PATH * "test_timeSeriesPlot.png")
+Base.invokelatest(savefig, BASE_OUT_PATH * "test_timeSeriesPlot.png")
 
 scaleFactorSeriesPlot(time_series, mass_factor=0, number_factor=4)
-savefig(BASE_OUT_PATH * "test_scaleFactorSeriesPlot.png")
+Base.invokelatest(savefig, BASE_OUT_PATH * "test_scaleFactorSeriesPlot.png")
 
 redshiftSeriesPlot(time_series, mass_factor=0, number_factor=4)
-savefig(BASE_OUT_PATH * "test_redshiftSeriesPlot.png")
+Base.invokelatest(savefig, BASE_OUT_PATH * "test_redshiftSeriesPlot.png")
 
 compareSimulationsPlot( "star_mass", 
                         "sfr", 
@@ -122,16 +120,16 @@ compareSimulationsPlot( "star_mass",
                         title="SFMS relation", 
                         x_factor=10,
                         log_scale=true) 
-savefig(BASE_OUT_PATH * "test_compareSimulationsPlot.png")
+Base.invokelatest(savefig, BASE_OUT_PATH * "test_compareSimulationsPlot.png")
 
 densityHistogramPlot(density, 1 * UnitfulAstro.Myr, factor=10)
-savefig(BASE_OUT_PATH * "test_densityHistogramPlot.png")
+Base.invokelatest(savefig, BASE_OUT_PATH * "test_densityHistogramPlot.png")
 
 densityProfilePlot(pos, gas_mass,  1 * UnitfulAstro.Myr, bins=50, factor=13)
-savefig(BASE_OUT_PATH * "test_densityProfilePlot.png")
+Base.invokelatest(savefig, BASE_OUT_PATH * "test_densityProfilePlot.png")
 
 metallicityProfilePlot(pos, gas_mass, gas_z, 1 * UnitfulAstro.Myr, bins=100)
-savefig(BASE_OUT_PATH * "test_metallicityProfilePlot.png")
+Base.invokelatest(savefig, BASE_OUT_PATH * "test_metallicityProfilePlot.png")
 
 sfrTxtPlot( SNAP_PATH, 
             SNAP_NAME, 
@@ -141,13 +139,11 @@ sfrTxtPlot( SNAP_PATH,
             bins=50, 
             scale=[:identity, :log10], 
             sim_cosmo=SIM_COSMO)
-savefig(BASE_OUT_PATH * "test_sfrTxtPlot.png")
+Base.invokelatest(savefig, BASE_OUT_PATH * "test_sfrTxtPlot.png")
 
 ########################################################################################
 # TEST OF PIPELINE FUNCTIONS.
 ########################################################################################
-
-gr()
 
 scatterGridPipeline(SNAP_NAME, 
                     SNAP_PATH, 
