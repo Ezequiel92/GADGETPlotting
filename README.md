@@ -19,6 +19,10 @@ There are four tiers of functions:
 
 NOTE: Despite the comments above, being this a simple script, every function is exposed. So all can be used, as it is shown in testing.jl. Only two global constants and no data structures are defined.
 
+## PGFPlotsX backend
+
+The functions `evolutionSummaryPipeline(...)`, `compareSimulationsPipeline(...)`, `densityHistogramPipeline(...)`, `densityProfilePipeline(...)` and `metallicityProfilePipeline(...)` make use of the PGFPlotsX backend, and as such, the command `pgfplotsx()` should be always called at least once per sesion before the functions (as it is done in `testing.jl`). With time, and as some issues with GR are resolved, the functions will be migrated to the default backend, hopefully making this caveat obsolete.
+
 ## Documentation
 
 Each function is documented within the script, where a docstring explains the functionality, the arguments and the returns.
