@@ -34,6 +34,8 @@ For examples on how to use the functions refer to testing.jl, note that it expec
     ├── testing.jl
     ├── Manifest.toml 
     └── Project.toml
+	
+More examples can be found in the repository [plotting_scripts](https://github.com/Ezequiel92/plotting_scripts).
 
 ## References
 

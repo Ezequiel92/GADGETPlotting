@@ -24,8 +24,7 @@ const SOLAR_METALLICITY = 0.0134
 
 """
 	uglyUnitDeserialization(unit::Unitful.FreeUnits)::String
-	
-Cast `unit` to a String. If given a plain String it will return it unchanged.
+ast `unit` to a String. If given a plain String it will return it unchanged.
 
 # Arguments 
 - `unit::Unitful.FreeUnits`: Unit to be deserialize.
@@ -270,6 +269,58 @@ function metallicityProfile(mass_data::Array{Float64,1},
 			
             # Metallicity for window i.
             y_data[i] = (total_z / total_mass) / SOLAR_METALLICITY
+        end
+    end
+    
+    return x_data, y_data
+end
+
+"""
+    massProfile(mass_data::Array{Float64,1}, 
+                distance_data::Array{Float64,1}, 
+                r_max::Float64, 
+                bins::Int64)::Tuple{Array{Float64,1},Array{Float64,1}}
+	
+Compute a accumulated mass profile, up to a radius `r_max`. 
+
+`r_max` and `distance_data` must be in the same units.
+
+# Arguments
+- `mass_data::Array{Float64,1}`: Masses of the particles.
+- `distance_data::Array{Float64,1}`: Radial distances of the particles. 
+- `r_max::Float64`: Maximum distance up to which the profile will be computed.
+- `bins::Int64`: Number of subdivisions of [0, `r_max`] to be used for the profile.
+
+# Returns
+- A Tuple of two Arrays with the accumulated masses and their radial distances.
+"""
+function massProfile(   mass_data::Array{Float64,1},
+                        distance_data::Array{Float64,1}, 
+                        r_max::Float64,
+                        bins::Int64)::Tuple{Array{Float64,1},Array{Float64,1}}
+
+    # Initialize output arrays.
+    x_data = Array{Float64}(undef, bins)
+    y_data = Array{Float64}(undef, bins)
+
+    # Width of each spherical shell used to calculate the mass within.
+    width = r_max / bins
+    
+    x_data[1] = width
+    y_data[1] = sum(mass_data[findall(x -> x < width, distance_data)])
+    for i in 2:bins
+        # Indices of `mass_data` and `distance_data` within window i.
+        idx = findall(x -> width * (i - 1) <= x < width * i, distance_data)
+
+        if isempty(idx)
+            x_data[i] = width * i
+            y_data[i] = y_data[i - 1]
+        else            
+            # Distance for window i.
+            x_data[i] = width * i
+			
+            # Mass for window i.
+            y_data[i] = y_data[i - 1] + sum(mass_data[idx])
         end
     end
     
@@ -801,7 +852,7 @@ function massData(  snapshot::String,
         elseif type == "stars"
         type_num = 4
     else
-        error("Particle type '$type ' not supported. The supported types are 'gas', 'dark_matter' and 'stars'")
+        error("Particle type '$type  ' not supported. The supported types are 'gas', 'dark_matter' and 'stars'")
     end
 
 	if block_present(snapshot, "MASS")
@@ -863,10 +914,10 @@ function zData( snapshot::String,
     # Select type of particle.
     if type == "gas"
         type_num = 0
-        elseif type == "stars"
+    elseif type == "stars"
         type_num = 4
     else
-        error("Particle type '$type ' not supported. The supported types are 'gas' and 'stars'")
+        error("Particle type '$type' not supported. The supported types are 'gas' and 'stars'")
     end
 
     if block_present(snapshot, "Z")
@@ -883,7 +934,7 @@ function zData( snapshot::String,
                 z_tot = @. ustrip(Float64, mass_unit, z_tot * GU.m_cgs)
 
                 Z[i] = z_tot
-        end
+            end
 		else 
 			# In the case that there are no particles.
 			Z = [Inf]
@@ -1043,8 +1094,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                             markercolor=:blueviolet,
                             background_color_inside=:black,
                             xlims=(-gas_size, gas_size),
-                            ylims=(-gas_size, gas_size)
-                        )
+                            ylims=(-gas_size, gas_size))
     pl_dm_x_y = scatter(dm_x, dm_y, 
                         title="Dark matter - XY plane", 
                         xlabel="x / $unit",
@@ -1052,8 +1102,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                         markercolor=:darkgrey,
                         background_color_inside=:black,
                         xlims=(-dm_size, dm_size),
-                        ylims=(-dm_size, dm_size)
-                    )
+                        ylims=(-dm_size, dm_size))
     pl_stars_x_y = scatter( stars_x, stars_y, 
                             title="Stars - XY plane", 
                             xlabel="x / $unit",
@@ -1061,8 +1110,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                             markercolor=:darkorange2,
                             background_color_inside=:black,
                             xlims=(-stars_size, stars_size),
-                            ylims=(-stars_size, stars_size)
-                        )
+                            ylims=(-stars_size, stars_size))
 
     # Plots of the XZ plane.
     pl_gas_x_z = scatter(   gas_x, gas_z, 
@@ -1072,8 +1120,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                             markercolor=:blueviolet,
                             background_color_inside=:black,
                             xlims=(-gas_size, gas_size),
-                            ylims=(-gas_size, gas_size)
-                        )
+                            ylims=(-gas_size, gas_size))
     pl_dm_x_z = scatter(dm_x, dm_z, 
                         title="Dark matter - XZ plane", 
                         xlabel="x / $unit",
@@ -1081,8 +1128,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                         markercolor=:darkgrey,
                         background_color_inside=:black,
                         xlims=(-dm_size, dm_size),
-                        ylims=(-dm_size, dm_size)
-                    )
+                        ylims=(-dm_size, dm_size))
     pl_stars_x_z = scatter( stars_x, stars_z, 
                             title="Stars - XZ plane", 
                             xlabel="x / $unit",
@@ -1090,8 +1136,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                             markercolor=:darkorange2,
                             background_color_inside=:black,
                             xlims=(-stars_size, stars_size),
-                            ylims=(-stars_size, stars_size)
-                        )
+                            ylims=(-stars_size, stars_size))
 
     # Plots of the YZ plane.
     pl_gas_y_z = scatter(   gas_y, gas_z, 
@@ -1101,8 +1146,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                             markercolor=:blueviolet,
                             background_color_inside=:black,
                             xlims=(-gas_size, gas_size),
-                            ylims=(-gas_size, gas_size)
-                        )
+                            ylims=(-gas_size, gas_size))
     pl_dm_y_z = scatter(dm_y, dm_z, 
                         title="Dark matter - YZ plane", 
                         xlabel="y / $unit",
@@ -1110,8 +1154,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                         markercolor=:darkgrey,
                         background_color_inside=:black,
                         xlims=(-dm_size, dm_size),
-                        ylims=(-dm_size, dm_size)
-                    )
+                        ylims=(-dm_size, dm_size))
     pl_stars_y_z = scatter( stars_y, stars_z, 
                             title="Stars - YZ plane", 
                             xlabel="y / $unit",
@@ -1119,8 +1162,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                             markercolor=:darkorange2,
                             background_color_inside=:black,
                             xlims=(-stars_size, stars_size),
-                            ylims=(-stars_size, stars_size)
-                        )
+                            ylims=(-stars_size, stars_size))
 
     # Final figure containing the nine plots.
     return scatter( pl_gas_x_y, pl_gas_x_z, pl_gas_y_z,
@@ -1138,8 +1180,7 @@ function scatterGridPlot(position_data::Dict{String,Any})::Plots.Plot
                     xtickfontsize=20,
                     ytickfontsize=20,
                     xguidefontsize=22,
-                    yguidefontsize=22
-                )
+                    yguidefontsize=22)
 end
 
 """
@@ -1246,8 +1287,7 @@ function densityMapPlot(position_data::Dict{String,Any},
                                         titlefont=35,
                                         colorbar=false,
                                         background_color_inside=last_color,
-                                        c=color_scheme
-                                    )
+                                        c=color_scheme)
     end
 
     if plane == "XZ" || plane == "All"
@@ -1278,8 +1318,7 @@ function densityMapPlot(position_data::Dict{String,Any},
                                         titlefont=35,
                                         colorbar=false,
                                         background_color_inside=last_color,
-                                        c=color_scheme
-                                    )
+                                        c=color_scheme)
     end
 
     if plane == "YZ" || plane == "All"
@@ -1310,8 +1349,7 @@ function densityMapPlot(position_data::Dict{String,Any},
                                         titlefont=35,
                                         colorbar=false,
                                         background_color_inside=last_color,
-                                        c=color_scheme 
-                                    )
+                                        c=color_scheme)
     end
     
     if plane != "All"
@@ -1324,8 +1362,7 @@ function densityMapPlot(position_data::Dict{String,Any},
                         size=(3000, 1000),
                         left_margin=55px,
                         top_margin=-20px,
-                        bottom_margin=20px
-                    )
+                        bottom_margin=20px)
     end  
 end
 
@@ -1400,7 +1437,7 @@ function starMapPlot(   position_data::Dict{String,Any};
         else
             heatmap(x, y, z)
         end
-            
+        
         xy_plot = plane_plot = heatmap!(aspect_ratio=1, 
                                         xlim=(-box_limits, box_limits), 
                                         ylim=(-box_limits, box_limits), 
@@ -1418,8 +1455,7 @@ function starMapPlot(   position_data::Dict{String,Any};
                                         titlefont=35,
                                         colorbar=false,
                                         background_color_inside=last_color,
-                                        c=color_scheme
-                                    )
+                                        c=color_scheme)
     end
 
     if plane == "XZ" || plane == "All"
@@ -1431,7 +1467,7 @@ function starMapPlot(   position_data::Dict{String,Any};
         else
             heatmap(x, y, z)
         end
-            
+        
         xz_plot = plane_plot = heatmap!(aspect_ratio=1, 
                                         xlim=(-box_limits, box_limits), 
                                         ylim=(-box_limits, box_limits), 
@@ -1449,8 +1485,7 @@ function starMapPlot(   position_data::Dict{String,Any};
                                         titlefont=35,
                                         colorbar=false,
                                         background_color_inside=last_color,
-                                        c=color_scheme
-                                    )
+                                        c=color_scheme)
     end
 
     if plane == "YZ" || plane == "All"
@@ -1462,7 +1497,7 @@ function starMapPlot(   position_data::Dict{String,Any};
         else
             heatmap(x, y, z)
         end
-            
+        
         yz_plot = plane_plot = heatmap!(aspect_ratio=1, 
                                         xlim=(-box_limits, box_limits), 
                                         ylim=(-box_limits, box_limits),  
@@ -1480,8 +1515,7 @@ function starMapPlot(   position_data::Dict{String,Any};
                                         titlefont=35,
                                         colorbar=false,
                                         background_color_inside=last_color,
-                                        c=color_scheme 
-                                    )
+                                        c=color_scheme)
     end
     
     if plane != "All"
@@ -1494,8 +1528,7 @@ function starMapPlot(   position_data::Dict{String,Any};
                         size=(3000, 1000),
                         left_margin=55px,
                         top_margin=-20px,
-                        bottom_margin=20px
-                    )
+                        bottom_margin=20px)
     end  
 end
 
@@ -1652,8 +1685,7 @@ function gasStarEvolutionPlot(  time_series::Dict{String,Any},
 				ytickfontsize=22,
 				xguidefontsize=25,
 				yguidefontsize=25,
-                legendfontsize=25                    
-    )
+                legendfontsize=25)
 end
 
 """
@@ -1767,8 +1799,7 @@ function timeSeriesPlot(time_series::Dict{String,Any};
                 ytickfontsize=22,
                 xguidefontsize=25,
                 yguidefontsize=25,
-                legendfontsize=30
-    )
+                legendfontsize=30)
 end
 
 """
@@ -1881,8 +1912,7 @@ function scaleFactorSeriesPlot( time_series::Dict{String,Any};
                 ytickfontsize=22,
                 xguidefontsize=25,
                 yguidefontsize=25,
-                legendfontsize=30
-    )
+                legendfontsize=30)
 end
 
 """
@@ -1995,8 +2025,7 @@ function redshiftSeriesPlot(time_series::Dict{String,Any};
                 ytickfontsize=22,
                 xguidefontsize=25,
                 yguidefontsize=25,
-                legendfontsize=30
-    )
+                legendfontsize=30)
 end
 
 """
@@ -2092,7 +2121,7 @@ function compareSimulationsPlot(x_quantity::String,
         end
     elseif x_quantity == "sfr"
         unit = uglyUnitDeserialization(data[1]["units"]["sfr"])
-            
+        
         if x_factor != 0
             xlabel *= replace(replace(unit, "M⊙" => L"$\ / \, \left(10^{%$x_factor} \, \mathrm{M_{\odot} \,"), "^-1" => L"^{-1}}\right)$")
         else
@@ -2100,7 +2129,7 @@ function compareSimulationsPlot(x_quantity::String,
         end
     elseif x_quantity == "gas_mass" || x_quantity == "dm_mass" || x_quantity == "star_mass"
         unit = uglyUnitDeserialization(data[1]["units"]["mass"])
-            
+        
         if x_factor != 0
             xlabel *= replace(unit, "M⊙" => L"\ / \, \left(10^{%$x_factor} \, \mathrm{M}_{\odot}\right)")
         else
@@ -2121,7 +2150,7 @@ function compareSimulationsPlot(x_quantity::String,
         end
     elseif y_quantity == "sfr"
         unit = uglyUnitDeserialization(data[1]["units"]["sfr"])
-            
+        
         if y_factor != 0
             ylabel *= replace(replace(unit, "M⊙" => L"$\ / \, \left(10^{%$y_factor} \, \mathrm{M_{\odot} \,"), "^-1" => L"^{-1}}\right)$")
         else
@@ -2129,7 +2158,7 @@ function compareSimulationsPlot(x_quantity::String,
         end
     elseif y_quantity == "gas_mass" || y_quantity == "dm_mass" || y_quantity == "star_mass"
         unit = uglyUnitDeserialization(data[1]["units"]["mass"])
-            
+        
         if y_factor != 0
             ylabel *= replace(unit, "M⊙" => L"\ / \, \left(10^{%$y_factor} \, \mathrm{M}_{\odot}\right)")
         else
@@ -2161,8 +2190,7 @@ function compareSimulationsPlot(x_quantity::String,
                 foreground_color_legend=nothing,
                 background_color_legend=nothing,
                 ticklabel_shift=".1cm",
-                extra_kwargs=:subplot
-    )
+                extra_kwargs=:subplot)
 end
 
 """
@@ -2224,8 +2252,7 @@ function densityHistogramPlot(  density_data::Dict{String,Any},
                         yguidefontsize=30,
                         ticklabel_shift=".1cm",
                         add="\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$time_unit};",
-                        extra_kwargs=:subplot
-    )
+                        extra_kwargs=:subplot)
 end
 
 """
@@ -2241,9 +2268,13 @@ Make a density profile plot for a given time step.
 - `mass_data::Dict{String,Any}`: Return value of the massData function.
 - `time::Unitful.Quantity`: Time with units for the time stamp of the plot. 
   All available time units in Unitful and UnitfulAstro can be used, e.g. UnitfulAstro.Myr.
+- `scale::Symbol=:identity`: Scaling to be used for the y axis.
+  The two options are:
+  :identity => no scaling.
+  :log10 => logarithmic scaling.
 - `bins::Int64=100`: Number of subdivisions of the region to be used for the profile. 
   The default is 100.
-- `factor::Int64=0`: Numerical exponent to scale the `density_data`, e.g. if factor = 10 
+- `factor::Int64=0`: Numerical exponent to scale the density, e.g. if factor = 10 
   the y axis will be scaled by 10^10. The default is 0, i.e. no scaling.
 - `region_factor::Float64=1.0`: Multiplicative factor for the plotting region. 
   It will scale `position_data["box_size"]` if vacuum boundary conditions were used, and
@@ -2258,6 +2289,7 @@ Make a density profile plot for a given time step.
 function densityProfilePlot(position_data::Dict{String,Any},
                             mass_data::Dict{String,Any}, 
                             time::Unitful.Quantity;
+                            scale::Symbol=:identity,
                             bins::Int64=100,
                             factor::Int64=0,
                             region_factor::Float64=1.0,
@@ -2288,24 +2320,48 @@ function densityProfilePlot(position_data::Dict{String,Any},
 	end
 
     r, ρ = densityProfile(masses, distances, r_max, bins)
+    # Set correct units.
+    ρ = @. ustrip(Float64, density_unit, ρ * (mass_data["unit"] / (length_unit^3)))
+    # Scale data by 10^{factor}.
     ρ ./= 10^factor
+
+    if scale == :log10 
+        positive_rho = findall(x -> x > 0, ρ) 
+        if length(positive_rho) < 2
+            # If the data has less than two positive values, go back to linear scale.
+            scale = :identity
+        else
+            # If the data has two or more positive values, 
+            # filter data points <= 0, for logarithmic plotting.
+            deleteat!(r, ρ .<= 0)
+            filter!(x -> x >  0, ρ)
+        end
+    end
 
     # Magnitude and unit for the time stamp.
     clock = round(ustrip(time), digits=2)
     time_unit = unit(time)
 
     # Unit formatting for the y axis label.
-    ylabel = L"\rho \ / \,"
+    str_unit = uglyUnitDeserialization(density_unit)
+    if type == "gas"
+        ylabel = L"\rho_{\mathrm{gas}} \ / \,"
+    elseif type == "stars"
+        ylabel = L"\rho_{\mathrm{stars}} \ / \,"
+    elseif type == "dark_matter"
+        ylabel = L"\rho_{\mathrm{dm}} \ / \,"
+    end
     if factor != 0
-        ylabel *= replace(mass_unit, "M⊙" => L"$\left(10^{%$factor} \, \mathrm{M_{\odot} \, %$length_unit^{-3}}\right)$")
+        ylabel *= replace(replace(str_unit, "M⊙" => L"$\left(10^{%$factor} \, \mathrm{M_{\odot} \,"), "^-3" => L"^{-3}}\right)$")
     else
-        ylabel *= replace(mass_unit, "M⊙" => L"$\left(\mathrm{M_{\odot} \, %$length_unit^{-3}}\right)$")
+        ylabel *= replace(replace(str_unit, "M⊙" => L"$\left(\mathrm{M_{\odot} \,"), "^-3" => L"^{-3}}\right)$")
     end
 
     # Final figure.
     return plot(r, ρ, 
                 xlabel="r / $length_unit",
                 ylabel=ylabel,
+                yscale=scale,
                 framestyle=:box,
                 size=(1200, 800),
                 legend=false,
@@ -2317,8 +2373,187 @@ function densityProfilePlot(position_data::Dict{String,Any},
                 yguidefontsize=30,
                 ticklabel_shift=".1cm",
                 add="\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$time_unit};",
-                extra_kwargs=:subplot
-    )
+                extra_kwargs=:subplot)
+end
+
+"""
+    densityProfilePlot( position_data::Array{Dict{String,Any},1},
+                        mass_data::Array{Dict{String,Any},1}, 
+                        time::Unitful.Quantity,
+                        labels::Array{String,2}; 
+                        <keyword arguments>)::Plots.Plot
+
+Make a density profile plot of several datasets, for a given time step.
+
+# Arguments
+- `position_data::Array{Dict{String,Any},1}`: Array of return values of the positionData function.
+- `mass_data::Array{Dict{String,Any},1}`: Array of return values of the massData function.
+- `time::Unitful.Quantity`: Time with units for the time stamp of the plot. 
+  All available time units in Unitful and UnitfulAstro can be used, e.g. UnitfulAstro.Myr.
+- `labels::Array{String,2}`: Labels for the different simulations, e.g. [label1 label2 ...].
+- `scale::Symbol=:identity`: Scaling to be used for the y axis.
+  The two options are:
+  :identity => no scaling.
+  :log10 => logarithmic scaling.
+- `bins::Int64=100`: Number of subdivisions of the region to be used for the profile. 
+  The default is 100.
+- `factor::Int64=0`: Numerical exponent to scale the density, e.g. if factor = 10 
+  the y axis will be scaled by 10^10. The default is 0, i.e. no scaling.
+- `region_factor::Float64=1.0`: Multiplicative factor for the plotting region. 
+  It will scale `position_data["box_size"]` if vacuum boundary conditions were used, and
+  it will scale `position_data["box_size"] / 2` if periodic boundary conditions were used.
+- `density_unit::Unitful.FreeUnits=UnitfulAstro.Msun / UnitfulAstro.kpc^3`: Unit of density 
+  to be used in the output, all available density units in Unitful and UnitfulAstro can 
+  be used, e.g. UnitfulAstro.Msun / UnitfulAstro.kpc^3, which is the default.
+
+# Returns
+- The figure outputted by Plots.jl.
+"""
+function densityProfilePlot(position_data::Array{Dict{String,Any},1},
+                            mass_data::Array{Dict{String,Any},1}, 
+                            time::Unitful.Quantity,
+                            labels::Array{String,2};
+                            scale::Symbol=:identity,
+                            bins::Int64=100,
+                            factor::Int64=0,
+                            region_factor::Float64=1.0,
+                            length_unit::Unitful.FreeUnits=UnitfulAstro.kpc,
+                            density_unit::Unitful.FreeUnits=UnitfulAstro.Msun / UnitfulAstro.kpc^3)::Plots.Plot
+
+    pgfplotsx()
+
+    # Extract data from arguments and check consistency.
+    types = get.(mass_data, "type", 0)
+    if !all(x -> x == types[1], types)
+        error("The types of particle are not the same among datasets.")
+    else
+        type = types[1]
+    end
+
+    length_units = get.(position_data, "unit", 0)
+    if !all(x -> x == length_units[1], length_units)
+        error("The units of length are not the same among datasets.")
+    else
+        length_unit = length_units[1]
+    end
+
+    mass_units = get.(mass_data, "unit", 0)
+    if !all(x -> x == mass_units[1], mass_units)
+        error("The units of mass are not the same among datasets.")
+    else
+        mass_unit = uglyUnitDeserialization(mass_units[1])
+    end
+
+    periodicities = get.(position_data, "periodic", 0)
+    if !all(x -> x == periodicities[1], periodicities)
+        error("The boundary conditions are not the same among datasets.")
+    else
+        periodicity = periodicities[1]
+    end
+    
+    masses = get.(mass_data, "mass", 0)
+    positions = get.(position_data, type, 0)
+
+    distances = Array{Float64,1}[]
+    for pos in positions
+        if isempty(pos)
+            # In the case that there are no particles.
+            push!(distances, [Inf])
+        else
+            push!(distances, sqrt.(pos[:,1].^2 .+ pos[:,2].^2 .+  pos[:,3].^2))
+        end
+    end
+    
+	if periodicity
+		# For periodic boundary conditions.
+		max_rs = (get.(position_data, "box_size", 0) ./ 2) .* region_factor
+	else
+        # Plotting region for vacuum boundary conditions.
+        max_rs = get.(position_data, "box_size", 0) .* region_factor
+	end
+
+    r = Array{Float64,1}[]
+    ρ = Array{Float64,1}[]
+    for (mass, distance, max_r) in zip(masses, distances, max_rs)
+        r_result, ρ_result = densityProfile(mass, distance, max_r, bins)
+        # Set correct units.
+        ρ_result = @. ustrip(Float64, density_unit, ρ_result * (mass_units[1] / (length_unit^3)))
+        # Scale data by 10^{factor}.
+        ρ_result ./= 10^factor
+        
+        push!(r, r_result)
+        push!(ρ, ρ_result)
+    end
+
+    if scale == :log10 
+        short_cases = findall(x -> length(x) < 2, findall.(x -> x > 0,  ρ))
+        if isempty(short_cases)
+            # If every dataset has at least two values, 
+            # filter data points <= 0, for logarithmic plotting and
+            # fill datasets with NaN so all have the same length.
+            for i in 1:length(r)
+                deleteat!(r[i],  ρ[i] .<= 0)
+                filter!(x -> x >  0,  ρ[i])
+            end
+
+            max_length = maximum(length.(r))
+
+            for (i, R) in enumerate(r)
+                if length(R) < max_length
+                    for _ in 1:(max_length - length(R))
+                        push!( r[i], NaN)
+                        push!( ρ[i], NaN)
+                    end
+                end
+            end
+        else
+            # If at least one dataset has less than two values, 
+            # go back to linear scale.
+            scale = :identity
+        end
+    end
+
+    # Magnitude and unit for the time stamp.
+    clock = round(ustrip(time), digits=2)
+    time_unit = unit(time)
+
+    # Unit formatting for the y axis label.
+    str_density_unit = uglyUnitDeserialization(density_unit)
+    if factor != 0
+        str_density_unit = replace(replace(str_density_unit, "M⊙" => L"$\, / \ \left(10^{%$factor} \, \mathrm{M_{\odot} \,"), "^-3" => L"^{-3}}\right)$")
+    else
+        str_density_unit = replace(replace(str_density_unit, "M⊙" => L"$\, / \ \left(\mathrm{M_{\odot} \,"), "^-3" => L"^{-3}}\right)$")
+    end
+    if type == "gas"
+        ylabel = L"Gas density %$str_density_unit"
+    elseif type == "stars"
+        ylabel = L"Star density %$str_density_unit"
+    elseif type == "dark_matter"
+        ylabel = L"Dark matter density %$str_density_unit"
+    end
+
+    # Final figure.
+    return plot(hcat(r...), hcat(ρ...), 
+                xlabel="r / $length_unit",
+                ylabel=ylabel,
+                label=labels,
+                yscale=scale,
+                framestyle=:box,
+                size=(1200, 800),
+                legend=:topright,
+                foreground_color_legend=nothing,
+                background_color_legend=nothing,
+                palette=:Set1_9,
+                lw=3,
+                linestyle=:auto,
+                xtickfontsize=28,
+                ytickfontsize=28,
+                xguidefontsize=30,
+                yguidefontsize=30,
+                legendfontsize=25,
+                ticklabel_shift=".1cm",
+                add="\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$time_unit};",
+                extra_kwargs=:subplot)
 end
 
 """
@@ -2336,6 +2571,10 @@ Make a metallicity profile plot for a given time step.
 - `z_data::Dict{String,Any}`: Return value of the zData function.
 - `time::Unitful.Quantity`: Time with units for the time stamp of the plot. 
   All available time units in Unitful and UnitfulAstro can be used, e.g. UnitfulAstro.Myr.
+- `scale::Symbol=:identity`: Scaling to be used for the y axis.
+  The two options are:
+  :identity => no scaling.
+  :log10 => logarithmic scaling.
 - `bins::Int64=100`: Number of subdivisions of the region to be used for the profile. 
   The default is 100.
 - `region_factor::Float64=1.0`: Multiplicative factor for the plotting region. 
@@ -2349,6 +2588,7 @@ function metallicityProfilePlot(position_data::Dict{String,Any},
                                 mass_data::Dict{String,Any}, 
                                 z_data::Dict{String,Any},
                                 time::Unitful.Quantity;
+                                scale::Symbol=:identity,
                                 bins::Union{Int64,Nothing}=100,
                                 region_factor::Float64=1.0)::Plots.Plot
 
@@ -2384,17 +2624,35 @@ function metallicityProfilePlot(position_data::Dict{String,Any},
 	
     r, z = metallicityProfile(masses, distances, metallicity, r_max, bins)
 
+    if scale == :log10 
+        positive_z = findall(x -> x > 0, z) 
+        if length(positive_z) < 2
+            # If the data has less than two positive values, go back to linear scale.
+            scale = :identity
+        else
+            # If the data has two or more positive values, 
+            # filter data points <= 0, for logarithmic plotting.
+            deleteat!(r, z .<= 0)
+            filter!(x -> x >  0, z)
+        end
+    end
+
     # Magnitude and unit for the time stamp.
     clock = round(ustrip(time), digits=2)
     time_unit = unit(time)
 
-    # Unit formatting for the y axis label.
-    ylabel = L"\mathrm{Z} \ / \ \mathrm{Z_{\odot}}"
+    # Formatting for the y axis label.
+    if type == "gas"
+        ylabel = L"\mathrm{Gas} \ \mathrm{Z} \ / \ \mathrm{Z_{\odot}}"
+    elseif type == "stars"
+        ylabel = L"\mathrm{Star} \ \mathrm{Z} \ / \ \mathrm{Z_{\odot}}"
+    end
 
     # Final figure.
     return plot(r, z, 
                 xlabel="r / $length_unit",
                 ylabel=ylabel,
+                yscale=scale,
                 framestyle=:box,
                 size=(1200, 800),
                 legend=false,
@@ -2402,14 +2660,469 @@ function metallicityProfilePlot(position_data::Dict{String,Any},
                 color=:red,
                 xtickfontsize=28,
                 ytickfontsize=28,
-                xguidefontsize=32,
-                yguidefontsize=36,
+                xguidefontsize=30,
+                yguidefontsize=30,
                 ticklabel_shift=".1cm",
                 add="\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$time_unit};",
-                extra_kwargs=:subplot
-            )
+                extra_kwargs=:subplot)
 end
 
+"""
+    metallicityProfilePlot( position_data::Array{Dict{String,Any},1},
+                            mass_data::Array{Dict{String,Any},1}, 
+                            z_data::Array{Dict{String,Any},1}, 
+                            time::Unitful.Quantity,
+                            labels::Array{String,2}; 
+                            <keyword arguments>)::Plots.Plot
+
+Make a metallicity profile plot for a given time step.
+
+# Arguments
+- `position_data::Array{Dict{String,Any},1}`: Array of return values of the positionData function.
+- `mass_data::Array{Dict{String,Any},1}`: Array of return values of the massData function.
+- `z_data::Array{Dict{String,Any},1}`: Array of return values of the zData function.
+- `time::Unitful.Quantity`: Time with units for the time stamp of the plot. 
+  All available time units in Unitful and UnitfulAstro can be used, e.g. UnitfulAstro.Myr.
+- `labels::Array{String,2}`: Labels for the different simulations, e.g. [label1 label2 ...].
+- `scale::Symbol=:identity`: Scaling to be used for the y axis.
+  The two options are:
+  :identity => no scaling.
+  :log10 => logarithmic scaling.
+- `bins::Int64=100`: Number of subdivisions of the region to be used for the profile. 
+  The default is 100.
+- `region_factor::Float64=1.0`: Multiplicative factor for the plotting region. 
+  It will scale `position_data["box_size"]` if vacuum boundary conditions were used, and
+  it will scale `position_data["box_size"] / 2` if periodic boundary conditions were used.
+
+# Returns
+- The figure outputted by Plots.jl.
+"""
+function metallicityProfilePlot(position_data::Array{Dict{String,Any},1},
+                                mass_data::Array{Dict{String,Any},1}, 
+                                z_data::Array{Dict{String,Any},1}, 
+                                time::Unitful.Quantity,
+                                labels::Array{String,2};
+                                scale::Symbol=:identity,
+                                bins::Union{Int64,Nothing}=100,
+                                region_factor::Float64=1.0)::Plots.Plot
+
+    pgfplotsx()
+
+    # Extract data from arguments and check consistency.
+    types = get.(mass_data, "type", 0)
+    if !all(x -> x == types[1], types)
+        error("The types of particle are not the same among datasets.")
+    else
+        type = types[1]
+    end
+
+    length_units = get.(position_data, "unit", 0)
+    if !all(x -> x == length_units[1], length_units)
+        error("The units of length are not the same among datasets.")
+    else
+        length_unit = length_units[1]
+    end
+
+    periodicities = get.(position_data, "periodic", 0)
+    if !all(x -> x == periodicities[1], periodicities)
+        error("The boundary conditions are not the same among datasets.")
+    else
+        periodicity = periodicities[1]
+    end
+
+    mass_units = get.(mass_data, "unit", 0)
+    z_units = get.(z_data, "unit", 0)
+    if !all(x -> x[1] == x[2], zip(mass_units, z_units))
+        error("The mass units should be the same as the metallicity units.")
+    end
+
+    masses = get.(mass_data, "mass", 0)
+    metallicities = get.(z_data, "Z", 0)
+    positions = get.(position_data, type, 0)
+
+    distances = Array{Float64,1}[]
+    for pos in positions
+        if isempty(pos)
+            # In the case that there are no particles.
+            push!(distances, [Inf])
+        else
+            push!(distances, sqrt.(pos[:,1].^2 .+ pos[:,2].^2 .+  pos[:,3].^2))
+        end
+    end
+    
+	if periodicity
+		# For periodic boundary conditions.
+		max_rs = (get.(position_data, "box_size", 0) ./ 2) .* region_factor
+	else
+        # Plotting region for vacuum boundary conditions.
+        max_rs = get.(position_data, "box_size", 0) .* region_factor
+    end
+
+    r = Array{Float64,1}[]
+    z = Array{Float64,1}[]
+    for (mass, distance, metallicity, max_r) in zip(masses, distances, metallicities, max_rs)
+        r_result, z_result = metallicityProfile(mass, distance, metallicity, max_r, bins)
+        
+        push!(r, r_result)
+        push!(z, z_result)
+    end
+
+    if scale == :log10 
+        short_cases = findall(x -> length(x) < 2, findall.(x -> x > 0, z))
+        if isempty(short_cases)
+            # If every dataset has at least two values, 
+            # filter data points <= 0, for logarithmic plotting and
+            # fill datasets with NaN so all have the same length.
+            for i in 1:length(r)
+                deleteat!(r[i], z[i] .<= 0)
+                filter!(x -> x >  0, z[i])
+            end
+
+            max_length = maximum(length.(r))
+
+            for (i, R) in enumerate(r)
+                if length(R) < max_length
+                    for _ in 1:(max_length - length(R))
+                        push!(r[i], NaN)
+                        push!(z[i], NaN)
+                    end
+                end
+            end
+        else
+            # If at least one dataset has less than two values, 
+            # go back to linear scale.
+            scale = :identity
+        end
+    end
+
+    # Magnitude and unit for the time stamp.
+    clock = round(ustrip(time), digits=2)
+    time_unit = unit(time)
+
+    # Formatting for the y axis label.
+    if type == "gas"
+        ylabel = L"\mathrm{Gas} \ \mathrm{Z} \ / \ \mathrm{Z_{\odot}}"
+    elseif type == "stars"
+        ylabel = L"\mathrm{Star} \ \mathrm{Z} \ / \ \mathrm{Z_{\odot}}"
+    end
+
+    # Final figure.
+    return plot(hcat(r...), hcat(z...), 
+                xlabel="r / $length_unit",
+                ylabel=ylabel,
+                label=labels,
+                yscale=scale,
+                framestyle=:box,
+                size=(1200, 800),
+                legend=:topright,
+                foreground_color_legend=nothing,
+                background_color_legend=nothing,
+                palette=:Set1_9,
+                lw=3,
+                linestyle=:auto,
+                xtickfontsize=28,
+                ytickfontsize=28,
+                xguidefontsize=30,
+                yguidefontsize=30,
+                legendfontsize=25,
+                ticklabel_shift=".1cm",
+                add="\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$time_unit};",
+                extra_kwargs=:subplot)
+end
+
+"""
+    massProfilePlot(position_data::Dict{String,Any}, 
+                    mass_data::Dict{String,Any}, 
+                    time::Unitful.Quantity; 
+                    <keyword arguments>)::Plots.Plot
+
+Make a accumulated mass profile plot for a given time step.
+
+# Arguments
+- `position_data::Dict{String,Any}`: Return value of the positionData function.
+- `mass_data::Dict{String,Any}`: Return value of the massData function.
+- `time::Unitful.Quantity`: Time with units for the time stamp of the plot. 
+  All available time units in Unitful and UnitfulAstro can be used, e.g. UnitfulAstro.Myr.
+- `scale::Symbol=:identity`: Scaling to be used for the y axis.
+  The two options are:
+  :identity => no scaling.
+  :log10 => logarithmic scaling.
+- `bins::Int64=100`: Number of subdivisions of the region to be used for the profile. 
+  The default is 100.
+- `factor::Int64=0`: Numerical exponent to scale the density, e.g. if factor = 10 
+  the y axis will be scaled by 10^10. The default is 0, i.e. no scaling.
+- `region_factor::Float64=1.0`: Multiplicative factor for the plotting region. 
+  It will scale `position_data["box_size"]` if vacuum boundary conditions were used, and
+  it will scale `position_data["box_size"] / 2` if periodic boundary conditions were used.
+- `mass_unit::Unitful.FreeUnits=UnitfulAstro.Msun`: Unit of mass to be used in the output, 
+  all available mass units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.Msun, which is the default.
+
+# Returns
+- The figure outputted by Plots.jl.
+"""
+function massProfilePlot(   position_data::Dict{String,Any},
+                            mass_data::Dict{String,Any}, 
+                            time::Unitful.Quantity;
+                            scale::Symbol=:identity,
+                            bins::Int64=100,
+                            factor::Int64=0,
+                            region_factor::Float64=1.0,
+                            mass_unit::Unitful.FreeUnits=UnitfulAstro.Msun)::Plots.Plot
+
+    pgfplotsx()
+
+    type = mass_data["type"]
+    masses = mass_data["mass"]
+
+    positions = position_data[type]
+    length_unit = position_data["unit"]
+
+    if isempty(positions)
+        # In the case that there are no particles.
+        distances = [Inf]
+    else
+        distances = sqrt.(positions[:,1].^2 .+ positions[:,2].^2 .+  positions[:,3].^2)
+    end
+    
+	if position_data["periodic"]
+		# For periodic boundary conditions.
+		r_max = (position_data["box_size"] / 2) * region_factor
+	else
+        # Plotting region for vacuum boundary conditions.
+        r_max = position_data["box_size"] * region_factor
+	end
+
+    r, m = massProfile(masses, distances, r_max, bins)
+    # Set correct units.
+    m = @. ustrip(Float64, mass_unit, m * mass_data["unit"])
+    # Scale data by 10^{factor}.
+    m ./= 10^factor
+
+    if scale == :log10 
+        positive_mass = findall(x -> x > 0, m) 
+        if length(positive_mass) < 2
+            # If the data has less than two positive values, go back to linear scale.
+            scale = :identity
+        else
+            # If the data has two or more positive values, 
+            # filter data points <= 0, for logarithmic plotting.
+            deleteat!(r, m .<= 0)
+            filter!(x -> x >  0, m)
+        end
+    end
+
+    # Magnitude and unit for the time stamp.
+    clock = round(ustrip(time), digits=2)
+    time_unit = unit(time)
+
+    # Unit formatting for the y axis label.
+    str_mass_unit = uglyUnitDeserialization(mass_unit)
+    if factor != 0
+        str_mass_unit = replace(str_mass_unit, "M⊙" => L"\, / \ \left(10^{%$factor} \, \mathrm{M}_{\odot}\right)")
+    else
+        str_mass_unit = replace(str_mass_unit, "M⊙" => L"\, / \ \mathrm{M}_{\odot}")
+    end
+    if type == "gas"
+        ylabel = L"Gas mass %$str_mass_unit"
+    elseif type == "stars"
+        ylabel = L"Star mass %$str_mass_unit"
+    elseif type == "dark_matter"
+        ylabel = L"Dark matter mass %$str_mass_unit"
+    end
+
+    # Final figure.
+    return plot(r, m, 
+                xlabel="r / $length_unit",
+                ylabel=ylabel,
+                yscale=scale,
+                framestyle=:box,
+                size=(1200, 800),
+                legend=false,
+                lw=3,
+                color=:red,
+                xtickfontsize=28,
+                ytickfontsize=28,
+                xguidefontsize=30,
+                yguidefontsize=30,
+                ticklabel_shift=".1cm",
+                add="\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.1, 0.95) {$clock\$\\,\$$time_unit};",
+                extra_kwargs=:subplot)
+end
+
+"""
+    massProfilePlot(position_data::Array{Dict{String,Any},1},
+                    mass_data::Array{Dict{String,Any},1}, 
+                    time::Unitful.Quantity,
+                    labels::Array{String,2}; 
+                    <keyword arguments>)::Plots.Plot
+
+Make a accumulated mass profile plot of several datasets, for a given time step.
+
+# Arguments
+- `position_data::Array{Dict{String,Any},1}`: Array of return values of the positionData function.
+- `mass_data::Array{Dict{String,Any},1}`: Array of return values of the massData function.
+- `time::Unitful.Quantity`: Time with units for the time stamp of the plot. 
+  All available time units in Unitful and UnitfulAstro can be used, e.g. UnitfulAstro.Myr.
+- `labels::Array{String,2}`: Labels for the different simulations, e.g. [label1 label2 ...].
+- `scale::Symbol=:identity`: Scaling to be used for the y axis.
+  The two options are:
+  :identity => no scaling.
+  :log10 => logarithmic scaling.
+- `bins::Int64=100`: Number of subdivisions of the region to be used for the profile. 
+  The default is 100.
+- `factor::Int64=0`: Numerical exponent to scale the density, e.g. if factor = 10 
+  the y axis will be scaled by 10^10. The default is 0, i.e. no scaling.
+- `region_factor::Float64=1.0`: Multiplicative factor for the plotting region. 
+  It will scale `position_data["box_size"]` if vacuum boundary conditions were used, and
+  it will scale `position_data["box_size"] / 2` if periodic boundary conditions were used.
+- `mass_unit::Unitful.FreeUnits=UnitfulAstro.Msun`: Unit of mass to be used in the output, 
+  all available mass units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.Msun, which is the default.
+
+# Returns
+- The figure outputted by Plots.jl.
+"""
+function massProfilePlot(   position_data::Array{Dict{String,Any},1},
+                            mass_data::Array{Dict{String,Any},1}, 
+                            time::Unitful.Quantity,
+                            labels::Array{String,2};
+                            scale::Symbol=:identity,
+                            bins::Int64=100,
+                            factor::Int64=0,
+                            region_factor::Float64=1.0,
+                            length_unit::Unitful.FreeUnits=UnitfulAstro.kpc,
+                            mass_unit::Unitful.FreeUnits=UnitfulAstro.Msun)::Plots.Plot
+
+    pgfplotsx()
+
+    # Extract data from arguments and check consistency.
+    types = get.(mass_data, "type", 0)
+    if !all(x -> x == types[1], types)
+        error("The types of particle are not the same among datasets.")
+    else
+        type = types[1]
+    end
+
+    length_units = get.(position_data, "unit", 0)
+    if !all(x -> x == length_units[1], length_units)
+        error("The units of length are not the same among datasets.")
+    else
+        length_unit = length_units[1]
+    end
+
+    periodicities = get.(position_data, "periodic", 0)
+    if !all(x -> x == periodicities[1], periodicities)
+        error("The boundary conditions are not the same among datasets.")
+    else
+        periodicity = periodicities[1]
+    end
+    
+    masses = get.(mass_data, "mass", 0)
+    mass_units = get.(mass_data, "unit", 0)
+    positions = get.(position_data, type, 0)
+
+    distances = Array{Float64,1}[]
+    for pos in positions
+        if isempty(pos)
+            # In the case that there are no particles.
+            push!(distances, [Inf])
+        else
+            push!(distances, sqrt.(pos[:,1].^2 .+ pos[:,2].^2 .+  pos[:,3].^2))
+        end
+    end
+    
+	if periodicity
+		# For periodic boundary conditions.
+		max_rs = (get.(position_data, "box_size", 0) ./ 2) .* region_factor
+	else
+        # Plotting region for vacuum boundary conditions.
+        max_rs = get.(position_data, "box_size", 0) .* region_factor
+	end
+
+    r = Array{Float64,1}[]
+    m = Array{Float64,1}[]
+    for (mass, unit, distance, max_r) in zip(masses, mass_units, distances, max_rs)
+        r_result, m_result = massProfile(mass, distance, max_r, bins)
+        # Set correct units.
+        m_result = @. ustrip(Float64, mass_unit, m_result * unit)
+        # Scale data by 10^{factor}.
+        m_result ./= 10^factor
+        
+        push!(r, r_result)
+        push!(m, m_result)
+    end
+    
+    if scale == :log10 
+        short_cases = findall(x -> length(x) < 2, findall.(x -> x > 0, m))
+        if isempty(short_cases)
+            # If every dataset has at least two values, 
+            # filter data points <= 0, for logarithmic plotting and
+            # fill datasets with NaN so all have the same length.
+            for i in 1:length(r)
+                deleteat!(r[i], m[i] .<= 0)
+                filter!(x -> x >  0, m[i])
+            end
+
+            max_length = maximum(length.(r))
+
+            for (i, R) in enumerate(r)
+                if length(R) < max_length
+                    for _ in 1:(max_length - length(R))
+                        push!(r[i], NaN)
+                        push!(m[i], NaN)
+                    end
+                end
+            end
+        else
+            # If at least one dataset has less than two values, 
+            # go back to linear scale.
+            scale = :identity
+        end
+    end
+
+    # Magnitude and unit for the time stamp.
+    clock = round(ustrip(time), digits=2)
+    time_unit = unit(time)
+
+    # Unit formatting for the y axis label.
+    str_mass_unit = uglyUnitDeserialization(mass_unit)
+    if factor != 0
+        str_mass_unit = replace(str_mass_unit, "M⊙" => L"\, / \ \left(10^{%$factor} \, \mathrm{M}_{\odot}\right)")
+    else
+        str_mass_unit = replace(str_mass_unit, "M⊙" => L"\, / \ \mathrm{M}_{\odot}")
+    end
+    if type == "gas"
+        ylabel = L"Gas mass %$str_mass_unit"
+    elseif type == "stars"
+        ylabel = L"Star mass %$str_mass_unit"
+    elseif type == "dark_matter"
+        ylabel = L"Dark matter mass %$str_mass_unit"
+    end
+
+    # Final figure.
+    return plot(hcat(r...), hcat(m...), 
+                xlabel="r / $length_unit",
+                ylabel=ylabel,
+                label=labels,
+                yscale=scale,
+                framestyle=:box,
+                size=(1200, 800),
+                legend=:bottomright,
+                foreground_color_legend=nothing,
+                background_color_legend=nothing,
+                palette=:Set1_9,
+                lw=3,
+                linestyle=:auto,
+                xtickfontsize=28,
+                ytickfontsize=28,
+                xguidefontsize=30,
+                yguidefontsize=30,
+                legendfontsize=25,
+                ticklabel_shift=".1cm",
+                add="\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.1, 0.95) {$clock\$\\,\$$time_unit};",
+                extra_kwargs=:subplot)
+end
 
 """
     sfrTxtPlot( source_path::String, 
@@ -2499,8 +3212,7 @@ function sfrTxtPlot(source_path::String,
                     ytickfontsize=22,
                     xguidefontsize=24,
                     yguidefontsize=24,
-                    legendfontsize=25
-                )
+                    legendfontsize=25)
 
     for y_type in y_axis
         x_data = data[x_axis[1]]
@@ -2535,8 +3247,7 @@ function sfrTxtPlot(source_path::String,
                 foreground_color_legend=nothing,
                 background_color_legend=nothing,
                 ticklabel_shift=".1cm",
-                extra_kwargs=:subplot
-            )
+                extra_kwargs=:subplot)
     end
 
     return figure
@@ -3217,7 +3928,7 @@ end
                             type::String; 
                             <keyword arguments>)::Nothing
 
-Save the results of the densityProfilePlot function in one image per snapshot,
+Save the results of the densityProfilePlot function as one image per snapshot,
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -3233,6 +3944,10 @@ and then generate a GIF and a video animating the images.
   "gas" -> Gas particle. 
   "dark_matter" -> Dark matter particle.
   "stars" -> Star particle.
+- `scale::Symbol=:identity`: Scaling to be used for the y axis.
+  The two options are:
+  :identity => no scaling.
+  :log10 => logarithmic scaling.
 - `step::Int64=1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
 - `sim_cosmo::Int64=0`: Value of the GADGET variable ComovingIntegrationOn: 
@@ -3266,6 +3981,7 @@ function densityProfilePipeline(snap_name::String,
                                 anim_name::String, 
                                 frame_rate::Int64,
                                 type::String;
+                                scale::Symbol=:identity,
                                 step::Int64=1,
                                 sim_cosmo::Int64=0,
                                 bins::Int64=100,
@@ -3285,7 +4001,7 @@ function densityProfilePipeline(snap_name::String,
     time_data = timeSeriesData(sim_files; sim_cosmo, time_unit)
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(base_output_path * "density_profile/image/")
+    mkpath(base_output_path * type * "_density_profile/image/")
 
     # Generate and store the plots.
     # animation = @animate 
@@ -3300,24 +4016,157 @@ function densityProfilePipeline(snap_name::String,
         figure = densityProfilePlot(positions,
                                     mass, 
                                     time_data["clock_time"][i] * time_unit;
+                                    scale,
                                     bins,
                                     factor,
                                     region_factor,
                                     density_unit)
             
-        savefig(figure, base_output_path * "density_profile/image/" * snap_name * "_" * snap_numbers[i] * format)
+        savefig(figure, base_output_path * type * "_density_profile/image/" * snap_name * "_" * snap_numbers[i] * format)
     end
 
     # Make the GIF.
     # gif(animation, 
-    #     base_output_path * "density_profile/" * anim_name * ".gif", 
+    #     base_output_path * type * "_density_profile/" * anim_name * ".gif", 
     #     fps=frame_rate
     # )
 
     # Make de video.
-    # makeVideo(  base_output_path * "density_profile/image/", 
+    # makeVideo(  base_output_path * type * "_density_profile/image/", 
     #             format, 
-    #             base_output_path * "density_profile/", 
+    #             base_output_path * type * "_density_profile/", 
+    #             anim_name, 
+    #             frame_rate
+    #         )
+
+    return nothing
+end
+
+"""
+    densityProfilePipeline( snap_name::Array{String,1}, 
+                            source_path::Array{String,1}, 
+                            base_output_path::String, 
+                            anim_name::String, 
+                            frame_rate::Int64,
+                            type::String,
+                            labels::Array{String,2}; 
+                            <keyword arguments>)::Nothing
+
+Save the results of the densityProfilePlot function for several simulations as one image 
+per snapshot, and then generate a GIF and a video animating the images. 
+
+# Arguments
+- `snap_name::Array{String,1}`: Array of base names of the target snapshots.
+- `source_path::Array{String,1}`: Array of paths where the target snapshots are located.
+- `base_output_path::String`: Path of parent directory for storing the figures.
+  The images will be stored in `base_output_path`compare_density_profile/images/ and 
+  will be named frame_XXX`format` where XXX is the ordinal of the frame.
+  The GIF and the video will be stored in `base_output_path`compare_density_profile/.
+- `anim_name::String`: Name of the generated video and GIF, without the extension.
+- `frame_rate::Int64`: Frame rate of the output video and GIF.
+- `type::String`: Particle type.
+  "gas" -> Gas particle. 
+  "dark_matter" -> Dark matter particle.
+  "stars" -> Star particle.
+- `labels::Array{String,2}`: Labels for the different simulations, e.g. [label1 label2 ...].
+- `scale::Symbol=:identity`: Scaling to be used for the y axis.
+  The two options are:
+  :identity => no scaling.
+  :log10 => logarithmic scaling.
+- `step::Int64=1`: Step used to traverse the list of snapshots. The default is 1, 
+  i.e. all snapshots will be plotted.
+- `sim_cosmo::Int64=0`: Value of the GADGET variable ComovingIntegrationOn: 
+  0 -> Newtonian simulation (static universe).
+  1 -> Cosmological simulation (expanding universe).
+- `bins::Int64=100`: Number of subdivisions of the region to be used for the profile. 
+  The default is 100.
+- `factor::Int64=0`: Numerical exponent to scale the density, e.g. if factor = 10 
+  the y axis will be scaled by 10^10. The default is 0, i.e. no scaling.
+- `region_factor::Float64=1.0`: Multiplicative factor for the plotting region. 
+  It will scale `positions["box_size"]` if vacuum boundary conditions were used, and
+  it will scale `positions["box_size"] / 2` if periodic boundary conditions were used.
+- `length_unit::Unitful.FreeUnits=UnitfulAstro.kpc`: Unit of length to be used in the output, 
+  all available length units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.kpc, which is the default.
+- `density_unit::Unitful.FreeUnits=UnitfulAstro.Msun / UnitfulAstro.kpc^3`: Unit of density 
+  to be used in the output, all available density units in Unitful and UnitfulAstro can 
+  be used, e.g. UnitfulAstro.Msun / UnitfulAstro.kpc^3, which is the default.
+- `time_unit::Unitful.FreeUnits=UnitfulAstro.Myr`: Unit of time to be used in the output, 
+  all available time units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.Myr, which is the default.
+- `region_size::Unitful.Quantity=1000UnitfulAstro.kpc`: Size of the plotting region 
+  if vacuum boundary conditions were used. It has to have units, e.g. 1000UnitfulAstro.kpc, 
+  which is the default. Its units don't have to be the same as `length_unit`.
+- `format::String=".png"`: File format of the output figure. All formats supported by pgfplotsx 
+  can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
+"""
+function densityProfilePipeline(snap_name::Array{String,1}, 
+                                source_path::Array{String,1}, 
+                                base_output_path::String, 
+                                anim_name::String, 
+                                frame_rate::Int64,
+                                type::String,
+                                labels::Array{String,2};
+                                scale::Symbol=:identity,
+                                step::Int64=1,
+                                sim_cosmo::Int64=0,
+                                bins::Int64=100,
+                                factor::Int64=0,
+                                region_factor::Float64=1.0,
+                                length_unit::Unitful.FreeUnits=UnitfulAstro.kpc,
+                                density_unit::Unitful.FreeUnits=UnitfulAstro.Msun / UnitfulAstro.kpc^3,
+                                time_unit::Unitful.FreeUnits=UnitfulAstro.Myr,
+                                region_size::Unitful.Quantity=1000UnitfulAstro.kpc,
+                                format::String=".png")::Nothing
+
+    # Create a directory to store the figures, if it doesn't exist.
+    mkpath(base_output_path * "compare_" * type * "_density_profile/image/")
+    
+    # Get the simulation data.
+    sim_files = Tuple{Vararg{String}}[]
+    for (i, path) in enumerate(source_path)
+        sim = getSnapshots(snap_name[i], path)
+        push!(sim_files, sim["snap_files"])
+    end
+
+    min_len = minimum(length.(sim_files))
+
+    # Time stamps, it should be the same for every dataset.
+    time_data = timeSeriesData(sim_files[1]; sim_cosmo, time_unit)
+
+    # Generate and store the plots.
+    # animation = @animate 
+    for i in 1:step:min_len
+        positions = Dict{String, Any}[]
+        masses = Dict{String, Any}[]
+        for snapshots in sim_files
+            push!(positions, positionData(snapshots[i]; sim_cosmo, length_unit, box_size=region_size))
+            push!(masses, massData(snapshots[i], type; sim_cosmo))
+        end
+                
+        figure = densityProfilePlot(positions,
+                                    masses, 
+                                    time_data["clock_time"][i] * time_unit,
+                                    labels;
+                                    scale,
+                                    bins,
+                                    factor,
+                                    region_factor,
+                                    density_unit)
+        
+        savefig(figure, base_output_path * "compare_" * type * "_density_profile/image/" * "frame_" * string(i) * format)  
+    end
+
+    # Make the GIF.
+    # gif(animation, 
+    #     base_output_path * "compare_" * type * "_density_profile/" * anim_name * ".gif", 
+    #     fps=frame_rate
+    # )
+
+    # Make de video.
+    # makeVideo(  base_output_path * "compare_" * type * "_density_profile/image/", 
+    #             format, 
+    #             base_output_path * "compare_" * type * "_density_profile/", 
     #             anim_name, 
     #             frame_rate
     #         )
@@ -3378,6 +4227,7 @@ function metallicityProfilePipeline(snap_name::String,
                                     anim_name::String, 
                                     frame_rate::Int64,
                                     type::String;
+                                    scale::Symbol=:identity,
                                     step::Int64=1,
                                     sim_cosmo::Int64=0,
                                     bins::Int64=100,
@@ -3387,15 +4237,15 @@ function metallicityProfilePipeline(snap_name::String,
                                     region_size::Unitful.Quantity=1000UnitfulAstro.kpc,
                                     format::String=".png")::Nothing
 
+    # Create a directory to store the figures, if it doesn't exist.
+    mkpath(base_output_path * type * "_metallicity_profile/image/")
+
     # Get the simulation data.
     sim = getSnapshots(snap_name, source_path)
     sim_files = sim["snap_files"]
     snap_numbers = sim["numbers"]
 
     time_data = timeSeriesData(sim_files; sim_cosmo, time_unit)
-
-    # Create a directory to store the figures, if it doesn't exist.
-    mkpath(base_output_path * "metallicity_profile/image/")
 
     # Generate and store the plots.
     # animation = @animate 
@@ -3412,22 +4262,404 @@ function metallicityProfilePipeline(snap_name::String,
                                         mass, 
                                         metallicities,
                                         time_data["clock_time"][i] * time_unit;
+                                        scale,
                                         bins,
                                         region_factor)
             
-        savefig(figure, base_output_path * "metallicity_profile/image/" * snap_name * "_" * snap_numbers[i] * format)
+        savefig(figure, base_output_path * type * "_metallicity_profile/image/" * snap_name * "_" * snap_numbers[i] * format)
     end
 
     # Make the GIF.
     # gif(animation, 
-    #     base_output_path * "metallicity_profile/" * anim_name * ".gif", 
+    #     base_output_path * type * "_metallicity_profile/" * anim_name * ".gif", 
     #     fps=frame_rate
     # )
 
     # Make de video.
-    # makeVideo(  base_output_path * "metallicity_profile/image/", 
+    # makeVideo(  base_output_path * type * "_metallicity_profile/image/", 
     #             format, 
-    #             base_output_path * "metallicity_profile/", 
+    #             base_output_path * type * "_metallicity_profile/", 
+    #             anim_name, 
+    #             frame_rate
+    #         )
+
+    return nothing
+end
+
+"""
+    metallicityProfilePipeline( snap_name::Array{String,1}, 
+                                source_path::Array{String,1}, 
+                                base_output_path::String, 
+                                anim_name::String, 
+                                frame_rate::Int64,
+                                type::String,
+                                labels::Array{String,2}; 
+                                <keyword arguments>)::Nothing
+
+Save the results of the metallicityProfilePlot function for several simulations as one 
+image per snapshot, and then generate a GIF and a video animating the images. 
+
+# Arguments
+- `snap_name::String`: Base name of the target snapshots.
+- `source_path::String`: Path where the target snapshots are located.
+- `base_output_path::String`: Path of parent directory for storing the figures.
+  The images will be stored in `base_output_path`compare_metallicity_profile/images and 
+  will be named frame_XXX`format` where XXX is the ordinal of the frame.
+  The GIF and the video will be stored in `base_output_path`compare_metallicity_profile/.
+- `anim_name::String`: Name of the generated video and GIF, without the extension.
+- `frame_rate::Int64`: Frame rate of the output video and GIF.
+- `type::String`: Particle type.
+  "gas" -> Gas particle. 
+  "dark_matter" -> Dark matter particle.
+  "stars" -> Star particle.
+- `labels::Array{String,2}`: Labels for the different simulations, e.g. [label1 label2 ...].
+- `scale::Symbol=:identity`: Scaling to be used for the y axis.
+  The two options are:
+  :identity => no scaling.
+  :log10 => logarithmic scaling.
+- `step::Int64=1`: Step used to traverse the list of snapshots. The default is 1, 
+  i.e. all snapshots will be plotted.
+- `sim_cosmo::Int64=0`: Value of the GADGET variable ComovingIntegrationOn: 
+  0 -> Newtonian simulation (static universe).
+  1 -> Cosmological simulation (expanding universe).
+- `bins::Int64=100`: Number of subdivisions of the region to be used for the profile. 
+  The default is 100.
+- `region_factor::Float64=1.0`: Multiplicative factor for the plotting region. 
+  It will scale `positions["box_size"]` if vacuum boundary conditions were used, and
+  it will scale `positions["box_size"] / 2` if periodic boundary conditions were used.
+- `length_unit::Unitful.FreeUnits=UnitfulAstro.kpc`: Unit of length to be used in the output, 
+  all available length units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.kpc, which is the default.
+- `time_unit::Unitful.FreeUnits=UnitfulAstro.Myr`: Unit of time to be used in the output, 
+  all available time units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.Myr, which is the default.
+- `region_size::Unitful.Quantity=1000UnitfulAstro.kpc`: Size of the plotting region 
+  if vacuum boundary conditions were used. It has to have units, e.g. 1000UnitfulAstro.kpc, 
+  which is the default. Its units don't have to be the same as `length_unit`.
+- `format::String=".png"`: File format of the output figure. All formats supported by pgfplotsx 
+  can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
+"""
+function metallicityProfilePipeline(snap_name::Array{String,1}, 
+                                    source_path::Array{String,1}, 
+                                    base_output_path::String, 
+                                    anim_name::String, 
+                                    frame_rate::Int64,
+                                    type::String,
+                                    labels::Array{String,2};
+                                    scale::Symbol=:identity,
+                                    step::Int64=1,
+                                    sim_cosmo::Int64=0,
+                                    bins::Int64=100,
+                                    region_factor::Float64=1.0,
+                                    length_unit::Unitful.FreeUnits=UnitfulAstro.kpc,
+                                    time_unit::Unitful.FreeUnits=UnitfulAstro.Myr,
+                                    region_size::Unitful.Quantity=1000UnitfulAstro.kpc,
+                                    format::String=".png")::Nothing
+
+    # Create a directory to store the figures, if it doesn't exist.
+    mkpath(base_output_path * "compare_" * type * "_metallicity_profile/image/")
+    
+    # Get the simulation data.
+    sim_files = Tuple{Vararg{String}}[]
+    for (i, path) in enumerate(source_path)
+        sim = getSnapshots(snap_name[i], path)
+        push!(sim_files, sim["snap_files"])
+    end
+
+    min_len = minimum(length.(sim_files))
+
+    # Time stamps, it should be the same for every dataset.
+    time_data = timeSeriesData(sim_files[1]; sim_cosmo, time_unit)
+
+    # Generate and store the plots.
+    # animation = @animate 
+    for i in 1:step:min_len
+        positions = Dict{String, Any}[]
+        masses = Dict{String, Any}[]
+        metallicities = Dict{String, Any}[]
+        for snapshots in sim_files
+            push!(positions, positionData(snapshots[i]; sim_cosmo, length_unit, box_size=region_size))
+            push!(masses, massData(snapshots[i], type; sim_cosmo))
+            push!(metallicities, zData(snapshots[i], type; sim_cosmo))
+        end
+                
+        figure = metallicityProfilePlot(positions,
+                                        masses, 
+                                        metallicities,
+                                        time_data["clock_time"][i] * time_unit,
+                                        labels;
+                                        scale,
+                                        bins,
+                                        region_factor)
+        
+        savefig(figure, base_output_path * "compare_" * type * "_metallicity_profile/image/" * "frame_" * string(i) * format)  
+    end
+
+    # Make the GIF.
+    # gif(animation, 
+    #     base_output_path * "compare_" * type * "_metallicity_profile/" * anim_name * ".gif", 
+    #     fps=frame_rate
+    # )
+
+    # Make de video.
+    # makeVideo(  base_output_path * "compare_" * type * "_metallicity_profile/image/", 
+    #             format, 
+    #             base_output_path * "compare_" * type * "_metallicity_profile/", 
+    #             anim_name, 
+    #             frame_rate
+    #         )
+
+    return nothing
+end
+
+"""
+    massProfilePipeline(snap_name::String, 
+                        source_path::String, 
+                        base_output_path::String, 
+                        anim_name::String, 
+                        frame_rate::Int64, 
+                        type::String; 
+                        <keyword arguments>)::Nothing
+
+Save the results of the massProfilePlot function as one image per snapshot,
+and then generate a GIF and a video animating the images. 
+
+# Arguments
+- `snap_name::String`: Base name of the target snapshots.
+- `source_path::String`: Path where the target snapshots are located.
+- `base_output_path::String`: Path of parent directory for storing the figures.
+  The images will be stored in `base_output_path`mass_profile/images/ and will be 
+  named `snap_name`_XXX`format` where XXX is the number of the snapshot.
+  The GIF and the video will be stored in `base_output_path`mass_profile/.
+- `anim_name::String`: Name of the generated video and GIF, without the extension.
+- `frame_rate::Int64`: Frame rate of the output video and GIF.
+- `type::String`: Particle type.
+  "gas" -> Gas particle. 
+  "dark_matter" -> Dark matter particle.
+  "stars" -> Star particle.
+- `scale::Symbol=:identity`: Scaling to be used for the y axis.
+  The two options are:
+  :identity => no scaling.
+  :log10 => logarithmic scaling.
+- `step::Int64=1`: Step used to traverse the list of snapshots. The default is 1, 
+  i.e. all snapshots will be plotted.
+- `sim_cosmo::Int64=0`: Value of the GADGET variable ComovingIntegrationOn: 
+  0 -> Newtonian simulation (static universe).
+  1 -> Cosmological simulation (expanding universe).
+- `bins::Int64=100`: Number of subdivisions of the region to be used for the profile. 
+  The default is 100.
+- `factor::Int64=0`: Numerical exponent to scale the mass, e.g. if factor = 10 
+  the y axis will be scaled by 10^10. The default is 0, i.e. no scaling.
+- `region_factor::Float64=1.0`: Multiplicative factor for the plotting region. 
+  It will scale `positions["box_size"]` if vacuum boundary conditions were used, and
+  it will scale `positions["box_size"] / 2` if periodic boundary conditions were used.
+- `length_unit::Unitful.FreeUnits=UnitfulAstro.kpc`: Unit of length to be used in the output, 
+  all available length units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.kpc, which is the default.
+- `mass_unit::Unitful.FreeUnits=UnitfulAstro.Msun`: Unit of mass to be used in the output, 
+  all available mass units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.Msun, which is the default.
+- `time_unit::Unitful.FreeUnits=UnitfulAstro.Myr`: Unit of time to be used in the output, 
+  all available time units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.Myr, which is the default.
+- `region_size::Unitful.Quantity=1000UnitfulAstro.kpc`: Size of the plotting region 
+  if vacuum boundary conditions were used. It has to have units, e.g. 1000UnitfulAstro.kpc, 
+  which is the default. Its units don't have to be the same as `length_unit`.
+- `format::String=".png"`: File format of the output figure. All formats supported by pgfplotsx 
+  can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
+"""
+function massProfilePipeline(   snap_name::String, 
+                                source_path::String, 
+                                base_output_path::String, 
+                                anim_name::String, 
+                                frame_rate::Int64,
+                                type::String;
+                                scale::Symbol=:identity,
+                                step::Int64=1,
+                                sim_cosmo::Int64=0,
+                                bins::Int64=100,
+                                factor::Int64=0,
+                                region_factor::Float64=1.0,
+                                length_unit::Unitful.FreeUnits=UnitfulAstro.kpc,
+                                mass_unit::Unitful.FreeUnits=UnitfulAstro.Msun,
+                                time_unit::Unitful.FreeUnits=UnitfulAstro.Myr,
+                                region_size::Unitful.Quantity=1000UnitfulAstro.kpc,
+                                format::String=".png")::Nothing
+
+    # Get the simulation data.
+    sim = getSnapshots(snap_name, source_path)
+    sim_files = sim["snap_files"]
+    snap_numbers = sim["numbers"]
+
+    time_data = timeSeriesData(sim_files; sim_cosmo, time_unit)
+
+    # Create a directory to store the figures, if it doesn't exist.
+    mkpath(base_output_path * type * "_mass_profile/image/")
+
+    # Generate and store the plots.
+    # animation = @animate 
+    for i in 1:step:length(sim_files)
+        snapshot = sim_files[i]
+        positions = positionData(   snapshot; 
+                                    sim_cosmo, 
+                                    length_unit, 
+                                    box_size=region_size)
+        mass = massData(snapshot, type; sim_cosmo)
+            
+        figure = massProfilePlot(   positions,
+                                    mass, 
+                                    time_data["clock_time"][i] * time_unit;
+                                    scale,
+                                    bins,
+                                    factor,
+                                    region_factor,
+                                    mass_unit)
+            
+        savefig(figure, base_output_path * type * "_mass_profile/image/" * snap_name * "_" * snap_numbers[i] * format)
+    end
+
+    # Make the GIF.
+    # gif(animation, 
+    #     base_output_path * type * "_mass_profile/" * anim_name * ".gif", 
+    #     fps=frame_rate
+    # )
+
+    # Make de video.
+    # makeVideo(  base_output_path * type * "_mass_profile/image/", 
+    #             format, 
+    #             base_output_path * type * "_mass_profile/", 
+    #             anim_name, 
+    #             frame_rate
+    #         )
+
+    return nothing
+end
+
+"""
+    massProfilePipeline(snap_name::Array{String,1}, 
+                        source_path::Array{String,1}, 
+                        base_output_path::String, 
+                        anim_name::String, 
+                        frame_rate::Int64,
+                        type::String,
+                        labels::Array{String,2}; 
+                        <keyword arguments>)::Nothing
+
+Save the results of the massProfilePlot function for several simulations as one image 
+per snapshot, and then generate a GIF and a video animating the images. 
+
+# Arguments
+- `snap_name::Array{String,1}`: Array of base names of the target snapshots.
+- `source_path::Array{String,1}`: Array of paths where the target snapshots are located.
+- `base_output_path::String`: Path of parent directory for storing the figures.
+  The images will be stored in `base_output_path`compare_mass_profile/images/ and 
+  will be named frame_XXX`format` where XXX is the ordinal of the frame.
+  The GIF and the video will be stored in `base_output_path`compare_mass_profile/.
+- `anim_name::String`: Name of the generated video and GIF, without the extension.
+- `frame_rate::Int64`: Frame rate of the output video and GIF.
+- `type::String`: Particle type.
+  "gas" -> Gas particle. 
+  "dark_matter" -> Dark matter particle.
+  "stars" -> Star particle.
+- `labels::Array{String,2}`: Labels for the different simulations, e.g. [label1 label2 ...].
+- `scale::Symbol=:identity`: Scaling to be used for the y axis.
+  The two options are:
+  :identity => no scaling.
+  :log10 => logarithmic scaling.
+- `step::Int64=1`: Step used to traverse the list of snapshots. The default is 1, 
+  i.e. all snapshots will be plotted.
+- `sim_cosmo::Int64=0`: Value of the GADGET variable ComovingIntegrationOn: 
+  0 -> Newtonian simulation (static universe).
+  1 -> Cosmological simulation (expanding universe).
+- `bins::Int64=100`: Number of subdivisions of the region to be used for the profile. 
+  The default is 100.
+- `factor::Int64=0`: Numerical exponent to scale the mass, e.g. if factor = 10 
+  the y axis will be scaled by 10^10. The default is 0, i.e. no scaling.
+- `region_factor::Float64=1.0`: Multiplicative factor for the plotting region. 
+  It will scale `positions["box_size"]` if vacuum boundary conditions were used, and
+  it will scale `positions["box_size"] / 2` if periodic boundary conditions were used.
+- `length_unit::Unitful.FreeUnits=UnitfulAstro.kpc`: Unit of length to be used in the output, 
+  all available length units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.kpc, which is the default.
+- `mass_unit::Unitful.FreeUnits=UnitfulAstro.Msun`: Unit of mass to be used in the output, 
+  all available mass units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.Msun, which is the default.
+- `time_unit::Unitful.FreeUnits=UnitfulAstro.Myr`: Unit of time to be used in the output, 
+  all available time units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.Myr, which is the default.
+- `region_size::Unitful.Quantity=1000UnitfulAstro.kpc`: Size of the plotting region 
+  if vacuum boundary conditions were used. It has to have units, e.g. 1000UnitfulAstro.kpc, 
+  which is the default. Its units don't have to be the same as `length_unit`.
+- `format::String=".png"`: File format of the output figure. All formats supported by pgfplotsx 
+  can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
+"""
+function massProfilePipeline(   snap_name::Array{String,1}, 
+                                source_path::Array{String,1}, 
+                                base_output_path::String, 
+                                anim_name::String, 
+                                frame_rate::Int64,
+                                type::String,
+                                labels::Array{String,2};
+                                scale::Symbol=:identity,
+                                step::Int64=1,
+                                sim_cosmo::Int64=0,
+                                bins::Int64=100,
+                                factor::Int64=0,
+                                region_factor::Float64=1.0,
+                                length_unit::Unitful.FreeUnits=UnitfulAstro.kpc,
+                                mass_unit::Unitful.FreeUnits=UnitfulAstro.Msun,
+                                time_unit::Unitful.FreeUnits=UnitfulAstro.Myr,
+                                region_size::Unitful.Quantity=1000UnitfulAstro.kpc,
+                                format::String=".png")::Nothing
+
+    # Create a directory to store the figures, if it doesn't exist.
+    mkpath(base_output_path * "compare_" * type * "_mass_profile/image/")
+    
+    # Get the simulation data.
+    sim_files = Tuple{Vararg{String}}[]
+    for (i, path) in enumerate(source_path)
+        sim = getSnapshots(snap_name[i], path)
+        push!(sim_files, sim["snap_files"])
+    end
+
+    min_len = minimum(length.(sim_files))
+
+    # Time stamps, it should be the same for every dataset.
+    time_data = timeSeriesData(sim_files[1]; sim_cosmo, time_unit)
+
+    # Generate and store the plots.
+    # animation = @animate 
+    for i in 1:step:min_len
+        positions = Dict{String, Any}[]
+        masses = Dict{String, Any}[]
+        for snapshots in sim_files
+            push!(positions, positionData(snapshots[i]; sim_cosmo, length_unit, box_size=region_size))
+            push!(masses, massData(snapshots[i], type; sim_cosmo))
+        end
+                
+        figure = massProfilePlot(   positions,
+                                    masses, 
+                                    time_data["clock_time"][i] * time_unit,
+                                    labels;
+                                    scale,
+                                    bins,
+                                    factor,
+                                    region_factor,
+                                    mass_unit)
+        
+        savefig(figure, base_output_path * "compare_" * type * "_mass_profile/image/" * "frame_" * string(i) * format)  
+    end
+
+    # Make the GIF.
+    # gif(animation, 
+    #     base_output_path * "compare_" * type * "_mass_profile/" * anim_name * ".gif", 
+    #     fps=frame_rate
+    # )
+
+    # Make de video.
+    # makeVideo(  base_output_path * "compare_" * type * "_mass_profile/image/", 
+    #             format, 
+    #             base_output_path * "compare_" * type * "_mass_profile/", 
     #             anim_name, 
     #             frame_rate
     #         )

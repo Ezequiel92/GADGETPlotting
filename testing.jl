@@ -23,6 +23,9 @@ const SIM_COSMO = 0
 "Frame rate for the animations."                   
 const FPS = 4    
 
+"Particular snapshop index for testing purposes."
+const SNAP_N = 21
+
 mkpath(BASE_OUT_PATH)
 
 ########################################################################################
@@ -38,34 +41,38 @@ time_series = timeSeriesData(snap_files, sim_cosmo=SIM_COSMO)
 display(time_series)
 println()
 
-pos = positionData( snap_files[21], 
+pos = positionData( snap_files[SNAP_N], 
                     sim_cosmo=SIM_COSMO, 
                     length_unit=UnitfulAstro.Mpc, 
                     box_size=BOX_SIZE)
 display(pos)
 println()
 
-density = densityData(snap_files[21], sim_cosmo=SIM_COSMO)
+density = densityData(snap_files[SNAP_N], sim_cosmo=SIM_COSMO)
 display(density)
 println()
 
-hsml = hsmlData(snap_files[21], sim_cosmo=SIM_COSMO)
+hsml = hsmlData(snap_files[SNAP_N], sim_cosmo=SIM_COSMO)
 display(hsml)
 println()
 
-gas_mass = massData(snap_files[21], "gas", sim_cosmo=SIM_COSMO)
+gas_mass = massData(snap_files[SNAP_N], "gas", sim_cosmo=SIM_COSMO)
 display(gas_mass)
 println()
 
-dm_mass = massData(snap_files[21], "dark_matter", sim_cosmo=SIM_COSMO)
+dm_mass = massData(snap_files[SNAP_N], "dark_matter", sim_cosmo=SIM_COSMO)
 display(dm_mass)
 println()
 
-star_mass = massData(snap_files[21], "stars", sim_cosmo=SIM_COSMO)
+star_mass = massData(snap_files[SNAP_N], "stars", sim_cosmo=SIM_COSMO)
 display(star_mass)
 println()
 
-gas_z = zData(snap_files[21], "gas", sim_cosmo=SIM_COSMO)
+gas_z = zData(snap_files[SNAP_N], "gas", sim_cosmo=SIM_COSMO)
+display(gas_z)
+println()
+
+star_z = zData(snap_files[SNAP_N], "stars", sim_cosmo=SIM_COSMO)
 display(gas_z)
 println()
 
@@ -101,17 +108,19 @@ savefig(BASE_OUT_PATH * "test_starMapPlot_XZ.png")
 starMapPlot(pos)
 savefig(BASE_OUT_PATH * "test_starMapPlot_All.png")
 
-gasStarEvolutionPlot(time_series, pos, 21)
+gasStarEvolutionPlot(time_series, pos, SNAP_N)
 savefig(BASE_OUT_PATH * "test_gasStarEvolutionPlot.png")
 
+pgfplotsx()
+
 timeSeriesPlot(time_series, mass_factor=0, number_factor=4)
-Base.invokelatest(savefig, BASE_OUT_PATH * "test_timeSeriesPlot.png")
+savefig(BASE_OUT_PATH * "test_timeSeriesPlot.png")
 
 scaleFactorSeriesPlot(time_series, mass_factor=0, number_factor=4)
-Base.invokelatest(savefig, BASE_OUT_PATH * "test_scaleFactorSeriesPlot.png")
+savefig(BASE_OUT_PATH * "test_scaleFactorSeriesPlot.png")
 
 redshiftSeriesPlot(time_series, mass_factor=0, number_factor=4)
-Base.invokelatest(savefig, BASE_OUT_PATH * "test_redshiftSeriesPlot.png")
+savefig(BASE_OUT_PATH * "test_redshiftSeriesPlot.png")
 
 compareSimulationsPlot( "star_mass", 
                         "sfr", 
@@ -120,16 +129,80 @@ compareSimulationsPlot( "star_mass",
                         title="SFMS relation", 
                         x_factor=10,
                         log_scale=true) 
-Base.invokelatest(savefig, BASE_OUT_PATH * "test_compareSimulationsPlot.png")
+savefig(BASE_OUT_PATH * "test_compareSimulationsPlot.png")
 
 densityHistogramPlot(density, 1 * UnitfulAstro.Myr, factor=10)
-Base.invokelatest(savefig, BASE_OUT_PATH * "test_densityHistogramPlot.png")
+savefig(BASE_OUT_PATH * "test_densityHistogramPlot.png")
 
-densityProfilePlot(pos, gas_mass,  1 * UnitfulAstro.Myr, bins=50, factor=13)
-Base.invokelatest(savefig, BASE_OUT_PATH * "test_densityProfilePlot.png")
+densityProfilePlot(pos, star_mass,  1 * UnitfulAstro.Myr, scale=:log10, bins=50)
+savefig(BASE_OUT_PATH * "test_star_densityProfilePlot.png")
 
-metallicityProfilePlot(pos, gas_mass, gas_z, 1 * UnitfulAstro.Myr, bins=100)
-Base.invokelatest(savefig, BASE_OUT_PATH * "test_metallicityProfilePlot.png")
+densityProfilePlot(pos, gas_mass,  1 * UnitfulAstro.Myr, scale=:log10, bins=50, factor=6)
+savefig(BASE_OUT_PATH * "test_gas_densityProfilePlot.png")
+
+densityProfilePlot( [pos, pos], 
+                    [gas_mass, gas_mass],  
+                    1 * UnitfulAstro.Myr, 
+                    ["sim_1" "sim_2"], 
+                    bins=50, 
+                    scale=:log10,
+                    factor=6)
+savefig(BASE_OUT_PATH * "test_compare_gas_densityProfilePlot.png")
+
+densityProfilePlot( [pos, pos], 
+                    [star_mass, star_mass],  
+                    1 * UnitfulAstro.Myr, 
+                    ["sim_1" "sim_2"], 
+                    bins=50, 
+                    scale=:log10)
+savefig(BASE_OUT_PATH * "test_compare_star_densityProfilePlot.png")
+
+metallicityProfilePlot(pos, gas_mass, gas_z, 1 * UnitfulAstro.Myr, scale=:log10, bins=50)
+savefig(BASE_OUT_PATH * "test_gas_metallicityProfilePlot.png")
+
+metallicityProfilePlot(pos, star_mass, star_z, 1 * UnitfulAstro.Myr, scale=:log10, bins=50)
+savefig(BASE_OUT_PATH * "test_star_metallicityProfilePlot.png")
+
+metallicityProfilePlot( [pos, pos], 
+                        [gas_mass, gas_mass], 
+                        [gas_z, gas_z], 
+                        1 * UnitfulAstro.Myr, 
+                        ["sim_1" "sim_2"], 
+                        scale=:log10,  
+                        bins=50)
+savefig(BASE_OUT_PATH * "test_compare_gas_metallicityProfilePlot.png")
+
+metallicityProfilePlot( [pos, pos], 
+                        [star_mass, star_mass], 
+                        [star_z, star_z], 
+                        1 * UnitfulAstro.Myr, 
+                        ["sim_1" "sim_2"], 
+                        scale=:log10,  
+                        bins=50)
+savefig(BASE_OUT_PATH * "test_compare_star_metallicityProfilePlot.png")
+
+massProfilePlot(pos, star_mass,  1 * UnitfulAstro.Myr, scale=:log10, bins=50)
+savefig(BASE_OUT_PATH * "test_star_massProfilePlot.png")
+
+massProfilePlot(pos, gas_mass,  1 * UnitfulAstro.Myr, scale=:log10, bins=50, factor=10)
+savefig(BASE_OUT_PATH * "test_gas_massProfilePlot.png")
+
+massProfilePlot([pos, pos], 
+                [gas_mass, gas_mass],
+                1 * UnitfulAstro.Myr, 
+                ["sim_1" "sim_2"],
+                scale=:log10, 
+                bins=50,
+                factor=10)
+savefig(BASE_OUT_PATH * "test_compare_gas_massProfilePlot.png")
+
+massProfilePlot([pos, pos], 
+                [star_mass, star_mass],
+                1 * UnitfulAstro.Myr, 
+                ["sim_1" "sim_2"],
+                scale=:log10, 
+                bins=50)
+savefig(BASE_OUT_PATH * "test_compare_star_massProfilePlot.png")
 
 sfrTxtPlot( SNAP_PATH, 
             SNAP_NAME, 
@@ -139,11 +212,13 @@ sfrTxtPlot( SNAP_PATH,
             bins=50, 
             scale=[:identity, :log10], 
             sim_cosmo=SIM_COSMO)
-Base.invokelatest(savefig, BASE_OUT_PATH * "test_sfrTxtPlot.png")
+savefig(BASE_OUT_PATH * "test_sfrTxtPlot.png")
 
 ########################################################################################
 # TEST OF PIPELINE FUNCTIONS.
 ########################################################################################
+
+gr()
 
 scatterGridPipeline(SNAP_NAME, 
                     SNAP_PATH, 
@@ -214,8 +289,23 @@ densityProfilePipeline( SNAP_NAME,
                         BASE_OUT_PATH, 
                         "density_profile_anim", 
                         FPS,
-                        "gas";
+                        "stars";
+                        scale=:log10,
                         bins=80,
+                        factor=6,
+                        region_factor=0.125,
+                        sim_cosmo=SIM_COSMO,
+                        region_size=BOX_SIZE)
+
+densityProfilePipeline( [SNAP_NAME, SNAP_NAME], 
+                        [SNAP_PATH, SNAP_PATH], 
+                        BASE_OUT_PATH, 
+                        "compare_density_profile_anim", 
+                        FPS,
+                        "gas",
+                        ["sim1" "sim2"];
+                        scale=:log10,
+                        bins=60,
                         factor=6,
                         region_factor=0.125,
                         sim_cosmo=SIM_COSMO,
@@ -226,11 +316,52 @@ metallicityProfilePipeline( SNAP_NAME,
                             BASE_OUT_PATH, 
                             "metallicity_profile_anim", 
                             FPS,
-                            "gas";
+                            "stars";
+                            scale=:log10,
                             bins=80,
                             region_factor=5.0,
                             sim_cosmo=SIM_COSMO,
                             region_size=BOX_SIZE)
+
+metallicityProfilePipeline( [SNAP_NAME, SNAP_NAME], 
+                            [SNAP_PATH, SNAP_PATH], 
+                            BASE_OUT_PATH, 
+                            "compare_metallicity_profile_anim", 
+                            FPS,
+                            "gas",
+                            ["sim1" "sim2"];
+                            scale=:log10,
+                            sim_cosmo=SIM_COSMO,
+                            bins=60,
+                            region_factor=5.0,
+                            region_size=BOX_SIZE)
+
+massProfilePipeline(SNAP_NAME, 
+                    SNAP_PATH, 
+                    BASE_OUT_PATH, 
+                    "mass_profile_anim", 
+                    FPS,
+                    "stars";
+                    scale=:log10,
+                    bins=80,
+                    factor=6,
+                    region_factor=0.125,
+                    sim_cosmo=SIM_COSMO,
+                    region_size=BOX_SIZE)
+
+massProfilePipeline([SNAP_NAME, SNAP_NAME], 
+                    [SNAP_PATH, SNAP_PATH], 
+                    BASE_OUT_PATH, 
+                    "compare_mass_profile_anim", 
+                    FPS,
+                    "gas",
+                    ["sim1" "sim2"];
+                    scale=:log10,
+                    bins=60,
+                    factor=6,
+                    region_factor=0.125,
+                    sim_cosmo=SIM_COSMO,
+                    region_size=BOX_SIZE)
 
 ########################################################################################
 # TEST OF AUXILIARY FUNCTIONS.
@@ -276,12 +407,12 @@ println("Everything worked just fine!!")
 # DELETE ALL GENERATED TESTING FILES.
 ########################################################################################
 
-# rm(BASE_OUT_PATH, recursive=true)
+rm(BASE_OUT_PATH, recursive=true)
 
 ########################################################################################
 # EXTRA TESTS.
 # This functions when executed should throw an error.
 ########################################################################################
 
-# massData(snap_files[21], "unobtainium", sim_cosmo=SIM_COSMO)
-# zData(snap_files[21], "unobtainium", sim_cosmo=SIM_COSMO)
+# massData(snap_files[SNAP_N], "unobtainium", sim_cosmo=SIM_COSMO)
+# zData(snap_files[SNAP_N], "unobtainium", sim_cosmo=SIM_COSMO)
