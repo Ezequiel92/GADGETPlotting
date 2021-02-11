@@ -65,9 +65,12 @@ function scatterGridPipeline(
 
         positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
 
+        # Snashot number.
+        number = snap_numbers[1 + step * (i - 1)]
+
         savefig(
             scatterGridPlot(positions),
-            output_path * "images/" * base_name * "_" * snap_numbers[i] * format,
+            output_path * "images/" * base_name * "_" * number * format,
         )
 
     end
@@ -156,9 +159,12 @@ function densityMapPipeline(
         density = densityData(snapshot; sim_cosmo)
         hsml = hsmlData(snapshot; sim_cosmo)
 
+        # Snashot number.
+        number = snap_numbers[1 + step * (i - 1)]
+
         savefig(
             densityMapPlot(pos, mass, density, hsml; plane, axes),
-            output_path * "images/" * base_name * "_" * snap_numbers[i] * format,
+            output_path * "images/" * base_name * "_" * number * format,
         )
         
     end
@@ -248,9 +254,12 @@ function starMapPipeline(
 
         pos = positionData( snapshot; sim_cosmo, box_size, length_unit)
 
+        # Snashot number.
+        number = snap_numbers[1 + step * (i - 1)]
+
         savefig(
             starMapPlot(pos; plane, box_factor, axes),
-            output_path * "images/" * base_name * "_" * snap_numbers[i] * format,
+            output_path * "images/" * base_name * "_" * number * format,
         )
 
     end
@@ -337,9 +346,12 @@ function gasStarEvolutionPipeline(
 
         positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
 
+        # Snashot number.
+        number = snap_numbers[1 + step * (i - 1)]
+
         savefig(
             gasStarEvolutionPlot(time_series, positions, i),
-            output_path * "TEMP/" * base_name * "_" * snap_numbers[i] * format,
+            output_path * "TEMP/" * base_name * "_" * number * format,
         )
 
     end
@@ -484,7 +496,8 @@ function, namely:
 - "star_number" (Star number)         
 - "gas_mass" (Total gas mass)               
 - "dm_mass" (Total dark matter mass)	            
-- "star_mass" (Total star mass)		               
+- "star_mass" (Total star mass)	
+- "gas_density" (Total gas density)	               
 - "gas_frac" (Gas fraction)		                
 - "dm_frac" (Dark matter fraction)		                
 - "star_frac" (Star fraction)	                   
@@ -506,18 +519,21 @@ function, namely:
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
-- `scale::Symbol = :identity`: Scaling to be used for the y axis.
-  The two options are:
-  :identity => no scaling.
-  :log10 => logarithmic scaling.
-- `smooth_data::Bool = false`: If true a smoothing window with no weighs is applied to 
-  the y data. If false (the default) no transformation occurs.
+- `title::String = ""`: Title for the figure. If an empty string is given no title is 
+  printed, which is the default.
 - `x_factor::Int64 = 0`: Numerical exponent to scale the `x_quantity`, e.g. if x_factor = 10 
   the corresponding axis will be scaled by 10^10. The default is 0, i.e. no scaling.
 - `y_factor::Int64 = 0`: Numerical exponent to scale the `y_quantity`, e.g. if y_factor = 10 
   the corresponding axis will be scaled by 10^10. The default is 0, i.e. no scaling.
-- `title::String = ""`: Title for the figure. If an empty string is given no title is 
-  printed, which is the default.
+- `scale::NTuple{2, Symbol} = (:identity, :identity)`: Scaling to be used for the x 
+  and y axes. The two options are:
+  :identity => no scaling.
+  :log10 => logarithmic scaling.
+- `smooth_data::Bool = false`: If true a smoothing window with no weighs is applied to 
+  the y data. If false (the default) no transformation occurs.
+- `bins::Int64 = 0`: Number of subdivisions for the smoothing of the data, only relevant if
+  `smooth_data = true`. 
+- `legend_pos::Symbol = :bottomright`: Position of the legend, e.g. :topleft.
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
   all available mass units in Unitful and UnitfulAstro can be used, 
   e.g. UnitfulAstro.Msun, which is the default.
@@ -542,8 +558,10 @@ function compareSimulationsPipeline(
     title::String = "",
     x_factor::Int64 = 0,
     y_factor::Int64 = 0,
-    scale::Symbol = :identity,
+    scale::NTuple{2, Symbol} = (:identity, :identity),
     smooth_data::Bool = false, 
+    bins::Int64 = 50,
+    legend_pos::Symbol = :bottomright,
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
     sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr,
@@ -573,6 +591,8 @@ function compareSimulationsPipeline(
             y_factor,
             scale,
             smooth_data,
+            bins,
+            legend_pos,
         ), 
         output_path * fig_name * "_" * y_quantity * "_vs_" * x_quantity * format,
     )
@@ -649,14 +669,17 @@ function densityHistogramPipeline(
 
         density = densityData(snapshot; sim_cosmo)
 
+        # Snashot number.
+        number = snap_numbers[1 + step * (i - 1)]
+
         savefig(
             densityHistogramPlot(
                 density,
-                time_data["clock_time"][i] * time_unit;
+                time_data["clock_time"][1 + step * (i - 1)] * time_unit;
                 factor,
                 density_unit,
             ), 
-            output_path * "images/" * base_name * "_" * snap_numbers[i] * format,
+            output_path * "images/" * base_name * "_" * number * format,
         )
 
     end
@@ -765,18 +788,21 @@ function densityProfilePipeline(
         positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
         mass = massData(snapshot, type; sim_cosmo)
 
+        # Snashot number.
+        number = snap_numbers[1 + step * (i - 1)]
+
         savefig(
             densityProfilePlot(
                 positions,
                 mass,
-                time_data["clock_time"][i] * time_unit;
+                time_data["clock_time"][1 + step * (i - 1)] * time_unit;
                 scale,
                 bins,
                 factor,
                 box_factor,
                 density_unit,
             ),
-            output_path * "images/" * base_name * "_" * snap_numbers[i] * format,
+            output_path * "images/" * base_name * "_" * number * format,
         )
 
     end
@@ -904,7 +930,7 @@ function densityProfilePipeline(
                 box_factor,
                 density_unit,
             ),
-            output_path * "images/" * "frame_" * string(i) * format,
+            output_path * "images/frame_"  * string(i - 1) * format,
         )
     end
 
@@ -1003,17 +1029,20 @@ function metallicityProfilePipeline(
         mass = massData(snapshot, type; sim_cosmo)
         metallicities = zData(snapshot, type; sim_cosmo)
 
+        # Snashot number.
+        number = snap_numbers[1 + step * (i - 1)]
+
         savefig(
             metallicityProfilePlot(
                 positions,
                 mass,
                 metallicities,
-                time_data["clock_time"][i] * time_unit;
+                time_data["clock_time"][1 + step * (i - 1)] * time_unit;
                 scale,
                 bins,
                 box_factor,
             ),
-            output_path * "images/" * base_name * "_" * snap_numbers[i] * format,
+            output_path * "images/" * base_name * "_" * number * format,
         )
     end
 
@@ -1133,7 +1162,7 @@ function metallicityProfilePipeline(
                 bins,
                 box_factor,
             ),
-            output_path * "images/" * "frame_" * string(i) * format,
+            output_path * "images/frame_" * string(i - 1) * format,
         )
 
     end
@@ -1243,18 +1272,21 @@ function massProfilePipeline(
         positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
         mass = massData(snapshot, type; sim_cosmo)
 
+        # Snashot number.
+        number = snap_numbers[1 + step * (i - 1)]
+
         savefig(
             massProfilePlot(
                 positions,
                 mass,
-                time_data["clock_time"][i] * time_unit;
+                time_data["clock_time"][1 + step * (i - 1)] * time_unit;
                 scale,
                 bins,
                 factor,
                 box_factor,
                 mass_unit,
             ),
-            output_path * "images/" * base_name * "_" * snap_numbers[i] * format,
+            output_path * "images/" * base_name * "_" * number * format,
         )
 
     end
@@ -1382,7 +1414,7 @@ function massProfilePipeline(
                 box_factor,
                 mass_unit,
             ),
-            output_path * "images/" * "frame_" * string(i) * format,
+            output_path * "images/frame_" * string(i - 1) * format,
         )
 
     end
@@ -1423,6 +1455,10 @@ Save the results of the CMDFPlot function as one image per snapshot
   1 -> Cosmological simulation (expanding universe).
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
+- `x_norm::Bool = false`: If the x axis will be normalize to its maximum value. 
+- `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
+  all available time units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.Myr, which is the default.
 - `format::String = ".png"`: File format of the output figure. All formats supported by 
   pgfplotsx can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
 """
@@ -1434,8 +1470,13 @@ function CMDFPipeline(
     output_path::String = "CMDF/",
     sim_cosmo::Int64 = 0,
     step::Int64 = 1,
+    x_norm::Bool = false,
+    time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
     format::String = ".png",
 )::Nothing
+
+    # Create a directory to store the figures, if it doesn't exist.
+    mkpath(output_path * "images/")
 
     # Get the simulation data.
     sim = getSnapshots(base_name, source_path)
@@ -1443,9 +1484,6 @@ function CMDFPipeline(
     snap_numbers = sim["numbers"]
 
     time_data = timeSeriesData(snap_files; sim_cosmo)
-
-    # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
 
     # Generate and store the plots.
     short_snaps = @view snap_files[1:step:end] 
@@ -1458,10 +1496,125 @@ function CMDFPipeline(
             mass_data = massData(snapshot, "stars"; sim_cosmo)
             z_data = zData(snapshot, "stars"; sim_cosmo)
 
+            # Snashot number.
+            number = snap_numbers[1 + step * (i - 1)]
+
             savefig(
-                CMDFPlot(mass_data, z_data, bins = 50),
-                output_path * "images/" * base_name * "_" * snap_numbers[i] * format,
+                CMDFPlot(
+                    mass_data, 
+                    z_data,
+                    time_data["clock_time"][1 + step * (i - 1)] * time_unit; 
+                    bins = 50, 
+                    x_norm
+                ),
+                output_path * "images/" * base_name * "_" * number * format,
             )
+        end
+
+    end
+
+    # Make the GIF.
+    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+
+    # Make the video.
+    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+
+    return nothing
+end
+
+"""
+    CMDFPipeline(
+        base_name::Vector{String},
+        source_path::Vector{String},
+        anim_name::String,
+        frame_rate::Int64,
+        labels::Array{String, 2}; 
+        <keyword arguments>
+    )::Nothing
+
+Save the results of the CMDFPlot function for several simulations as one image per snapshot 
+(if there are stars present), and then generate a GIF and a video animating the images. 
+
+# Arguments
+- `base_name::Vector{String}`: Base names of the snapshot files, set in the GADGET 
+  variable SnapshotFileBase.
+- `source_path::Vector{String}`: Paths to the directories containing the snapshot files, 
+  set in the GADGET variable OutputDir.
+- `anim_name::String`: Name of the generated video and GIF, without the extension.
+- `frame_rate::Int64`: Frame rate of the output video and GIF.
+- `labels::Array{String, 2}`: Labels for the different simulations.
+- `output_path::String = "CMDF/"`: Path to the output directory. The images 
+  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+  is the number of the snapshot. The GIF and the video will be stored in `output_path`.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
+  0 -> Newtonian simulation (static universe).
+  1 -> Cosmological simulation (expanding universe).
+- `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
+  i.e. all snapshots will be plotted.
+- `x_norm::Bool = false`: If the x axis will be normalize to its maximum value. 
+- `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
+  all available time units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.Myr, which is the default.
+- `format::String = ".png"`: File format of the output figure. All formats supported by 
+  pgfplotsx can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
+"""
+function CMDFPipeline(
+    base_name::Vector{String},
+    source_path::Vector{String},
+    anim_name::String,
+    frame_rate::Int64,
+    labels::Array{String, 2};
+    output_path::String = "mass_profile/",
+    sim_cosmo::Int64 = 0,
+    step::Int64 = 1,
+    x_norm::Bool = false,
+    time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
+    format::String = ".png",
+)::Nothing
+
+    # Create a directory to store the figures, if it doesn't exist.
+    mkpath(output_path * "images/")
+
+    # Get the simulation data.
+    snap_files = [getSnapshots(base_name[i], path)["snap_files"] 
+                for (i, path) in enumerate(source_path)]
+
+    # Length of the shortest simulation.
+    min_len = minimum(length.(snap_files))
+
+    # Time stamps, it should be the same for every dataset.
+    time_data = timeSeriesData(snap_files[1]; sim_cosmo, time_unit)
+
+    # Generate and store the plots.
+    # animation = @animate 
+    for i in 1:step:min_len
+        
+        headers = [read_header(snapshots[i]) for snapshots in snap_files]
+        num_stars = getindex.(getfield.(headers, :nall), 5)
+
+        if all(num_stars .!= 0)
+    
+            masses = [
+                massData(snapshots[i], "stars"; sim_cosmo) 
+                for snapshots in snap_files
+            ]
+            metallicities = [
+                zData(snapshots[i], "stars"; sim_cosmo) 
+                for snapshots in snap_files
+            ]
+
+            savefig(
+                CMDFPlot(
+                    masses, 
+                    metallicities,
+                    time_data["clock_time"][i] * time_unit,
+                    labels;
+                    bins = 50, 
+                    x_norm
+                ),
+                output_path * "images/frame_" * string(i - 1) * format,
+            )
+
         end
 
     end
@@ -1548,9 +1701,12 @@ function birthHistogramPipeline(
                 time_unit = time_data["units"]["time"],
             )
 
+            # Snashot number.
+            number = snap_numbers[1 + step * (i - 1)]
+
             savefig(
                 birthHistogramPlot(nursery, bins = 50),
-                output_path * "images/" * base_name * "_" * snap_numbers[i] * format,
+                output_path * "images/" * base_name * "_" * number * format,
             )
         end
     end
@@ -1647,7 +1803,7 @@ function sfrTxtPipeline(
 
     # By default every figure has a number as its name.
     if isempty(names)
-        names = [string(i) for i in eachindex(source_path)]
+        names = [string(i - 1) for i in eachindex(source_path)]
     end
 
     @inbounds for i in eachindex(source_path, base_name)

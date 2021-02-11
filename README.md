@@ -2,10 +2,10 @@
 
 Julia script for creating plots, GIFs and videos from the data produce by a GAGET2/3/4 simulation.
 
-- It only works with the traditional output format (binary data) which is the default in GADGET2/3 (SnapFormat=1) and a compatibility option in GADGET4 (SnapFormat=1).
-- It is just a script intended to be included as is (`include("src/GADGETPlotting.jl")`), it is not a module nor a package.
-- A small testing data set is provided in test_snapshots/.
-- The testing script testing.jl shows examples for every function, how to import the script, and provides a sanity check, as it should run without errors.
+- It only works with the traditional output format (binary data) which is the default in GADGET2/3 (`SnapFormat = 1`) and a compatibility option in GADGET4 (`SnapFormat = 1`).
+- It is just a script intended to be included as is, i.e. `include("src/GADGETPlotting.jl")`. It is not a module nor a package.
+- A small testing data set is provided in the test_snapshots directory.
+- The testing script test.jl shows how to import the script, gives examples for every function, and provides a sanity check, as it should run without errors.
 - The dependencies are given by the Manifest.toml and Project.toml files.
 
 ## Functions
@@ -14,26 +14,26 @@ There are four tiers of functions:
 
 - Auxiliary functions (src/auxiliary.jl): These are only for internal use. They do soma data processing.
 - Data acquisition functions (src/data_acquisition.jl): These are only for internal use. They take the raw data, apply some transformation and return it as a familiar data structure.
-- Plotting functions (src/plotting.jl): These are only for internal use. They take data in the format returned by the data acquisition functions and return plot objects.
-- Pipeline functions (src/pipelines.jl): These are the ones intended for external use. They take the location of the snapshot files and some configuration parameters, and produce a series of plots/GIFs/videos as a result. By default, some of these functions may produce a large number of images (but it can be configured to do less), and they may take a long time to run, especially if the function uses the `pgfplotsx` backend of [Plots.jl](https://github.com/JuliaPlots/Plots.jl).
+- Plotting functions (src/plotting.jl): These are intended for external use. They take data in the format returned by the data acquisition functions and return plot objects.
+- Pipeline functions (src/pipelines.jl): These are intended for external use. They take the location of the snapshot files and some configuration parameters, and produce a series of plots/GIFs/videos as a result. By default, some of these functions may produce a large number of images (but it can be configured to do less), and they may take a long time to run, especially if the function uses the `pgfplotsx` backend of [Plots.jl](https://github.com/JuliaPlots/Plots.jl).
 
-NOTE: Despite the comments above, being this a simple script, every function is exposed. So, all can be used, as it is shown in testing.jl. Only two global constants and no data structures are defined.
+NOTE: Despite the comments above, being this a simple script, every function is exposed. So, all can be used as it is shown in test.jl. Only two global constants and no data structures are defined.
 
 ## PGFPlotsX backend
 
-The functions `evolutionSummaryPipeline(...)`, `compareSimulationsPipeline(...)`, `densityHistogramPipeline(...)`, `densityProfilePipeline(...)`,  `metallicityProfilePipeline(...)`, `massProfilePlot(...)` and `sfrTxtPlot(...)` make use of the PGFPlotsX backend, and as such, the command `pgfplotsx()` should be always called at least once per session before these functions (as it is done in `testing.jl`). With time, and as some issues with GR are resolved, the functions will be migrated to the GR backend, hopefully making this caveat obsolete.
+Some plotting and pipeline function make use of the PGFPlotsX backend, and as such, the command `pgfplotsx()` should be always called at least once per session before these functions (as it is done in `test.jl`). With time, and as some issues with GR are resolved, the functions will be migrated to the GR backend, hopefully making this caveat obsolete.
 
 ## Documentation
 
 Each function is documented within the script, where a docstring explains the functionality, the arguments and the returns.
 
-Refer to testing.jl for examples on how to use the functions. Note that it expects the simple file structure present in this repo, namely:
+Refer to test.jl for examples on how to use the functions. Note that it expects the simple file structure of this repo, namely:
 
     .
     ├── src
 	│	 ├── GADGETPlotting.jl 
 	│	 └── ...
-    ├── testing.jl
+    ├── test.jl
     └── ...
 	
 More examples can be found in the repository [plotting_scripts](https://github.com/Ezequiel92/plotting_scripts).
@@ -46,4 +46,4 @@ More examples can be found in the repository [plotting_scripts](https://github.c
 
 ## Warning
 
-Some functions are intended for data generated by GADGET3 which is not a publicly available code.
+Some functions are intended for the data generated by GADGET3, which is not a publicly available code.

@@ -24,10 +24,7 @@ Give the paths to the GADGET output files, grouping them by snapshot in a Tuple.
   named as follows: (`source_path` `base_name`_001 ... `source_path` `base_name`_NNN) 
   where NNN is the total number of snapshots.
 """
-function getSnapshots(
-    base_name::String,
-    source_path::String,
-)::Dict{String, Vector{String}}
+function getSnapshots(base_name::String, source_path::String)::Dict{String, Vector{String}}
 
     # Get the full list of paths to every GADGET file in `source_path`.
     file_list = glob(base_name * "_*", source_path)
@@ -72,6 +69,9 @@ as a series of values for the whole simulation.
 - `sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr`: Unit of mass/time to 
   be used in the output, all available time and mass units in Unitful.jl and UnitfulAstro.jl 
   can be used, e.g. UnitfulAstro.Msun / UnitfulAstro.yr, which is the default.
+- `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
+  in the output, all available length units in Unitful.jl and UnitfulAstro.jl 
+  can be used, e.g. UnitfulAstro.kpc, which is the default.
 
 # Returns
 - A dictionary.
@@ -86,6 +86,7 @@ function timeSeriesData(
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
     sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr,
+    length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
 )::Dict{String, Any}
 
     # Number of sanpshots.
@@ -93,24 +94,30 @@ function timeSeriesData(
 
     # Output data structure.
     time_series = Dict(
-        "scale_factor" => Vector{Float64}(undef, n_files),      # Dimensionless.
-        "redshift" => Vector{Float64}(undef, n_files),          # Dimensionless.
-        "clock_time" => Vector{Float64}(undef, n_files),        # `time_unit`.
-        "sfr" => Vector{Float64}(undef, n_files),               # `sfr_unit`.
-        "sfr_prob" => Vector{Float64}(undef, n_files),          # `sfr_unit`.
-        "gas_number" => Vector{Int64}(undef, n_files),          # Dimensionless.
-        "dm_number" => Vector{Int64}(undef, n_files),           # Dimensionless.
-        "star_number" => Vector{Int64}(undef, n_files),         # Dimensionless.
-        "gas_mass" => Vector{Float64}(undef, n_files),          # `mass_unit`.
-        "dm_mass" => Vector{Float64}(undef, n_files),           # `mass_unit`.
-        "star_mass" => Vector{Float64}(undef, n_files),         # `mass_unit`.
-        "gas_frac" => Vector{Float64}(undef, n_files),          # Dimensionless.
-        "dm_frac" => Vector{Float64}(undef, n_files),           # Dimensionless.
-        "star_frac" => Vector{Float64}(undef, n_files),         # Dimensionless.
-        "gas_bar_frac" => Vector{Float64}(undef, n_files),      # Dimensionless.
-        "star_bar_frac" => Vector{Float64}(undef, n_files),     # Dimensionless.
+        "scale_factor" => Vector{Float64}(undef, n_files),  # Dimensionless.
+        "redshift" => Vector{Float64}(undef, n_files),      # Dimensionless.
+        "clock_time" => Vector{Float64}(undef, n_files),    # `time_unit`.
+        "sfr" => Vector{Float64}(undef, n_files),           # `sfr_unit`.
+        "sfr_prob" => Vector{Float64}(undef, n_files),      # `sfr_unit`.
+        "gas_number" => Vector{Int64}(undef, n_files),      # Dimensionless.
+        "dm_number" => Vector{Int64}(undef, n_files),       # Dimensionless.
+        "star_number" => Vector{Int64}(undef, n_files),     # Dimensionless.
+        "gas_mass" => Vector{Float64}(undef, n_files),      # `mass_unit`.
+        "dm_mass" => Vector{Float64}(undef, n_files),       # `mass_unit`.
+        "star_mass" => Vector{Float64}(undef, n_files),     # `mass_unit`.
+        "gas_density" => Vector{Float64}(undef, n_files),   # `mass_unit` / `length_unit`^3.
+        "gas_frac" => Vector{Float64}(undef, n_files),      # Dimensionless.
+        "dm_frac" => Vector{Float64}(undef, n_files),       # Dimensionless.
+        "star_frac" => Vector{Float64}(undef, n_files),     # Dimensionless.
+        "gas_bar_frac" => Vector{Float64}(undef, n_files),  # Dimensionless.
+        "star_bar_frac" => Vector{Float64}(undef, n_files), # Dimensionless.
         # Unit pass-through.
-        "units" => Dict("mass" => mass_unit, "time" => time_unit, "sfr" => sfr_unit),
+        "units" => Dict(
+            "mass" => mass_unit,
+            "time" => time_unit,
+            "sfr" => sfr_unit,
+            "length" => length_unit,
+        ),
         # Labels for printing.
         "labels" => Dict(
             "scale_factor" => "a",
@@ -124,6 +131,7 @@ function timeSeriesData(
             "gas_mass" => "Total gas mass",
             "dm_mass" => "Total dark matter mass",
             "star_mass" => "Total star mass",
+            "gas_density" => "Total gas density",
             "gas_frac" => "Gas fraction",
             "dm_frac" => "Dark matter fraction",
             "star_frac" => "Star fraction",
@@ -178,14 +186,26 @@ function timeSeriesData(
         if gas_number != 0
             if header.massarr[1] != 0
                 # If all gas particles have the same mass.
-                gas_mass = header.massarr[1] * gas_number
+                masses = fill(header.massarr[1], (gas_number))
+                gas_mass = masses[1] * gas_number
             else
-                gas_mass = sum(read_snap(snapshot, "MASS", 0))
+                masses = read_snap(snapshot, "MASS", 0)
+                gas_mass = sum(masses)
             end
             gas_mass = ustrip(Float64, mass_unit, gas_mass * GU.m_cgs)
+
+            # Total gas density.
+            densities = densityData(
+                snapshot; 
+                sim_cosmo, 
+                density_unit = mass_unit / length_unit^3
+            )
+            volume = sum(masses ./ densities["gas_density"])
+            gas_density = gas_mass / volume
         else
             # In the case that there are no gas particles.
             gas_mass = 0.0
+            gas_density = 0.0
         end
 
         # Total mass of dark matter in `mass_unit`.
@@ -282,6 +302,9 @@ function timeSeriesData(
         time_series["gas_mass"][i] = gas_mass
         time_series["dm_mass"][i] = dm_mass
         time_series["star_mass"][i] = star_mass
+
+        # Total gas density.
+        time_series["gas_density"][i] = gas_density
 
         # Mass fraction relative to the total mass of the system.
         time_series["gas_frac"][i] = gas_mass / total_mass
@@ -703,6 +726,7 @@ function sfrTxtData(
     sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr,
 )::Dict{Int64, Vector{Float64}}
 
+    # Get header of one snapshot for unit conversion.
     header = read_header(source_path * base_name * "_000")
 
     # Struct for unit conversion.
@@ -871,7 +895,6 @@ function birthPlace(
         nursery_pos = @. ustrip(Float64, length_unit, raw_pos * GU.x_cgs)
 
         push!(birth_place, nursery_pos)
-        
     end
 
     return Dict("birth_place" => hcat(birth_place...), "unit" => length_unit)

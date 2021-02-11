@@ -42,7 +42,7 @@ function scatterGridPlot(position_data::Dict{String, Any})::Plots.Plot
         # For vacuum boundary conditions.
         stars_size = position_data["box_size"] * 1.1
         dm_size = stars_size * 3.0
-        gas_size = stars_size * 7.0  
+        gas_size = stars_size * 7.0
     end
 
     # Unit for the axes.
@@ -273,40 +273,32 @@ function densityMapPlot(
     )
 
     if plane == "XY" || plane == "All"
-        sph_density = log10.(sphMapping(
-                                pos, 
-                                hsml, 
-                                mass, 
-                                ρ, 
-                                ρ; 
-                                param, 
-                                kernel)
-                            )
+        sph_density = log10.(sphMapping(pos, hsml, mass, ρ, ρ; param, kernel))
 
         xy_plot = heatmap(
-                    binning,
-                    binning,
-                    sph_density,
-                    xlim = (-box_limits, box_limits),
-                    ylim = (-box_limits, box_limits),
-                    size = (1010, 1010),
-                    aspect_ratio = 1,
-                    left_margin = 20px,
-                    right_margin = 20px,
-                    framestyle = :box,
-                    xlabel = "x / $length_unit",
-                    ylabel = "y / $length_unit",
-                    title = "XY plane",
-                    fontfamily = "Computer Modern",
-                    xtickfontsize = 30,
-                    ytickfontsize = 30,
-                    xguidefontsize = 35,
-                    yguidefontsize = 35,
-                    titlefont = 35,
-                    color = color_scheme,
-                    colorbar = false,
-                    background_color_inside = last_color,
-                )
+            binning,
+            binning,
+            sph_density,
+            xlim = (-box_limits, box_limits),
+            ylim = (-box_limits, box_limits),
+            size = (1010, 1010),
+            aspect_ratio = 1,
+            left_margin = 20px,
+            right_margin = 20px,
+            framestyle = :box,
+            xlabel = "x / $length_unit",
+            ylabel = "y / $length_unit",
+            title = "XY plane",
+            fontfamily = "Computer Modern",
+            xtickfontsize = 30,
+            ytickfontsize = 30,
+            xguidefontsize = 35,
+            yguidefontsize = 35,
+            titlefont = 35,
+            color = color_scheme,
+            colorbar = false,
+            background_color_inside = last_color,
+        )
 
         if axes
             hline!([0.0], line = (2, axes_color), legend = false)
@@ -318,40 +310,32 @@ function densityMapPlot(
         # Active rotation (alibi) of the galaxy, using Euler angles.
         # Rx(-90°) Ry(0°) Rz(0°)
         pos_xz = rotate_3D(pos, -90.0, 0.0, 0.0)
-        sph_density = log10.(sphMapping(
-                                pos_xz, 
-                                hsml, 
-                                mass, 
-                                ρ, 
-                                ρ; 
-                                param, 
-                                kernel)
-                            )
+        sph_density = log10.(sphMapping(pos_xz, hsml, mass, ρ, ρ; param, kernel))
 
         xz_plot = heatmap(
-                    binning,
-                    binning,
-                    sph_density,
-                    xlim = (-box_limits, box_limits),
-                    ylim = (-box_limits, box_limits),
-                    size = (1010, 1010),
-                    aspect_ratio = 1,
-                    left_margin = 20px,
-                    right_margin = 20px,
-                    framestyle = :box,
-                    xlabel = "x / $length_unit",
-                    ylabel = "z / $length_unit",
-                    title = "XZ plane",
-                    fontfamily = "Computer Modern",
-                    xtickfontsize = 30,
-                    ytickfontsize = 30,
-                    xguidefontsize = 35,
-                    yguidefontsize = 35,
-                    titlefont = 35,
-                    color = color_scheme,
-                    colorbar = false,
-                    background_color_inside = last_color,
-                )
+            binning,
+            binning,
+            sph_density,
+            xlim = (-box_limits, box_limits),
+            ylim = (-box_limits, box_limits),
+            size = (1010, 1010),
+            aspect_ratio = 1,
+            left_margin = 20px,
+            right_margin = 20px,
+            framestyle = :box,
+            xlabel = "x / $length_unit",
+            ylabel = "z / $length_unit",
+            title = "XZ plane",
+            fontfamily = "Computer Modern",
+            xtickfontsize = 30,
+            ytickfontsize = 30,
+            xguidefontsize = 35,
+            yguidefontsize = 35,
+            titlefont = 35,
+            color = color_scheme,
+            colorbar = false,
+            background_color_inside = last_color,
+        )
 
         if axes
             hline!([0.0], line = (2, axes_color), legend = false)
@@ -363,40 +347,32 @@ function densityMapPlot(
         # Active rotation (alibi) of the galaxy, using Euler angles.
         # Rx(-90°) Ry(0°) Rz(-90°)
         pos_yz = rotate_3D(pos, -90.0, 0.0, -90.0)
-        sph_density = log10.(sphMapping(
-                                pos_yz, 
-                                hsml, 
-                                mass, 
-                                ρ, 
-                                ρ; 
-                                param, 
-                                kernel)
-                            )
+        sph_density = log10.(sphMapping(pos_yz, hsml, mass, ρ, ρ; param, kernel))
 
         yz_plot = heatmap(
-                    binning,
-                    binning,
-                    sph_density,
-                    xlim = (-box_limits, box_limits),
-                    ylim = (-box_limits, box_limits),
-                    size = (1010, 1010),
-                    aspect_ratio = 1,
-                    left_margin = 20px,
-                    right_margin = 20px,
-                    framestyle = :box,
-                    xlabel = "y / $length_unit",
-                    ylabel = "z / $length_unit",
-                    title = "YZ plane",
-                    fontfamily = "Computer Modern",
-                    xtickfontsize = 30,
-                    ytickfontsize = 30,
-                    xguidefontsize = 35,
-                    yguidefontsize = 35,
-                    titlefont = 35,
-                    color = color_scheme,
-                    colorbar = false,
-                    background_color_inside = last_color,
-                )
+            binning,
+            binning,
+            sph_density,
+            xlim = (-box_limits, box_limits),
+            ylim = (-box_limits, box_limits),
+            size = (1010, 1010),
+            aspect_ratio = 1,
+            left_margin = 20px,
+            right_margin = 20px,
+            framestyle = :box,
+            xlabel = "y / $length_unit",
+            ylabel = "z / $length_unit",
+            title = "YZ plane",
+            fontfamily = "Computer Modern",
+            xtickfontsize = 30,
+            ytickfontsize = 30,
+            xguidefontsize = 35,
+            yguidefontsize = 35,
+            titlefont = 35,
+            color = color_scheme,
+            colorbar = false,
+            background_color_inside = last_color,
+        )
 
         if axes
             hline!([0.0], line = (2, axes_color), legend = false)
@@ -496,7 +472,6 @@ function starMapPlot(
     last_color = color_scheme[1]
 
     if plane == "XY" || plane == "All"
-
         if stars_present
             density_xy = xyz(ash(x, y, rngx = binnig, rngy = binnig))
             heatmap(density_xy[1], density_xy[2], log10.(density_xy[3]))
@@ -510,31 +485,29 @@ function starMapPlot(
         end
 
         xy_plot = heatmap!(
-                    xlim = (-box_limits, box_limits),
-                    ylim = (-box_limits, box_limits),
-                    size = (1010, 1010),
-                    aspect_ratio = 1,
-                    left_margin = 20px,
-                    right_margin = 30px,
-                    framestyle = :box,
-                    xlabel = "x / $length_unit",
-                    ylabel = "y / $length_unit",
-                    title = "XY plane",
-                    fontfamily = "Computer Modern",
-                    xtickfontsize = 30,
-                    ytickfontsize = 30,
-                    xguidefontsize = 35,
-                    yguidefontsize = 35,
-                    titlefont = 35,
-                    color = color_scheme,
-                    colorbar = false,
-                    background_color_inside = last_color,
-                )
-
+            xlim = (-box_limits, box_limits),
+            ylim = (-box_limits, box_limits),
+            size = (1010, 1010),
+            aspect_ratio = 1,
+            left_margin = 20px,
+            right_margin = 30px,
+            framestyle = :box,
+            xlabel = "x / $length_unit",
+            ylabel = "y / $length_unit",
+            title = "XY plane",
+            fontfamily = "Computer Modern",
+            xtickfontsize = 30,
+            ytickfontsize = 30,
+            xguidefontsize = 35,
+            yguidefontsize = 35,
+            titlefont = 35,
+            color = color_scheme,
+            colorbar = false,
+            background_color_inside = last_color,
+        )
     end
 
     if plane == "XZ" || plane == "All"
-
         if stars_present
             density_xz = xyz(ash(x, z, rngx = binnig, rngy = binnig))
             heatmap(density_xz[1], density_xz[2], log10.(density_xz[3]))
@@ -548,31 +521,29 @@ function starMapPlot(
         end
 
         xz_plot = heatmap!(
-                    xlim = (-box_limits, box_limits),
-                    ylim = (-box_limits, box_limits),
-                    size = (1010, 1010),
-                    aspect_ratio = 1,
-                    left_margin = 20px,
-                    right_margin = 30px,
-                    framestyle = :box,
-                    xlabel = "x / $length_unit",
-                    ylabel = "z / $length_unit",
-                    title = "XZ plane",
-                    fontfamily = "Computer Modern",
-                    xtickfontsize = 30,
-                    ytickfontsize = 30,
-                    xguidefontsize = 35,
-                    yguidefontsize = 35,
-                    titlefont = 35,
-                    color = color_scheme,
-                    colorbar = false,
-                    background_color_inside = last_color,
-                )
-
+            xlim = (-box_limits, box_limits),
+            ylim = (-box_limits, box_limits),
+            size = (1010, 1010),
+            aspect_ratio = 1,
+            left_margin = 20px,
+            right_margin = 30px,
+            framestyle = :box,
+            xlabel = "x / $length_unit",
+            ylabel = "z / $length_unit",
+            title = "XZ plane",
+            fontfamily = "Computer Modern",
+            xtickfontsize = 30,
+            ytickfontsize = 30,
+            xguidefontsize = 35,
+            yguidefontsize = 35,
+            titlefont = 35,
+            color = color_scheme,
+            colorbar = false,
+            background_color_inside = last_color,
+        )
     end
 
     if plane == "YZ" || plane == "All"
-
         if stars_present
             density_yz = xyz(ash(y, z, rngx = binnig, rngy = binnig))
             heatmap(density_yz[1], density_yz[2], log10.(density_yz[3]))
@@ -586,36 +557,35 @@ function starMapPlot(
         end
 
         yz_plot = heatmap!(
-                    xlim = (-box_limits, box_limits),
-                    ylim = (-box_limits, box_limits),
-                    size = (1010, 1010),
-                    aspect_ratio = 1,
-                    left_margin = 20px,
-                    right_margin = 30px,
-                    framestyle = :box,
-                    xlabel = "y / $length_unit",
-                    ylabel = "z / $length_unit",
-                    title = "YZ plane",
-                    fontfamily = "Computer Modern",
-                    xtickfontsize = 30,
-                    ytickfontsize = 30,
-                    xguidefontsize = 35,
-                    yguidefontsize = 35,
-                    titlefont = 35,
-                    color = color_scheme,
-                    colorbar = false,
-                    background_color_inside = last_color,
-                )
-
+            xlim = (-box_limits, box_limits),
+            ylim = (-box_limits, box_limits),
+            size = (1010, 1010),
+            aspect_ratio = 1,
+            left_margin = 20px,
+            right_margin = 30px,
+            framestyle = :box,
+            xlabel = "y / $length_unit",
+            ylabel = "z / $length_unit",
+            title = "YZ plane",
+            fontfamily = "Computer Modern",
+            xtickfontsize = 30,
+            ytickfontsize = 30,
+            xguidefontsize = 35,
+            yguidefontsize = 35,
+            titlefont = 35,
+            color = color_scheme,
+            colorbar = false,
+            background_color_inside = last_color,
+        )
     end
 
     if plane == "XY"
         return xy_plot
     elseif plane == "XZ"
         return xz_plot
-    elseif  plane == "YZ"
+    elseif plane == "YZ"
         return yz_plot
-    elseif  plane == "All"
+    elseif plane == "All"
         # Plot the three planes together.
         return plot(
             xy_plot,
@@ -665,10 +635,7 @@ function gasStarEvolutionPlot(
     length_unit = position_data["unit"]
     sfr_unit = string(time_series["units"]["sfr"])
     sfr_unit = replace(
-        replace(
-            sfr_unit, 
-            "M⊙" => "\\left(\\textrm{M}_{\\odot} \\, \\textrm{"
-        ), 
+        replace(sfr_unit, "M⊙" => "\\left(\\textrm{M}_{\\odot} \\, \\textrm{"),
         "^-1" => "}^{-1}\\right)",
     )
 
@@ -703,16 +670,16 @@ function gasStarEvolutionPlot(
     # Data for the time stamp.
     clock = round(t[index], digits = 2)
     # Upper limit for the time axis label.     
-    t_end = ceil(t[end]) * 1.025   
+    t_end = ceil(t[end]) * 1.025
     # Upper limit for the SFR axis label.         
-    sfr_end = ceil(maximum(sfr)) * 1.05 
+    sfr_end = ceil(maximum(sfr)) * 1.05
 
     # Fractional baryonic mass plot.
     pl_frac = plot(
         reduced_time,
         baryonic_frac,
-        xlims=(-t_end * 0.025, t_end),
-        ylims=(-0.05, 1.05),
+        xlims = (-t_end * 0.025, t_end),
+        ylims = (-0.05, 1.05),
         xlabel = "t / $time_unit",
         ylabel = "Fractional baryonic mass",
         linestyle = [:solid :dash],
@@ -732,8 +699,8 @@ function gasStarEvolutionPlot(
         ylabel = L"\textrm{SFR} \ / \, %$sfr_unit",
         legend = false,
         lw = 4,
-        xlims=(-t_end * 0.025, t_end),
-        ylims=(-sfr_end * 0.05, sfr_end),
+        xlims = (-t_end * 0.025, t_end),
+        ylims = (-sfr_end * 0.05, sfr_end),
         color = :darkorange2,
     )
 
@@ -797,28 +764,34 @@ function gasStarEvolutionPlot(
 end
 
 """
-    CMDFPlot(
+    function CMDFPlot(
         m_data::Dict{String, Any}, 
-        z_data::Dict{String, Any};
+        z_data::Dict{String, Any},
+        time::Unitful.Quantity;
         <keyword arguments>
     )::Plots.Plot
 	
-Make a figure of the cumulative metallicity distribution function. 
+Make a cumulative metallicity distribution function plot, for a given time step.
 
 `mass_data` and `metallicity_data` must be in the same units.
 
 # Arguments
 - `m_data::Dict{String, Any}`: Return value of the massData function.
 - `z_data::Dict{String, Any}`: Return value of the zData function.
+- `time::Unitful.Quantity`: Time with units for the time stamp of the plot. 
+  All available time units in Unitful and UnitfulAstro can be used, e.g. UnitfulAstro.Myr.
 - `bins::Int64`: Number of subdivisions of the metallicity to be used for the profile.
+- `x_norm::Bool = false`: If the x axis will be normalize to its maximum value. 
 
 # Returns
 - The plot generated by the PGFPlotsX backend of Plots.jl.
 """
 function CMDFPlot(
-    m_data::Dict{String, Any}, 
-    z_data::Dict{String, Any};
+    m_data::Dict{String, Any},
+    z_data::Dict{String, Any},
+    time::Unitful.Quantity;
     bins::Int64 = 50,
+    x_norm::Bool = false,
 )::Plots.Plot
 
     pgfplotsx()
@@ -836,21 +809,141 @@ function CMDFPlot(
     # Compute the cumulative metallicity distribution function.
     max_z = findmax(metallicity_data)
     max_Z = max_z[1] / mass_data[max_z[2]]
-    Z, m = CMDF(mass_data, metallicity_data, max_Z, bins)
+    Z, m = CMDF(mass_data, metallicity_data, max_Z, bins; x_norm)
+
+    # x axis label.
+    if x_norm
+        xlabel = L"Z \, / \, Z_{\mathrm{max}}"
+    else
+        xlabel = "Z"
+    end
+
+    # Magnitude and unit for the time stamp.
+    clock = round(ustrip(time), digits = 2)
+    time_unit = unit(time)
 
     return plot(
-        Z, 
-        m, 
-        xlabel = "Z", 
-        ylabel = L"M_{\star}(< Z) \, / \, M_{\star}", 
+        Z,
+        m,
+        xlabel = xlabel,
+        ylabel = L"M_{\star}(< Z) \, / \, M_{\star}",
         legend = false,
         framestyle = :box,
         size = (1200, 900),
-        lw = 2, 
+        lw = 2,
         xtickfontsize = 25,
         ytickfontsize = 25,
         xguidefontsize = 30,
         yguidefontsize = 30,
+        ticklabel_shift = ".1cm",
+        add = "\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.05) {$clock\$\\,\$$time_unit};",
+        extra_kwargs = :subplot,
+    )
+end
+
+"""
+    CMDFPlot(
+        m_data::Vector{Dict{String, Any}}, 
+        z_data::Vector{Dict{String, Any}},
+        time::Unitful.Quantity,
+        labels::Array{String, 2};
+        <keyword arguments>
+    )::Plots.Plot
+	
+Make a cumulative metallicity distribution function plot of several datasets, 
+for a given time step.
+
+`mass_data` and `metallicity_data` must be in the same units.
+
+# Arguments
+- `m_data::Vector{Dict{String, Any}}`: Return values of the massData function.
+- `z_data::Vector{Dict{String, Any}}`: Return values of the zData function.
+- `time::Unitful.Quantity`: Time with units for the time stamp of the plot. 
+  All available time units in Unitful and UnitfulAstro can be used, e.g. UnitfulAstro.Myr.
+- `labels::Array{String, 2}`: Labels for the different simulations.
+- `bins::Int64`: Number of subdivisions of the metallicity to be used for the profile.
+- `x_norm::Bool = false`: If the x axis will be normalize to its maximum value. 
+
+# Returns
+- The plot generated by the PGFPlotsX backend of Plots.jl.
+"""
+function CMDFPlot(
+    m_data::Vector{Dict{String, Any}},
+    z_data::Vector{Dict{String, Any}},
+    time::Unitful.Quantity,
+    labels::Array{String, 2};
+    bins::Int64 = 50,
+    x_norm::Bool = false,
+)::Plots.Plot
+
+    pgfplotsx()
+
+    # Check unit consistency.
+    mass_units = get.(m_data, "unit", 0)
+    if !all(x -> x == mass_units[1], mass_units)
+        error("The units of mass are not the same among datasets.")
+    else
+        m_unit = mass_units[1]
+    end
+
+    mass_z_units = get.(z_data, "unit", 0)
+    if !all(x -> x == mass_z_units[1], mass_z_units)
+        error("The units of mass are not the same among datasets.")
+    else
+        z_unit = mass_z_units[1]
+    end
+
+    (m_unit == z_unit || error("Mass and metallicity must be in the same units."))
+
+    # Get mass data.
+    masses = get.(m_data, "mass", 0)
+    metallicities = get.(z_data, "Z", 0)
+
+    Z = Vector{Float64}[]
+    m = Vector{Float64}[]
+    for (mass, metallicity) in zip(masses, metallicities)
+        # Compute the cumulative metallicity distribution function.
+        max_z = findmax(metallicity)
+        max_Z = max_z[1] / mass[max_z[2]]
+        Z_result, m_result = CMDF(mass, metallicity, max_Z, bins; x_norm)
+
+        push!(Z, Z_result)
+        push!(m, m_result)
+    end
+
+    # x axis label.
+    if x_norm
+        xlabel = L"Z \, / \, Z_{\mathrm{max}}"
+    else
+        xlabel = "Z"
+    end
+
+    # Magnitude and unit for the time stamp.
+    clock = round(ustrip(time), digits = 2)
+    time_unit = unit(time)
+
+    return plot(
+        hcat(Z...),
+        hcat(m...),
+        xlabel = xlabel,
+        ylabel = L"M_{\star}(< Z) \, / \, M_{\star}",
+        label = labels,
+        framestyle = :box,
+        size = (1200, 900),
+        legend = :bottomright,
+        lw = 2,
+        linestyle = :auto,
+        palette = :Set1_9,
+        foreground_color_legend = nothing,
+        background_color_legend = nothing,
+        xtickfontsize = 25,
+        ytickfontsize = 25,
+        xguidefontsize = 30,
+        yguidefontsize = 30,
+        legendfontsize = 25,
+        ticklabel_shift = ".1cm",
+        add = "\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.05) {$clock\$\\,\$$time_unit};",
+        extra_kwargs = :subplot,
     )
 end
 
@@ -866,10 +959,7 @@ Make a histogram of the number of stars born at a certain radial distance.
 # Returns
 - The plot generated by the PGFPlotsX backend of Plots.jl.
 """
-function birthHistogramPlot(
-    birth_data::Dict{String, Any}; 
-    bins::Int64 = 50,
-)::Plots.Plot
+function birthHistogramPlot(birth_data::Dict{String, Any}; bins::Int64 = 50)::Plots.Plot
 
     pgfplotsx()
 
@@ -923,13 +1013,10 @@ function timeSeriesPlot(
     # Unit formatting for the axes labels.
     time_unit = time_series["units"]["time"]
     sfr_unit = string(time_series["units"]["sfr"])
-    mass_unit = string(time_series["units"]["mass"])   
+    mass_unit = string(time_series["units"]["mass"])
 
     sfr_unit = replace(
-        replace(
-            sfr_unit, 
-            "M⊙" => L"$\, / \ \left(\mathrm{M_{\odot} \,",
-        ),
+        replace(sfr_unit, "M⊙" => L"$\, / \ \left(\mathrm{M_{\odot} \,"),
         "^-1" => L"^{-1}}\right)$",
     )
 
@@ -1066,10 +1153,7 @@ function scaleFactorSeriesPlot(
     mass_unit = string(time_series["units"]["mass"])
 
     sfr_unit = replace(
-        replace(
-            sfr_unit,
-            "M⊙" => L"$\, / \ \left(\mathrm{M_{\odot} \,",
-        ),
+        replace(sfr_unit, "M⊙" => L"$\, / \ \left(\mathrm{M_{\odot} \,"),
         "^-1" => L"^{-1}}\right)$",
     )
 
@@ -1094,7 +1178,7 @@ function scaleFactorSeriesPlot(
     baryonic_frac = [time_series["gas_bar_frac"] time_series["star_bar_frac"]]
     number = [time_series["gas_number"] time_series["star_number"]] ./ 10^number_factor
     mass = [time_series["gas_mass"] time_series["star_mass"]] ./ 10^mass_factor
-   
+
     # Number of stars and gas particles vs. scale factor.
     pl_number = plot(
         a,
@@ -1204,12 +1288,9 @@ function redshiftSeriesPlot(
     # Unit formatting for the axes labels.
     sfr_unit = string(time_series["units"]["sfr"])
     mass_unit = string(time_series["units"]["mass"])
-    
+
     sfr_unit = replace(
-        replace(
-            sfr_unit, 
-            "M⊙" => L"$\, / \ \left(\mathrm{M_{\odot} \,",
-        ),
+        replace(sfr_unit, "M⊙" => L"$\, / \ \left(\mathrm{M_{\odot} \,"),
         "^-1" => L"^{-1}}\right)$",
     )
 
@@ -1339,7 +1420,8 @@ can be any magnitude used in the timeSeriesData function, namely:
 - "star_number" (Star number)         
 - "gas_mass" (Total gas mass)               
 - "dm_mass" (Total dark matter mass)	            
-- "star_mass" (Total star mass)		               
+- "star_mass" (Total star mass)		
+- "gas_density" (Total gas density)	               
 - "gas_frac" (Gas fraction)		                
 - "dm_frac" (Dark matter fraction)		                
 - "star_frac" (Star fraction)	                   
@@ -1358,12 +1440,15 @@ can be any magnitude used in the timeSeriesData function, namely:
   the corresponding axis will be scaled by 10^10. The default is 0, i.e. no scaling.
 - `y_factor::Int64 = 0`: Numerical exponent to scale the `y_quantity`, e.g. if y_factor = 10 
   the corresponding axis will be scaled by 10^10. The default is 0, i.e. no scaling.
-- `scale::Symbol = :identity`: Scaling to be used for the y axis.
-  The two options are:
+- `scale::NTuple{2, Symbol} = (:identity, :identity)`: Scaling to be used for the x 
+  and y axes. The two options are:
   :identity => no scaling.
   :log10 => logarithmic scaling.
 - `smooth_data::Bool = false`: If true a smoothing window with no weighs is applied to 
   the y data. If false, no transformation occurs.
+- `bins::Int64 = 0`: Number of subdivisions for the smoothing of the data, only relevant if
+  `smooth_data = true`. 
+- `legend_pos::Symbol = :bottomright`: Position of the legend, e.g. :topleft.
 
 # Returns
 - The plot generated by the PGFPlotsX backend of Plots.jl.
@@ -1376,8 +1461,10 @@ function compareSimulationsPlot(
     title::String = "",
     x_factor::Int64 = 0,
     y_factor::Int64 = 0,
-    scale::Symbol = :identity,
+    scale::NTuple{2, Symbol} = (:identity, :identity),
     smooth_data::Bool = false,
+    bins::Int64 = 50,
+    legend_pos::Symbol = :best,
 )::Plots.Plot
 
     pgfplotsx()
@@ -1387,13 +1474,17 @@ function compareSimulationsPlot(
     y_data = collect(get.(data, y_quantity, 0)) ./ 10^y_factor
 
     if smooth_data
-        # If required, smooth the y data with a moving window.
-        smooth_data = map((x, y) -> smoothWindow(x, y, 50), x_data, y_data)
+        # If required, smooth the data with a moving window.
+        smooth_data = map(
+            (x, y) -> smoothWindow(x, y, bins; log = (scale[1] == :log10)),
+            x_data,
+            y_data,
+        )
         x_data = [x[1] for x in smooth_data]
         y_data = [y[2] for y in smooth_data]
     end
 
-    if scale == :log10
+    if scale[2] == :log10
         length_short_cases = minimum(length.(findall.(x -> x > 0, y_data)))
         if length_short_cases >= 2
 
@@ -1418,7 +1509,7 @@ function compareSimulationsPlot(
         else
             # If at least one dataset has less than two values, 
             # go back to linear scale.
-            scale = :identity
+            scale[2] = :identity
         end
     end
 
@@ -1428,7 +1519,6 @@ function compareSimulationsPlot(
 
     # Unit formatting for the x axis.
     if x_quantity == "clock_time"
-
         unit = data[1]["units"]["time"]
 
         if x_factor != 0
@@ -1438,7 +1528,6 @@ function compareSimulationsPlot(
         end
 
     elseif x_quantity == "sfr"
-
         unit = string(data[1]["units"]["sfr"])
 
         if x_factor != 0
@@ -1457,7 +1546,6 @@ function compareSimulationsPlot(
         end
 
     elseif x_quantity == "gas_mass" || x_quantity == "dm_mass" || x_quantity == "star_mass"
-
         unit = string(data[1]["units"]["mass"])
 
         if x_factor != 0
@@ -1469,15 +1557,30 @@ function compareSimulationsPlot(
             xlabel *= replace(unit, "M⊙" => L"\ / \, \left(\mathrm{M}_{\odot}\right)")
         end
 
+    elseif x_quantity == "gas_density"
+        unit = string(data[1]["units"]["mass"] / data[1]["units"]["length"]^3)
+
+        if x_factor != 0
+            xlabel *= replace(
+                replace(
+                    unit,
+                    "M⊙" => L"$\ / \, \left(10^{%$x_factor} \, \mathrm{M_{\odot} \,",
+                ),
+                "^-3" => L"^{-3}}\right)$",
+            )
+        else
+            xlabel *= replace(
+                replace(unit, "M⊙" => L"$\ / \, \left(\mathrm{M_{\odot} \,"),
+                "^-3" => L"^{-3}}\right)$",
+            )
+        end
+
     elseif x_factor != 0
-
         xlabel *= L"\ / \, 10^{%$x_factor}"
-
     end
 
     # Unit formatting for the y axis.
     if y_quantity == "clock_time"
-
         unit = data[1]["units"]["time"]
 
         if y_factor != 0
@@ -1487,7 +1590,6 @@ function compareSimulationsPlot(
         end
 
     elseif y_quantity == "sfr"
-
         unit = string(data[1]["units"]["sfr"])
 
         if y_factor != 0
@@ -1506,7 +1608,6 @@ function compareSimulationsPlot(
         end
 
     elseif y_quantity == "gas_mass" || y_quantity == "dm_mass" || y_quantity == "star_mass"
-
         unit = string(data[1]["units"]["mass"])
 
         if y_factor != 0
@@ -1518,10 +1619,26 @@ function compareSimulationsPlot(
             ylabel *= replace(unit, "M⊙" => L"\ / \, \left(\mathrm{M}_{\odot}\right)")
         end
 
+    elseif y_quantity == "gas_density"
+        unit = string(data[1]["units"]["mass"] / data[1]["units"]["length"]^3)
+
+        if y_factor != 0
+            ylabel *= replace(
+                replace(
+                    unit,
+                    "M⊙" => L"$\ / \, \left(10^{%$y_factor} \, \mathrm{M_{\odot} \,",
+                ),
+                "^-3" => L"^{-3}}\right)$",
+            )
+        else
+            ylabel *= replace(
+                replace(unit, "M⊙" => L"$\ / \, \left(\mathrm{M_{\odot} \,"),
+                "^-3" => L"^{-3}}\right)$",
+            )
+        end
+
     elseif y_factor != 0
-
         ylabel *= L"\ / \, 10^{%$y_factor}"
-
     end
 
     # Final figure.
@@ -1530,10 +1647,11 @@ function compareSimulationsPlot(
         hcat(y_data...);
         xlabel,
         ylabel,
-        yscale = scale,
+        xscale = scale[1],
+        yscale = scale[2],
         title,
         label = labels,
-        legend = :bottomright,
+        legend = legend_pos,
         framestyle = :box,
         size = (1200, 700),
         lw = 4,
@@ -1648,7 +1766,6 @@ Make a density profile plot for a given time step.
   :identity => no scaling.
   :log10 => logarithmic scaling.
 - `bins::Int64 = 100`: Number of subdivisions of the region to be used for the profile. 
-  The default is 100.
 - `factor::Int64 = 0`: Numerical exponent to scale the density, e.g. if factor = 10 
   the y axis will be scaled by 10^10. The default is 0, i.e. no scaling.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
@@ -1888,7 +2005,7 @@ function densityProfilePlot(
                 deleteat!(r[i], ρ[i] .<= 0)
                 filter!(x -> x > 0, ρ[i])
             end
-            
+
             # Fill the datasets with NaN so all have the same length.
             max_length = maximum(length.(r))
             for (i, l_r) in enumerate(length.(r))
@@ -1907,34 +2024,6 @@ function densityProfilePlot(
         end
     end
 
-    # if scale == :log10
-    #     short_cases = findall(x -> length(x) < 2, findall.(x -> x > 0, ρ))
-    #     if isempty(short_cases)
-    #         # If every dataset has at least two values, 
-    #         # filter data points <= 0, for logarithmic plotting and
-    #         # fill datasets with NaN so all have the same length.
-    #         for i in 1:length(r)
-    #             deleteat!(r[i], ρ[i] .<= 0)
-    #             filter!(x -> x > 0, ρ[i])
-    #         end
-
-    #         max_length = maximum(length.(r))
-
-    #         for (i, R) in enumerate(r)
-    #             if length(R) < max_length
-    #                 for _ in 1:(max_length - length(R))
-    #                     push!(r[i], NaN)
-    #                     push!(ρ[i], NaN)
-    #                 end
-    #             end
-    #         end
-    #     else
-    #         # If at least one dataset has less than two values, 
-    #         # go back to linear scale.
-    #         scale = :identity
-    #     end
-    # end
-
     # Magnitude and unit for the time stamp.
     clock = round(ustrip(time), digits = 2)
     time_unit = unit(time)
@@ -1943,10 +2032,7 @@ function densityProfilePlot(
     ρ_unit = string(density_unit)
     if factor != 0
         ρ_unit = replace(
-            replace(
-                ρ_unit,
-                "M⊙" => L"$\, / \ \left(10^{%$factor} \, \mathrm{M_{\odot} \,",
-            ),
+            replace(ρ_unit, "M⊙" => L"$\, / \ \left(10^{%$factor} \, \mathrm{M_{\odot} \,"),
             "^-3" => L"^{-3}}\right)$",
         )
     else
@@ -2068,10 +2154,10 @@ function metallicityProfilePlot(
             # data points <= 0, to allow logarithmic plotting.
             deleteat!(r, z .<= 0)
             filter!(x -> x > 0, z)
-            
+
         else
             # If the data has less than two positive values, go back to linear scale.
-            scale = :identity  
+            scale = :identity
         end
     end
 
@@ -2204,7 +2290,8 @@ function metallicityProfilePlot(
 
     r = Vector{Float64}[]
     z = Vector{Float64}[]
-    for (mass, distance, metallicity, max_r) in zip(masses, distances, metallicities, max_rs)
+    for (mass, distance, metallicity, max_r) in
+        zip(masses, distances, metallicities, max_rs)
         r_result, z_result = metallicityProfile(mass, distance, metallicity, max_r, bins)
 
         push!(r, r_result)
@@ -2278,8 +2365,6 @@ function metallicityProfilePlot(
     )
 end
 
-
-
 """
     massProfilePlot(
         position_data::Dict{String, Any},
@@ -2300,7 +2385,6 @@ Make a accumulated mass profile plot for a given time step.
   :identity => no scaling.
   :log10 => logarithmic scaling.
 - `bins::Int64 = 100`: Number of subdivisions of the region to be used for the profile. 
-  The default is 100.
 - `factor::Int64 = 0`: Numerical exponent to scale the density, e.g. if factor = 10 
   the y axis will be scaled by 10^10. The default is 0, i.e. no scaling.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
@@ -2432,7 +2516,6 @@ Make a accumulated mass profile plot of several datasets, for a given time step.
   :identity => no scaling.
   :log10 => logarithmic scaling.
 - `bins::Int64 = 100`: Number of subdivisions of the region to be used for the profile. 
-  The default is 100.
 - `factor::Int64 = 0`: Numerical exponent to scale the density, e.g. if factor = 10 
   the y axis will be scaled by 10^10. The default is 0, i.e. no scaling.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
@@ -2617,8 +2700,8 @@ THIS FUNCTION NEEDS A FILE (sfr.txt) WHICH IS NOT PRODUCED BY ANY PUBLIC VERSION
   no title is printed, which is the default.
 - `bins::Int64 = 0`: Number of subdivisions for the smoothing of the data. 
   The default is Inf, i.e. no smoothing.
-- `scale::NTuple{2, Symbol} = (:identity, :identity)`: Scaling to be used for the x and y axes.
-  The two options are:
+- `scale::NTuple{2, Symbol} = (:identity, :identity)`: Scaling to be used for the x 
+  and y axes. The two options are:
   :identity => no scaling.
   :log10 => logarithmic scaling.
 - `min_filter::NTuple{2, Float64} = (-Inf, -Inf)`: Value filter for the x and y axes.
@@ -2689,7 +2772,6 @@ function sfrTxtPlot(
     )
 
     for y_type in y_axis
-
         x_data = data[x_axis[1]]
         y_data = data[y_type]
 
@@ -2726,7 +2808,6 @@ function sfrTxtPlot(
             ticklabel_shift = ".1cm",
             extra_kwargs = :subplot,
         )
-        
     end
 
     return figure

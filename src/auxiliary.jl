@@ -106,6 +106,7 @@ every value within the window with the mean in order to smooth out the data.
 - `x_data::Vector{T} where {T <: Real}`: Data used to create the windows.
 - `y_data::Vector{T} where {T <: Real}`: Data to be smoothed out.
 - `bins::Int64`: Number of windows to be used in the smoothing.
+- `log::Bool = false`: If the x axis will be divided using logarithmic bins.
 
 # Returns
 - The smooth data.
@@ -113,7 +114,8 @@ every value within the window with the mean in order to smooth out the data.
 function smoothWindow(
     x_data::Vector{T} where {T <: Real},
     y_data::Vector{T} where {T <: Real},
-    bins::Int64,
+    bins::Int64;
+    log::Bool = false,
 )::NTuple{2, Vector{Float64}}
 
     # Dimension consistency check.
@@ -122,19 +124,33 @@ function smoothWindow(
         throw(DimensionMismatch("The input vectors should have the same length."))
     )
 
-    # First value of the x axis.
-    start = minimum(x_data)
-
-    # Widths of the smoothing windows.
-    width = (maximum(x_data) - start) / bins
+    if log 
+        # First positive value of the x axis.
+        start = log10(minimum(x -> x <= 0 ? Inf : x, x_data))
+        # Logarithmic widths of the smoothing windows.
+        width = (log10(maximum(x_data)) - start) / bins
+    else
+        # First value of the x axis.
+        start = minimum(x_data)
+        # Linear widths of the smoothing windows.
+        width = (maximum(x_data) - start) / bins
+    end
 
     # Initialize output arrays.
     smooth_x_data = Vector{Float64}(undef, bins)
     smooth_y_data = Vector{Float64}(undef, bins)
 
     @inbounds for i in eachindex(smooth_x_data, smooth_y_data)
+
         # Find the indices of `x_data` which fall within window `i`.
-        idx = findall(x -> start + width * (i - 1) <= x < start + width * i, x_data)
+        if log
+            idx = findall(
+                x -> 10^(start + width * (i - 1)) <= x < 10^(start + width * i), 
+                x_data,
+            )
+        else 
+            idx = findall(x -> start + width * (i - 1) <= x < start + width * i, x_data)
+        end
 		
 		if isempty(idx)
 			error("Using $bins bins is too high for the data, lower it.")
@@ -343,19 +359,21 @@ end
     CMDF(
         mass_data::Vector{Float64},
         metallicity_data::Vector{Float64},
-        max_z::Float64,
-        bins::Int64,
+        max_Z::Float64,
+        bins::Int64; 
+        <keyword arguments>
     )::NTuple{2, Vector{Float64}}
 	
-Compute the cumulative metallicity distribution function up to a metallicity `max_z`. 
+Compute the cumulative metallicity distribution function up to a metallicity `max_Z`. 
 
 `mass_data` and `metallicity_data` must be in the same units.
 
 # Arguments
 - `mass_data::Vector{Float64}`: Masses of the particles.
 - `metallicity_data::Vector{Float64}`: Metallicities of the particles. 
-- `max_z::Float64`: Maximum metallicity up to which the profile will be calculated.
-- `bins::Int64`: Number of subdivisions of [0, `max_z`] to be used for the profile.
+- `max_Z::Float64`: Maximum metallicity up to which the profile will be calculated.
+- `bins::Int64`: Number of subdivisions of [0, `max_Z`] to be used for the profile.
+- `x_norm::Bool = false`: If the x axis will be normalize to its maximum value. 
 
 # Returns
 - A Tuple of two Arrays.
@@ -364,8 +382,9 @@ Compute the cumulative metallicity distribution function up to a metallicity `ma
 function CMDF(
     mass_data::Vector{Float64},
     metallicity_data::Vector{Float64},
-    max_z::Float64,
-    bins::Int64,
+    max_Z::Float64,
+    bins::Int64;
+    x_norm::Bool = false,
 )::NTuple{2, Vector{Float64}}
 
     # Dimension consistency check.
@@ -376,9 +395,16 @@ function CMDF(
 	
 	# Dimensionless metallicity.
 	Z = metallicity_data ./ mass_data
- 
-    # Width of the metallicity bins.
-	width = max_z / bins
+
+    # If required, normalize the x axis.
+    if x_norm
+        Z = Z ./ max_Z
+        # Width of the metallicity bins.
+        width = 1 / bins
+    else
+        # Width of the metallicity bins.
+	    width = max_Z / bins  
+    end
 	
 	# Total star mass.
 	total_m = sum(mass_data)
