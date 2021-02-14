@@ -4,7 +4,7 @@
 
 using GadgetIO, GadgetUnits, SPHtoGrid, SPHKernels
 using Unitful, UnitfulAstro
-using Plots, LaTeXStrings, StatsPlots.PlotMeasures, AverageShiftedHistograms
+using Plots, LaTeXStrings, StatsPlots.PlotMeasures, AverageShiftedHistograms, GLM
 using Glob, FileIO, VideoIO, DelimitedFiles, Accessors
 
 "Hₒ = 100 km s^(-1) Mpc^(-1) in Gyr^(-1)"
@@ -17,6 +17,16 @@ M. Asplund et al. (2009). The Chemical Composition of the Sun. Annual Review of 
 and Astrophysics, 47(1), 481–522. https://doi.org/10.1146/annurev.astro.46.060407.145222
 """
 const SOLAR_METALLICITY = 0.0134
+
+"""
+Slope, intercept and unit of area density for the Kennicutt-Schmidt law.
+
+R. C. Kennicutt (1998). The Global Schmidt Law in Star-forming Galaxies. The Astrophysical 
+Journal, 498(2), 541-552. https://doi.org/10.1086/305588
+"""
+const KENNICUTT98_SLOPE = 1.4
+const KENNICUTT98_INTERCEPT = 2.5e-4 * (UnitfulAstro.Msun / UnitfulAstro.yr / UnitfulAstro.kpc^2) 
+const KENNICUTT98_RHO_UNIT = 1.0 * UnitfulAstro.Msun / UnitfulAstro.pc^2
 
 include("auxiliary.jl")
 include("data_acquisition.jl")

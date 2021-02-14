@@ -376,6 +376,299 @@ function gasStarEvolutionPipeline(
 end
 
 """
+    CMDFPipeline(
+        base_name::String,
+        source_path::String,
+        anim_name::String,
+        frame_rate::Int64; 
+        <keyword arguments>
+    )::Nothing
+
+Save the results of the CMDFPlot function as one image per snapshot 
+(if there are stars present), and then generate a GIF and a video animating the images. 
+
+# Arguments
+- `base_name::String`: Base names of the snapshot files, set in the GADGET 
+  variable SnapshotFileBase.
+- `source_path::String`: Paths to the directories containing the snapshot files, 
+  set in the GADGET variable OutputDir.
+- `anim_name::String`: Name of the generated video and GIF, without the extension.
+- `frame_rate::Int64`: Frame rate of the output video and GIF.
+- `output_path::String = "CMDF/"`: Path to the output directory. The images 
+  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+  is the number of the snapshot. The GIF and the video will be stored in `output_path`.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
+  0 -> Newtonian simulation (static universe).
+  1 -> Cosmological simulation (expanding universe).
+- `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
+  i.e. all snapshots will be plotted.
+- `x_norm::Bool = false`: If the x axis will be normalize to its maximum value. 
+- `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
+  all available time units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.Myr, which is the default.
+- `format::String = ".png"`: File format of the output figure. All formats supported by 
+  pgfplotsx can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
+"""
+function CMDFPipeline(
+    base_name::String,
+    source_path::String,
+    anim_name::String,
+    frame_rate::Int64;
+    output_path::String = "CMDF/",
+    sim_cosmo::Int64 = 0,
+    step::Int64 = 1,
+    x_norm::Bool = false,
+    time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
+    format::String = ".png",
+)::Nothing
+
+    # Create a directory to store the figures, if it doesn't exist.
+    mkpath(output_path * "images/")
+
+    # Get the simulation data.
+    sim = getSnapshots(base_name, source_path)
+    snap_files = sim["snap_files"]
+    snap_numbers = sim["numbers"]
+
+    time_data = timeSeriesData(snap_files; sim_cosmo)
+
+    # Generate and store the plots.
+    short_snaps = @view snap_files[1:step:end] 
+    # animation = @animate          
+    for (i, snapshot) in enumerate(short_snaps)
+
+        header = read_header(snapshot)
+        
+        if header.nall[5] != 0
+            mass_data = massData(snapshot, "stars"; sim_cosmo)
+            z_data = zData(snapshot, "stars"; sim_cosmo)
+
+            # Snashot number.
+            number = snap_numbers[1 + step * (i - 1)]
+
+            savefig(
+                CMDFPlot(
+                    mass_data, 
+                    z_data,
+                    time_data["clock_time"][1 + step * (i - 1)] * time_unit; 
+                    bins = 50, 
+                    x_norm
+                ),
+                output_path * "images/" * base_name * "_" * number * format,
+            )
+        end
+
+    end
+
+    # Make the GIF.
+    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+
+    # Make the video.
+    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+
+    return nothing
+end
+
+"""
+    CMDFPipeline(
+        base_name::Vector{String},
+        source_path::Vector{String},
+        anim_name::String,
+        frame_rate::Int64,
+        labels::Array{String, 2}; 
+        <keyword arguments>
+    )::Nothing
+
+Save the results of the CMDFPlot function for several simulations as one image per snapshot 
+(if there are stars present), and then generate a GIF and a video animating the images. 
+
+# Arguments
+- `base_name::Vector{String}`: Base names of the snapshot files, set in the GADGET 
+  variable SnapshotFileBase.
+- `source_path::Vector{String}`: Paths to the directories containing the snapshot files, 
+  set in the GADGET variable OutputDir.
+- `anim_name::String`: Name of the generated video and GIF, without the extension.
+- `frame_rate::Int64`: Frame rate of the output video and GIF.
+- `labels::Array{String, 2}`: Labels for the different simulations.
+- `output_path::String = "CMDF/"`: Path to the output directory. The images 
+  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+  is the number of the snapshot. The GIF and the video will be stored in `output_path`.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
+  0 -> Newtonian simulation (static universe).
+  1 -> Cosmological simulation (expanding universe).
+- `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
+  i.e. all snapshots will be plotted.
+- `x_norm::Bool = false`: If the x axis will be normalize to its maximum value. 
+- `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
+  all available time units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.Myr, which is the default.
+- `format::String = ".png"`: File format of the output figure. All formats supported by 
+  pgfplotsx can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
+"""
+function CMDFPipeline(
+    base_name::Vector{String},
+    source_path::Vector{String},
+    anim_name::String,
+    frame_rate::Int64,
+    labels::Array{String, 2};
+    output_path::String = "mass_profile/",
+    sim_cosmo::Int64 = 0,
+    step::Int64 = 1,
+    x_norm::Bool = false,
+    time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
+    format::String = ".png",
+)::Nothing
+
+    # Create a directory to store the figures, if it doesn't exist.
+    mkpath(output_path * "images/")
+
+    # Get the simulation data.
+    snap_files = [getSnapshots(base_name[i], path)["snap_files"] 
+                for (i, path) in enumerate(source_path)]
+
+    # Length of the shortest simulation.
+    min_len = minimum(length.(snap_files))
+
+    # Time stamps, it should be the same for every dataset.
+    time_data = timeSeriesData(snap_files[1]; sim_cosmo, time_unit)
+
+    # Generate and store the plots.
+    # animation = @animate 
+    for i in 1:step:min_len
+        
+        headers = [read_header(snapshots[i]) for snapshots in snap_files]
+        num_stars = getindex.(getfield.(headers, :nall), 5)
+
+        if all(num_stars .!= 0)
+    
+            masses = [
+                massData(snapshots[i], "stars"; sim_cosmo) 
+                for snapshots in snap_files
+            ]
+            metallicities = [
+                zData(snapshots[i], "stars"; sim_cosmo) 
+                for snapshots in snap_files
+            ]
+
+            savefig(
+                CMDFPlot(
+                    masses, 
+                    metallicities,
+                    time_data["clock_time"][i] * time_unit,
+                    labels;
+                    bins = 50, 
+                    x_norm
+                ),
+                output_path * "images/frame_" * string(i - 1) * format,
+            )
+
+        end
+
+    end
+
+    # Make the GIF.
+    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+
+    # Make the video.
+    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+
+    return nothing
+end
+
+"""
+    birthHistogramPipeline(
+        base_name::String,
+        source_path::String,
+        anim_name::String,
+        frame_rate::Int64; 
+        <keyword arguments>
+    )::Nothing
+
+Save the results of the birthHistogramPlot function as one image per snapshot 
+(if there are stars present), and then generate a GIF and a video animating the images. 
+
+# Arguments
+- `base_name::String`: Base names of the snapshot files, set in the GADGET 
+  variable SnapshotFileBase.
+- `source_path::String`: Paths to the directories containing the snapshot files, 
+  set in the GADGET variable OutputDir.
+- `anim_name::String`: Name of the generated video and GIF, without the extension.
+- `frame_rate::Int64`: Frame rate of the output video and GIF.
+- `output_path::String = "birth_histogram/"`: Path to the output directory. The images 
+  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+  is the number of the snapshot. The GIF and the video will be stored in `output_path`.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
+  0 -> Newtonian simulation (static universe).
+  1 -> Cosmological simulation (expanding universe).
+- `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
+  i.e. all snapshots will be plotted.
+- `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
+  output, all available length units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.kpc, which is the default.
+- `format::String = ".png"`: File format of the output figure. All formats supported by 
+  pgfplotsx can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
+"""
+function birthHistogramPipeline(
+    base_name::String,
+    source_path::String,
+    anim_name::String,
+    frame_rate::Int64;
+    output_path::String = "birth_histogram/",
+    sim_cosmo::Int64 = 0,
+    step::Int64 = 1,
+    length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
+    format::String = ".png",
+)::Nothing
+
+    # Get the simulation data.
+    sim = getSnapshots(base_name, source_path)
+    snap_files = sim["snap_files"]
+    snap_numbers = sim["numbers"]
+
+    time_data = timeSeriesData(snap_files; sim_cosmo)
+
+    # Create a directory to store the figures, if it doesn't exist.
+    mkpath(output_path * "images/")
+
+    # Generate and store the plots.
+    short_snaps = @view snap_files[1:step:end] 
+    
+    # animation = @animate          
+    for (i, snapshot) in enumerate(short_snaps)
+
+        header = read_header(snapshot)
+
+        if header.nall[5] != 0
+            nursery = birthPlace(
+                i, 
+                snap_files, 
+                time_data["clock_time"],
+                time_data["units"]["time"];
+                sim_cosmo, 
+                length_unit, 
+                time_unit = time_data["units"]["time"],
+            )
+
+            # Snashot number.
+            number = snap_numbers[1 + step * (i - 1)]
+
+            savefig(
+                birthHistogramPlot(nursery, bins = 50),
+                output_path * "images/" * base_name * "_" * number * format,
+            )
+        end
+    end
+
+    # Make the GIF.
+    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+
+    # Make the video.
+    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+
+    return nothing
+end
+
+"""
     evolutionSummaryPipeline(
         base_name::String,
         source_path::String,
@@ -677,7 +970,6 @@ function densityHistogramPipeline(
                 density,
                 time_data["clock_time"][1 + step * (i - 1)] * time_unit;
                 factor,
-                density_unit,
             ), 
             output_path * "images/" * base_name * "_" * number * format,
         )
@@ -800,7 +1092,6 @@ function densityProfilePipeline(
                 bins,
                 factor,
                 box_factor,
-                density_unit,
             ),
             output_path * "images/" * base_name * "_" * number * format,
         )
@@ -928,7 +1219,6 @@ function densityProfilePipeline(
                 bins,
                 factor,
                 box_factor,
-                density_unit,
             ),
             output_path * "images/frame_"  * string(i - 1) * format,
         )
@@ -1284,7 +1574,6 @@ function massProfilePipeline(
                 bins,
                 factor,
                 box_factor,
-                mass_unit,
             ),
             output_path * "images/" * base_name * "_" * number * format,
         )
@@ -1412,303 +1701,10 @@ function massProfilePipeline(
                 bins,
                 factor,
                 box_factor,
-                mass_unit,
             ),
             output_path * "images/frame_" * string(i - 1) * format,
         )
 
-    end
-
-    # Make the GIF.
-    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
-
-    # Make the video.
-    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
-
-    return nothing
-end
-
-"""
-    CMDFPipeline(
-        base_name::String,
-        source_path::String,
-        anim_name::String,
-        frame_rate::Int64; 
-        <keyword arguments>
-    )::Nothing
-
-Save the results of the CMDFPlot function as one image per snapshot 
-(if there are stars present), and then generate a GIF and a video animating the images. 
-
-# Arguments
-- `base_name::String`: Base names of the snapshot files, set in the GADGET 
-  variable SnapshotFileBase.
-- `source_path::String`: Paths to the directories containing the snapshot files, 
-  set in the GADGET variable OutputDir.
-- `anim_name::String`: Name of the generated video and GIF, without the extension.
-- `frame_rate::Int64`: Frame rate of the output video and GIF.
-- `output_path::String = "CMDF/"`: Path to the output directory. The images 
-  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
-  is the number of the snapshot. The GIF and the video will be stored in `output_path`.
-- `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
-  0 -> Newtonian simulation (static universe).
-  1 -> Cosmological simulation (expanding universe).
-- `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
-  i.e. all snapshots will be plotted.
-- `x_norm::Bool = false`: If the x axis will be normalize to its maximum value. 
-- `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
-  all available time units in Unitful and UnitfulAstro can be used, 
-  e.g. UnitfulAstro.Myr, which is the default.
-- `format::String = ".png"`: File format of the output figure. All formats supported by 
-  pgfplotsx can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
-"""
-function CMDFPipeline(
-    base_name::String,
-    source_path::String,
-    anim_name::String,
-    frame_rate::Int64;
-    output_path::String = "CMDF/",
-    sim_cosmo::Int64 = 0,
-    step::Int64 = 1,
-    x_norm::Bool = false,
-    time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
-    format::String = ".png",
-)::Nothing
-
-    # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
-
-    # Get the simulation data.
-    sim = getSnapshots(base_name, source_path)
-    snap_files = sim["snap_files"]
-    snap_numbers = sim["numbers"]
-
-    time_data = timeSeriesData(snap_files; sim_cosmo)
-
-    # Generate and store the plots.
-    short_snaps = @view snap_files[1:step:end] 
-    # animation = @animate          
-    for (i, snapshot) in enumerate(short_snaps)
-
-        header = read_header(snapshot)
-        
-        if header.nall[5] != 0
-            mass_data = massData(snapshot, "stars"; sim_cosmo)
-            z_data = zData(snapshot, "stars"; sim_cosmo)
-
-            # Snashot number.
-            number = snap_numbers[1 + step * (i - 1)]
-
-            savefig(
-                CMDFPlot(
-                    mass_data, 
-                    z_data,
-                    time_data["clock_time"][1 + step * (i - 1)] * time_unit; 
-                    bins = 50, 
-                    x_norm
-                ),
-                output_path * "images/" * base_name * "_" * number * format,
-            )
-        end
-
-    end
-
-    # Make the GIF.
-    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
-
-    # Make the video.
-    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
-
-    return nothing
-end
-
-"""
-    CMDFPipeline(
-        base_name::Vector{String},
-        source_path::Vector{String},
-        anim_name::String,
-        frame_rate::Int64,
-        labels::Array{String, 2}; 
-        <keyword arguments>
-    )::Nothing
-
-Save the results of the CMDFPlot function for several simulations as one image per snapshot 
-(if there are stars present), and then generate a GIF and a video animating the images. 
-
-# Arguments
-- `base_name::Vector{String}`: Base names of the snapshot files, set in the GADGET 
-  variable SnapshotFileBase.
-- `source_path::Vector{String}`: Paths to the directories containing the snapshot files, 
-  set in the GADGET variable OutputDir.
-- `anim_name::String`: Name of the generated video and GIF, without the extension.
-- `frame_rate::Int64`: Frame rate of the output video and GIF.
-- `labels::Array{String, 2}`: Labels for the different simulations.
-- `output_path::String = "CMDF/"`: Path to the output directory. The images 
-  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
-  is the number of the snapshot. The GIF and the video will be stored in `output_path`.
-- `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
-  0 -> Newtonian simulation (static universe).
-  1 -> Cosmological simulation (expanding universe).
-- `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
-  i.e. all snapshots will be plotted.
-- `x_norm::Bool = false`: If the x axis will be normalize to its maximum value. 
-- `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
-  all available time units in Unitful and UnitfulAstro can be used, 
-  e.g. UnitfulAstro.Myr, which is the default.
-- `format::String = ".png"`: File format of the output figure. All formats supported by 
-  pgfplotsx can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
-"""
-function CMDFPipeline(
-    base_name::Vector{String},
-    source_path::Vector{String},
-    anim_name::String,
-    frame_rate::Int64,
-    labels::Array{String, 2};
-    output_path::String = "mass_profile/",
-    sim_cosmo::Int64 = 0,
-    step::Int64 = 1,
-    x_norm::Bool = false,
-    time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
-    format::String = ".png",
-)::Nothing
-
-    # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
-
-    # Get the simulation data.
-    snap_files = [getSnapshots(base_name[i], path)["snap_files"] 
-                for (i, path) in enumerate(source_path)]
-
-    # Length of the shortest simulation.
-    min_len = minimum(length.(snap_files))
-
-    # Time stamps, it should be the same for every dataset.
-    time_data = timeSeriesData(snap_files[1]; sim_cosmo, time_unit)
-
-    # Generate and store the plots.
-    # animation = @animate 
-    for i in 1:step:min_len
-        
-        headers = [read_header(snapshots[i]) for snapshots in snap_files]
-        num_stars = getindex.(getfield.(headers, :nall), 5)
-
-        if all(num_stars .!= 0)
-    
-            masses = [
-                massData(snapshots[i], "stars"; sim_cosmo) 
-                for snapshots in snap_files
-            ]
-            metallicities = [
-                zData(snapshots[i], "stars"; sim_cosmo) 
-                for snapshots in snap_files
-            ]
-
-            savefig(
-                CMDFPlot(
-                    masses, 
-                    metallicities,
-                    time_data["clock_time"][i] * time_unit,
-                    labels;
-                    bins = 50, 
-                    x_norm
-                ),
-                output_path * "images/frame_" * string(i - 1) * format,
-            )
-
-        end
-
-    end
-
-    # Make the GIF.
-    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
-
-    # Make the video.
-    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
-
-    return nothing
-end
-
-"""
-    birthHistogramPipeline(
-        base_name::String,
-        source_path::String,
-        anim_name::String,
-        frame_rate::Int64; 
-        <keyword arguments>
-    )::Nothing
-
-Save the results of the birthHistogramPlot function as one image per snapshot 
-(if there are stars present), and then generate a GIF and a video animating the images. 
-
-# Arguments
-- `base_name::String`: Base names of the snapshot files, set in the GADGET 
-  variable SnapshotFileBase.
-- `source_path::String`: Paths to the directories containing the snapshot files, 
-  set in the GADGET variable OutputDir.
-- `anim_name::String`: Name of the generated video and GIF, without the extension.
-- `frame_rate::Int64`: Frame rate of the output video and GIF.
-- `output_path::String = "birth_histogram/"`: Path to the output directory. The images 
-  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
-  is the number of the snapshot. The GIF and the video will be stored in `output_path`.
-- `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
-  0 -> Newtonian simulation (static universe).
-  1 -> Cosmological simulation (expanding universe).
-- `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
-  i.e. all snapshots will be plotted.
-- `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
-  output, all available length units in Unitful and UnitfulAstro can be used, 
-  e.g. UnitfulAstro.kpc, which is the default.
-- `format::String = ".png"`: File format of the output figure. All formats supported by 
-  pgfplotsx can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
-"""
-function birthHistogramPipeline(
-    base_name::String,
-    source_path::String,
-    anim_name::String,
-    frame_rate::Int64;
-    output_path::String = "birth_histogram/",
-    sim_cosmo::Int64 = 0,
-    step::Int64 = 1,
-    length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
-    format::String = ".png",
-)::Nothing
-
-    # Get the simulation data.
-    sim = getSnapshots(base_name, source_path)
-    snap_files = sim["snap_files"]
-    snap_numbers = sim["numbers"]
-
-    time_data = timeSeriesData(snap_files; sim_cosmo)
-
-    # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
-
-    # Generate and store the plots.
-    short_snaps = @view snap_files[1:step:end] 
-    
-    # animation = @animate          
-    for (i, snapshot) in enumerate(short_snaps)
-
-        header = read_header(snapshot)
-
-        if header.nall[5] != 0
-            nursery = birthPlace(
-                i, 
-                snap_files, 
-                time_data["clock_time"];
-                sim_cosmo, 
-                length_unit, 
-                time_unit = time_data["units"]["time"],
-            )
-
-            # Snashot number.
-            number = snap_numbers[1 + step * (i - 1)]
-
-            savefig(
-                birthHistogramPlot(nursery, bins = 50),
-                output_path * "images/" * base_name * "_" * number * format,
-            )
-        end
     end
 
     # Make the GIF.
@@ -1825,14 +1821,273 @@ function sfrTxtPipeline(
                     title = title[i], 
                     bins, 
                     scale, 
-                    min_filter, 
-                    mass_unit, 
-                    time_unit, 
-                    sfr_unit
+                    min_filter,
                 ),
                 output_path * names[i] * format,
             )
 
+    end
+
+    return nothing
+end
+
+"""
+    temperatureHistogramPipeline(
+        base_name::String,
+        source_path::String,
+        anim_name::String,
+        frame_rate::Int64; 
+        <keyword arguments>
+    )::Nothing
+
+Save the results of the temperatureHistogramPlot function as one image per snapshot, 
+and then generate a GIF and a video animating the images. 
+
+# Arguments
+- `base_name::String`: Base names of the snapshot files, set in the GADGET 
+  variable SnapshotFileBase.
+- `source_path::String`: Paths to the directories containing the snapshot files, 
+  set in the GADGET variable OutputDir.
+- `anim_name::String`: Name of the generated video and GIF, without the extension.
+- `frame_rate::Int64`: Frame rate of the output video and GIF.
+- `output_path::String = "temperature_histogram/"`: Path to the output directory. The images 
+  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+  is the number of the snapshot. The GIF and the video will be stored in `output_path`.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
+  0 -> Newtonian simulation (static universe).
+  1 -> Cosmological simulation (expanding universe).
+- `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
+  i.e. all snapshots will be plotted.
+- `temp_unit::Unitful.FreeUnits = Unitful.K`: Unit of temperature to be used in the 
+  output, all available temperature units in Unitful and UnitfulAstro can be used, 
+  e.g. Unitful.K, which is the default.
+- `format::String = ".png"`: File format of the output figure. All formats supported by 
+  pgfplotsx can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
+"""
+function temperatureHistogramPipeline(
+    base_name::String,
+    source_path::String,
+    anim_name::String,
+    frame_rate::Int64;
+    output_path::String = "temperature_histogram/",
+    sim_cosmo::Int64 = 0,
+    step::Int64 = 1,
+    temp_unit::Unitful.FreeUnits = Unitful.K,
+    format::String = ".png",
+)::Nothing
+
+    # Get the simulation data.
+    sim = getSnapshots(base_name, source_path)
+    snap_files = sim["snap_files"]
+    snap_numbers = sim["numbers"]
+
+    time_data = timeSeriesData(snap_files; sim_cosmo)
+    time_unit = time_data["units"]["time"]
+    clock = time_data["clock_time"]
+
+    # Create a directory to store the figures, if it doesn't exist.
+    mkpath(output_path * "images/")
+
+    # Generate and store the plots.
+    short_snaps = @view snap_files[1:step:end] 
+    
+    # animation = @animate          
+    for (i, snapshot) in enumerate(short_snaps)
+
+        temp_data = tempData(snapshot; sim_cosmo, temp_unit)
+
+        # Snashot number.
+        number = snap_numbers[1 + step * (i - 1)]
+
+        savefig(
+            temperatureHistogramPlot(
+                temp_data, 
+                clock[1 + step * (i - 1)] * time_unit, 
+                bins = 30
+            ),
+            output_path * "images/" * base_name * "_" * number * format,
+        )
+        
+    end
+
+    # Make the GIF.
+    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+
+    # Make the video.
+    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+
+    return nothing
+end
+
+"""
+    rhoTempPipeline(
+        base_name::String,
+        source_path::String,
+        anim_name::String,
+        frame_rate::Int64; 
+        <keyword arguments>
+    )::Nothing
+
+Save the results of the rhoTempPlot function as one image per snapshot, 
+and then generate a GIF and a video animating the images. 
+
+# Arguments
+- `base_name::String`: Base names of the snapshot files, set in the GADGET 
+  variable SnapshotFileBase.
+- `source_path::String`: Paths to the directories containing the snapshot files, 
+  set in the GADGET variable OutputDir.
+- `anim_name::String`: Name of the generated video and GIF, without the extension.
+- `frame_rate::Int64`: Frame rate of the output video and GIF.
+- `output_path::String = "rho_vs_temp/"`: Path to the output directory. The images 
+  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+  is the number of the snapshot. The GIF and the video will be stored in `output_path`.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
+  0 -> Newtonian simulation (static universe).
+  1 -> Cosmological simulation (expanding universe).
+- `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
+  i.e. all snapshots will be plotted.
+- `temp_unit::Unitful.FreeUnits = Unitful.K`: Unit of temperature to be used in the 
+  output, all available temperature units in Unitful and UnitfulAstro can be used, 
+  e.g. Unitful.K, which is the default.
+- `density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3`: Unit of density 
+  to be used in the output, all available density units in Unitful and UnitfulAstro can 
+  be used, e.g. UnitfulAstro.Msun / UnitfulAstro.kpc^3, which is the default.
+- `format::String = ".png"`: File format of the output figure. All formats supported by 
+  pgfplotsx can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
+"""
+function rhoTempPipeline(
+    base_name::String,
+    source_path::String,
+    anim_name::String,
+    frame_rate::Int64;
+    output_path::String = "rho_vs_temp/",
+    sim_cosmo::Int64 = 0,
+    step::Int64 = 1,
+    temp_unit::Unitful.FreeUnits = Unitful.K,
+    density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3,
+    format::String = ".png",
+)::Nothing
+
+    # Get the simulation data.
+    sim = getSnapshots(base_name, source_path)
+    snap_files = sim["snap_files"]
+    snap_numbers = sim["numbers"]
+
+    time_data = timeSeriesData(snap_files; sim_cosmo)
+    time_unit = time_data["units"]["time"]
+    clock = time_data["clock_time"]
+
+    # Create a directory to store the figures, if it doesn't exist.
+    mkpath(output_path * "images/")
+
+    # Generate and store the plots.
+    short_snaps = @view snap_files[1:step:end] 
+    
+    # animation = @animate          
+    for (i, snapshot) in enumerate(short_snaps)
+
+        temp_data = tempData(snapshot; sim_cosmo, temp_unit)
+        density_data = densityData(snapshot; sim_cosmo, density_unit)
+
+        # Snashot number.
+        number = snap_numbers[1 + step * (i - 1)]
+
+        savefig(
+            rhoTempPlot(
+                temp_data,
+                density_data::Dict{String, Any},
+                clock[1 + step * (i - 1)] * time_unit,
+            ),
+            output_path * "images/" * base_name * "_" * number * format,
+        )
+        
+    end
+
+    # Make the GIF.
+    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+
+    # Make the video.
+    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+
+    return nothing
+end
+
+
+
+
+
+function KennicuttSchmidtPipeline(
+    base_name::String,
+    source_path::String;
+    output_path::String = "Kennicutt_Schmidt/",
+    sim_cosmo::Int64 = 0,
+    temp_filter::Unitful.Quantity = 3e4Unitful.K,
+    age_filter::Unitful.Quantity = 200UnitfulAstro.Myr,
+    max_r::Unitful.Quantity = 1000UnitfulAstro.kpc,
+    box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
+    bins::Int64 = 50,
+    time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
+    mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
+    temp_unit::Unitful.FreeUnits = Unitful.K,
+    length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
+    format::String = ".png",
+)::Nothing
+
+    # Get the simulation data.
+    sim = getSnapshots(base_name, source_path)
+    snap_files = sim["snap_files"]
+    snap_numbers = sim["numbers"]
+
+    time_data = timeSeriesData(snap_files; sim_cosmo)
+    clock_unit = time_data["units"]["time"]
+    # Clock time of each snapshot.
+    clock = time_data["clock_time"]
+
+    # Create a directory to store the figures, if it doesn't exist.
+    mkpath(output_path * "images/")
+
+    @inbounds for (i, snapshot) in enumerate(snap_files)
+
+        header = read_header(snapshot)
+        if header.nall[5] != 0
+            
+            number = snap_numbers[i]
+            # Clock time of the snapshot i.
+            now = uconvert(time_unit, clock[i] * clock_unit)
+
+            # Gas masses.
+            gas_mass_data = massData(snapshot, "gas"; sim_cosmo, mass_unit)
+            # Gas temperatures.
+            temperature_data = tempData(snapshot; sim_cosmo, temp_unit)
+            # Stars masses.
+            star_mass_data = massData(snapshot, "stars"; sim_cosmo, mass_unit)
+            # Stars ages.
+            age_data = ageData(snapshot, now; sim_cosmo)
+            # Positions.
+            pos_data = positionData(snapshot; sim_cosmo, box_size, length_unit)
+
+            figure = KennicuttSchmidtPlot(
+                gas_mass_data,
+                temperature_data,
+                star_mass_data,
+                age_data,
+                pos_data,
+                temp_filter,
+                age_filter,
+                max_r,
+                clock[i] * clock_unit;
+                bins,
+            )
+
+            if figure !== nothing
+                # If there was enough data to make a fit.
+                savefig(
+                    figure,
+                    output_path * "images/" * base_name * "_" * number * format,
+                )
+            end
+
+        end
     end
 
     return nothing

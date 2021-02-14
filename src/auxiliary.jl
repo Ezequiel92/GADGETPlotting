@@ -372,7 +372,7 @@ Compute the cumulative metallicity distribution function up to a metallicity `ma
 - `mass_data::Vector{Float64}`: Masses of the particles.
 - `metallicity_data::Vector{Float64}`: Metallicities of the particles. 
 - `max_Z::Float64`: Maximum metallicity up to which the profile will be calculated.
-- `bins::Int64`: Number of subdivisions of [0, `max_Z`] to be used for the profile.
+- `bins::Int64`: Number of subdivisions of [0, `max_Z`] to construct the plot.
 - `x_norm::Bool = false`: If the x axis will be normalize to its maximum value. 
 
 # Returns
@@ -429,4 +429,111 @@ function CMDF(
 	end
 	
 	return x_data, cumsum(y_data)
+end
+
+"""
+    KennicuttSchmidtLaw(
+        gas_mass_data::Vector{Float64},
+        gas_distance_data::Vector{Float64},
+        temperature_data::Vector{Float64},
+        star_mass_data::Vector{Float64},
+        star_distance_data::Vector{Float64},
+        age_data::Vector{Float64},
+        temp_filter::Float64,
+        age_filter::Float64,
+        max_r::Float64; 
+        <keyword arguments>
+    )::Union{Nothing, Dict{String, Any}}
+	
+Compute mass area density and the SFR area density for the Kennicutt-Schmidt law. 
+
+`temp_filter` and `temperature_data` must be in the same units, and `age_filter` and 
+`age_data` must be in the same units too.
+
+# Arguments
+- `gas_mass_data::Vector{Float64}`: Masses of the gas particles.
+- `gas_distance_data::Vector{Float64}`: 2D distances of the gas particles. 
+- `temperature_data::Vector{Float64}`: Temperatures of the gas particles.
+- `star_mass_data::Vector{Float64}`: Masses of the stars.
+- `star_distance_data::Vector{Float64}`: 2D distances of the stars.
+- `age_data::Vector{Float64}`: Ages of the stars.
+- `temp_filter::Float64`: Maximum temperature allowed for the gas particles.
+- `age_filter::Float64`: Maximum age allowed for the stars.
+- `max_r::Float64`: Maximum distance up to which the parameters will be calculated.
+- `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. 
+  It has to be at least 5.
+
+# Returns
+- A dictionary with three entries.
+  - Key "RHO" => Logarithm of the area mass densities.
+  - Key "SFR" => Logarithm of the SFR area densities.
+  - Key "LM" => Linear model given by GLM.jl.
+"""
+function KennicuttSchmidtLaw(
+    gas_mass_data::Vector{Float64},
+    gas_distance_data::Vector{Float64},
+    temperature_data::Vector{Float64},
+    star_mass_data::Vector{Float64},
+    star_distance_data::Vector{Float64},
+    age_data::Vector{Float64},
+    temp_filter::Float64,
+    age_filter::Float64,
+    max_r::Float64;
+    bins::Int64 = 50,
+)::Union{Nothing, Dict{String, Any}}
+
+    # Bin size check.
+    if bins < 5
+        error("You have to use at least 10 bins.")
+    end
+
+    # Filter out hot gas particles.
+    deleteat!(gas_mass_data, temperature_data .> temp_filter)
+    deleteat!(gas_distance_data, temperature_data .> temp_filter)
+    filter!(x -> x < temp_filter, temperature_data)
+
+    # Filter out old stars.
+    deleteat!(star_mass_data, age_data .> age_filter)
+    deleteat!(star_distance_data, age_data .> age_filter)
+    filter!(x -> x < age_filter, age_data)
+
+    r_width = max_r / bins
+
+    # Initialize output arrays.
+    x_data = Vector{Float64}(undef, bins)
+    y_data = Vector{Float64}(undef, bins)
+    @inbounds for i in eachindex(x_data, y_data)
+
+		idx_gas = findall(x ->  r_width * (i - 1) <= x < r_width * i, gas_distance_data)
+        gas_mass = sum(gas_mass_data[idx_gas])
+		# Gas area density for window i.
+		x_data[i] = gas_mass / (π * r_width * r_width * (2 * i - 1))
+
+        idx_star = findall(x ->  r_width * (i - 1) <= x < r_width * i, star_distance_data)
+        sfr = sum(star_mass_data[idx_star]) / age_filter 
+        # SFR area density for window i.
+        y_data[i] = sfr / (π * r_width * r_width * (2 * i - 1))		
+		
+	end
+
+    # Filter out zeros.
+    deleteat!(y_data, x_data .<= 0.0)
+    filter!(x -> x > 0.0, x_data)
+    deleteat!(x_data, y_data .<= 0.0)
+    filter!(y -> y > 0.0, y_data)
+
+    # Set logarithmic scaling.
+    x_data = log10.(x_data)
+    y_data = log10.(y_data)
+
+    # If there are too little data to get a fit return nothing
+    if length(x_data) < 5
+        return nothing
+    end
+
+    # Compute linear fit.
+    X = [ones(length(x_data)) x_data]
+    linear_model = lm(X, y_data)
+
+    return Dict("RHO" => x_data, "SFR" => y_data, "LM" => linear_model)
 end

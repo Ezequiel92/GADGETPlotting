@@ -51,8 +51,28 @@ end
 """
     timeSeriesData(snap_files::Vector{String}; <keyword arguments>)::Dict{String, Any}
 					
-Get a dictionary with several parameters defined at every snapshot, 
-as a series of values for the whole simulation. 
+Get several parameters defined at every snapshot, as a series of values for the whole 
+simulation. 
+
+The parameters are:
+
+- "scale_factor"                  
+- "redshift"                  
+- "clock_time" (Physical time)
+- "sfr" (SFR) 			              
+- "sfr_prob" (SFR probability - Not normalized) 			           
+- "gas_number" (Gas particle number) 	            
+- "dm_number" (Dark matter particle number)		               
+- "star_number" (Star number)         
+- "gas_mass" (Total gas mass)               
+- "dm_mass" (Total dark matter mass)	            
+- "star_mass" (Total star mass)	
+- "gas_density" (Global gas density)	               
+- "gas_frac" (Gas fraction)		                
+- "dm_frac" (Dark matter fraction)		                
+- "star_frac" (Star fraction)	                   
+- "gas_bar_frac" (Baryonic gas fraction)                  
+- "star_bar_frac" (Baryonic star fraction)
 
 # Arguments
 - `snap_files::Vector{String}`: Output of the function getSnapshots corresponding 
@@ -194,7 +214,7 @@ function timeSeriesData(
             end
             gas_mass = ustrip(Float64, mass_unit, gas_mass * GU.m_cgs)
 
-            # Total gas density.
+            # Global gas density.
             densities = densityData(
                 snapshot; 
                 sim_cosmo, 
@@ -303,7 +323,7 @@ function timeSeriesData(
         time_series["dm_mass"][i] = dm_mass
         time_series["star_mass"][i] = star_mass
 
-        # Total gas density.
+        # Global gas density.
         time_series["gas_density"][i] = gas_density
 
         # Mass fraction relative to the total mass of the system.
@@ -665,7 +685,7 @@ function zData(
             # Add up all elements but the ones at position 1 and 7, i.e. H and He.
             z_tot = sum(z[[2, 3, 4, 5, 6, 8, 9, 10, 11, 12], i])
             # Transformation from internal units to `mass_unit`.
-            z_tot = @. ustrip(Float64, mass_unit, z_tot * GU.m_cgs)
+            z_tot = ustrip(Float64, mass_unit, z_tot * GU.m_cgs)
 
             @inbounds Z[i] = z_tot
         end
@@ -675,6 +695,282 @@ function zData(
     end
 
     return Dict("Z" => Z, "unit" => mass_unit, "type" => type)
+end
+
+"""
+    tempData(snapshot::String; <keyword arguments>)::Dict{String,Any}
+
+Get the temperature of the gas particles at a specific time step.
+
+# Arguments
+- `snapshot::String`: Path to a given snapshot.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
+  0 -> Newtonian simulation (static universe).
+  1 -> Cosmological simulation (expanding universe).
+- `temp_unit::Unitful.FreeUnits = Unitful.K`: Unit of temperature to be used in the output, 
+  all available temperature units in Unitful.jl and UnitfulAstro.jl can be used, 
+  e.g. Unitful.K, which is the default.
+
+# Returns
+- A dictionary with two entries.
+  - Key "T" => A one dimensional array which contains the temperatures of the particles.  
+  - Key "unit" => The unit of temperature used, i.e. is a pass-through of `temp_unit`. 
+"""
+function tempData(
+    snapshot::String;
+    sim_cosmo::Int64 = 0,
+    temp_unit::Unitful.FreeUnits = Unitful.K,
+)::Dict{String, Any}
+
+    # Data availability check.
+    (
+        block_present(snapshot, "U") ||
+        error("There is no block 'U' in snapshot located at $snapshot")
+    )
+    (
+        block_present(snapshot, "NE") ||
+        error("There is no block 'NE' in snapshot located at $snapshot")
+    )
+    (
+        block_present(snapshot, "Z") ||
+        error("There is no block 'Z' in snapshot located at $snapshot")
+    )
+
+    header = read_header(snapshot)
+
+    # Struct for unit conversion.
+    if sim_cosmo == 1
+        GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
+    else
+        # For Newtonian simulation uses the default scale factor: a = 1.
+        GU = GadgetPhysicalUnits(hpar = header.h0)
+    end
+
+    if header.nall[1] != 0
+
+        # Mass.
+        mass_data = massData(snapshot, "gas"; sim_cosmo)
+        mass = mass_data["mass"]
+        mass_unit = mass_data["unit"]
+
+        # Metallicity.
+        z = read_snap(snapshot, "Z", 0)
+        Z = @. ustrip(Float64, mass_unit, z * GU.m_cgs)
+
+        # Internal enery per unit mass.
+        u = read_snap(snapshot, "U", 0)
+        U = @. uconvert(Unitful.J / mass_unit, u * (GU.E_cgs / GU.m_cgs))
+
+        # ne := number_of_electrons / number_of_Hydrogen_atoms.
+        ne = read_snap(snapshot, "NE", 0)
+
+        # xH := mass_fraction_of_Hydrogen.
+        xH = Z[7, :] ./ mass 
+        # yHe := number_of_Helium_atoms / number_of_Hydrogen_atoms.
+        yHe = @. (1.0 - xH) / (4.0 * xH)
+        # μ := total_mass / (total_number_of_particles * proton_mass).
+        μ = @. (1.0 + 4.0 * yHe) / (1.0 + yHe + ne)
+        # T = (adiabatic_index - 1) * internal_energy_per_unit_mass * 
+        #     (total_mass / total_number_of_particles) / Boltzmann_constant
+        T = @. ustrip(Float64, temp_unit, 2/3 * U * μ * Unitful.mp / Unitful.k)
+        
+    else
+        # In the case that there are no particles.
+        T = [Inf]
+    end
+
+    return Dict("T" => T, "unit" => temp_unit)
+end
+
+"""
+    ageData(snapshot::String, now::Float64; <keyword arguments>)::Dict{String,Any}
+
+Get the ages of the stars at a specific time step.
+
+# Arguments
+- `snapshot::String`: Path to a given snapshot.
+- `now::Unitful.Quantity`: Clock time of `snapshot`, with units. All available time units in 
+  Unitful.jl and UnitfulAstro.jl can be used.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
+  0 -> Newtonian simulation (static universe).
+  1 -> Cosmological simulation (expanding universe).
+
+# Returns
+- A dictionary with two entries.
+  - Key "ages" => The ages of the stars.  
+  - Key "unit" => The unit of time used. 
+"""
+function ageData(
+    snapshot::String,
+    now::Unitful.Quantity;
+    sim_cosmo::Int64 = 0,
+)::Dict{String, Any}
+
+    # Data availability check.
+    (
+        block_present(snapshot, "AGE") ||
+        error("There is no block 'AGE' in snapshot located at $snapshot")
+    )
+
+    header = read_header(snapshot)
+
+    # Struct for unit conversion.
+    if sim_cosmo == 1
+        GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
+
+        a = header.time     # Scale factor.
+        z = (1 / a) - 1     # Redshift.
+
+        # Ω_K (curvature)
+        omega_K = 1 - header.omega_0 - header.omega_l
+        # Energy function.
+        E = header.omega_0 / (a * a * a) + omega_K / (a * a) + header.omega_l
+        # Hubble constant in 1 / Gyr.
+        H = header.h0 * HUBBLE_CONST * sqrt(E)
+        # Integrand of the time integral in Gyr. 
+        t_int = 1 / (H * a)
+        # Conversion factor from internal units of time to physical units of time.
+        t_conv = t_int * UnitfulAstro.Gyr
+    else
+        # For Newtonian simulation uses the default scale factor: a = 1.
+        GU = GadgetPhysicalUnits(hpar = header.h0)
+
+        # Conversion factor from internal units of time to physical units of time.
+        t_conv = GU.t_Myr
+    end
+
+    # Stars time of birth. 
+    birth_time = read_snap(snapshot, "AGE", 4)
+
+    # Unit conversion.
+    time_unit = unit(now)
+    birth_time = @. ustrip(Float64, time_unit, birth_time * t_conv)
+    
+    # Stars ages. 
+    clock_now = ustrip(now)
+    ages = clock_now .- birth_time
+
+    return Dict("ages" => ages, "unit" => time_unit)
+end
+
+"""
+    birthPlace(
+        snap_index::Int64,
+        snap_files::Vector{String},
+        time_stamps::Vector{Float64},
+        stamps_unit::Unitful.FreeUnits; 
+        <keyword arguments>
+    )::Array{Float64, 2}
+
+Get the birth location of the stars in a given snapshot.
+
+# Arguments
+- `snap_index::Int64`: Index in `snap_files` of the snapshot whose stars will be located.
+- `snap_files::Vector{String}`: Output of the function getSnapshots corresponding 
+  to the key "snap_files", containing an Array with the paths to the snapshots.
+- `time_stamps::Vector{Float64}`: Clock time of every snapshot in `snap_files`.
+- `stamps_unit::Unitful.FreeUnits`: Unit of time of the `time_stamps`.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
+  0 -> Newtonian simulation (static universe).
+  1 -> Cosmological simulation (expanding universe).
+- `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time of `time_stamps`.
+
+# Returns
+-  2 dimensional arrays which contains the positions of the stars. Each row is a star
+  and each column corresponds to coordinates x, y and z respectively.
+"""
+function birthPlace(
+    snap_index::Int64,
+    snap_files::Vector{String},
+    time_stamps::Vector{Float64},
+    stamps_unit::Unitful.FreeUnits;
+    sim_cosmo::Int64 = 0,
+    length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
+    time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
+)::Dict{String, Any}
+
+    # Bounds check.
+    (
+        1 < snap_index <= length(snap_files) ||
+        throw(BoundsError("There is no snapshot and index $snap_index."))
+    )
+    # Dimension consistency check.
+    (
+        length(time_stamps) == length(snap_files) ||
+        throw(DimensionMismatch("The input vectors should have the same length."))
+    )
+
+    snapshot = snap_files[snap_index]
+
+    # Data availability check.
+    (
+        block_present(snapshot, "ID") ||
+        error("There is no block 'ID' in snapshot located at $snapshot")
+    )
+    (
+        block_present(snapshot, "AGE") ||
+        error("There is no block 'AGE' in snapshot located at $snapshot")
+    )
+
+    header = read_header(snapshot)
+
+    # Struct for unit conversion.
+    if sim_cosmo == 1
+        GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
+
+        a = header.time     # Scale factor.
+        z = (1 / a) - 1     # Redshift.
+
+        # Ω_K (curvature)
+        omega_K = 1 - header.omega_0 - header.omega_l
+        # Energy function.
+        E = header.omega_0 / (a * a * a) + omega_K / (a * a) + header.omega_l
+        # Hubble constant in 1 / Gyr.
+        H = header.h0 * HUBBLE_CONST * sqrt(E)
+        # Integrand of the time integral in Gyr. 
+        t_int = 1 / (H * a)
+        # Conversion factor from internal units of time to physical units of time.
+        t_conv = t_int * UnitfulAstro.Gyr
+    else
+        # For Newtonian simulation uses the default scale factor: a = 1.
+        GU = GadgetPhysicalUnits(hpar = header.h0)
+
+        # Conversion factor from internal units of time to physical units of time.
+        t_conv = GU.t_Myr
+    end
+
+    # Stars time of birth. 
+    ages = read_snap(snapshot, "AGE", 4)
+    birth_times = @. ustrip(Float64, time_unit, ages * t_conv)
+    time_stamps = @. ustrip(Float64, time_unit, time_stamps * stamps_unit)
+    # Stars IDs.
+    ids = read_snap(snapshot, "ID", 4)
+
+    birth_place = Vector{Float64}[]
+    for (id, birth_time) in zip(ids, birth_times)
+
+        # Index of the snapshot where the target star was born.
+        snap_idx = findfirst(x -> x >= birth_time, time_stamps)
+
+        # IDs of the stars in the snapshot where the target star was born.
+        nursery_ids = read_snap(snap_files[snap_idx], "ID", 4)
+
+        # Index of the target star, in the snapshot where it was born.
+        birth_idx = findfirst(x -> x == id, nursery_ids)
+        while birth_idx === nothing
+            snap_idx += 1
+            nursery_ids = read_snap(snap_files[snap_idx], "ID", 4)
+            birth_idx = findfirst(x -> x == id, nursery_ids)
+        end
+
+        # Position of the target star, in the snapshot where it was born.
+        raw_pos = read_snap(snap_files[snap_idx], "POS", 4)[:, birth_idx]
+        nursery_pos = @. ustrip(Float64, length_unit, raw_pos * GU.x_cgs)
+
+        push!(birth_place, nursery_pos)
+    end
+
+    return Dict("birth_place" => hcat(birth_place...), "unit" => length_unit)
 end
 
 """
@@ -724,7 +1020,7 @@ function sfrTxtData(
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
     sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr,
-)::Dict{Int64, Vector{Float64}}
+)::Dict{Union{Int64, String}, Any}
 
     # Get header of one snapshot for unit conversion.
     header = read_header(source_path * base_name * "_000")
@@ -781,121 +1077,6 @@ function sfrTxtData(
         4 => column_4,
         5 => column_5,
         6 => column_6,
+        "units" => Dict("mass" => mass_unit, "time" => time_unit, "sfr" => sfr_unit),
     )
-end
-
-"""
-    birthPlace(
-        snap_index::Int64,
-        snap_files::Vector{String},
-        time_stamps::Vector{Float64}; 
-        <keyword arguments>
-    )::Array{Float64, 2}
-
-Get the birth location of the stars in a given snapshot.
-
-# Arguments
-- `snap_index::Int64`: Index in `snap_files` of the snapshot whose stars will be located.
-- `snap_files::Vector{String}`: Output of the function getSnapshots corresponding 
-  to the key "snap_files", containing an Array with the paths to the snapshots.
-- `time_stamps::Vector{Float64}`: Clock time of every snapshot in `snap_files`.
-- `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
-  0 -> Newtonian simulation (static universe).
-  1 -> Cosmological simulation (expanding universe).
-- `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time of `time_stamps`.
-
-# Returns
--  2 dimensional arrays which contains the positions of the stars. Each row is a star
-  and each column corresponds to coordinates x, y and z respectively.
-"""
-function birthPlace(
-    snap_index::Int64,
-    snap_files::Vector{String},
-    time_stamps::Vector{Float64};
-    sim_cosmo::Int64 = 0,
-    length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
-    time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
-)::Dict{String, Any}
-
-    # Bounds check.
-    (
-        1 < snap_index <= length(snap_files) ||
-        throw(BoundsError("There is no snapshot and index $snap_index."))
-    )
-    # Dimension consistency check.
-    (
-        length(time_stamps) == length(snap_files) ||
-        throw(DimensionMismatch("The input vectors should have the same length."))
-    )
-
-    snapshot = snap_files[snap_index]
-
-    # Data availability check.
-    (
-        block_present(snapshot, "ID") ||
-        error("There is no block 'ID' in snapshot located at $snapshot")
-    )
-    (
-        block_present(snapshot, "AGE") ||
-        error("There is no block 'AGE' in snapshot located at $snapshot")
-    )
-
-    header = read_header(snapshot)
-
-    # Struct for unit conversion.
-    if sim_cosmo == 1
-        GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
-
-        a = header.time     # Scale factor.
-        z = (1 / a) - 1     # Redshift.
-
-        # Ω_K (curvature)
-        omega_K = 1 - header.omega_0 - header.omega_l
-        # Energy function.
-        E = header.omega_0 / (a * a * a) + omega_K / (a * a) + header.omega_l
-        # Hubble constant in 1 / Gyr.
-        H = header.h0 * HUBBLE_CONST * sqrt(E)
-        # Integrand of the time integral in Gyr. 
-        t_int = 1 / (H * a)
-        # Conversion factor from internal units of time to physical units of time.
-        t_conv = t_int * UnitfulAstro.Gyr
-    else
-        # For Newtonian simulation uses the default scale factor: a = 1.
-        GU = GadgetPhysicalUnits(hpar = header.h0)
-
-        # Conversion factor from internal units of time to physical units of time.
-        t_conv = GU.t_Myr
-    end
-
-    # Stars' time of birth. 
-    ages = read_snap(snapshot, "AGE", 4)
-    birth_times = @. ustrip(Float64, time_unit, ages * t_conv)
-    # Stars' IDs.
-    ids = read_snap(snapshot, "ID", 4)
-
-    birth_place = Vector{Float64}[]
-    for (id, birth_time) in zip(ids, birth_times)
-
-        # Index of the snapshot where the target star was born.
-        snap_idx = findfirst(x -> x >= birth_time, time_stamps)
-
-        # IDs of the stars in the snapshot where the target star was born.
-        nursery_ids = read_snap(snap_files[snap_idx], "ID", 4)
-
-        # Index of the target star, in the snapshot where it was born.
-        birth_idx = findfirst(x -> x == id, nursery_ids)
-        while birth_idx === nothing
-            snap_idx += 1
-            nursery_ids = read_snap(snap_files[snap_idx], "ID", 4)
-            birth_idx = findfirst(x -> x == id, nursery_ids)
-        end
-
-        # Position of the target star, in the snapshot where it was born.
-        raw_pos = read_snap(snap_files[snap_idx], "POS", 4)[:, birth_idx]
-        nursery_pos = @. ustrip(Float64, length_unit, raw_pos * GU.x_cgs)
-
-        push!(birth_place, nursery_pos)
-    end
-
-    return Dict("birth_place" => hcat(birth_place...), "unit" => length_unit)
 end

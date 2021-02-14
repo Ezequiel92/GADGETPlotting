@@ -10,13 +10,13 @@
 
 include("src/GADGETPlotting.jl")
 
-"Base path for the directories where the figures and animations will be saved."
+"Base path to the directories where the output images and animations will be saved."
 const BASE_OUT_PATH = "results/"
 
 "Directory containing the snapshot files."
 const BASE_SRC_PATH = "test_snapshots/"
 
-"Base name of the snapshot files."
+"Base name of the snapshot files, set in the GADGET variable SnapshotFileBase."
 const SNAP_NAME = "snap"
 
 "Side dimension of the simulated region, for the case of vacuum boundary conditions."
@@ -83,12 +83,30 @@ star_z = zData(snap_files[SNAP_N], "stars", sim_cosmo = SIM_COSMO)
 display(star_z)
 println()
 
-sfrtxtdata = sfrTxtData(BASE_SRC_PATH, SNAP_NAME, sim_cosmo = SIM_COSMO)
-display(sfrtxtdata)
+temp_data = tempData(snap_files[SNAP_N], sim_cosmo = SIM_COSMO)
+display(temp_data)
 println()
 
-birth_pos = birthPlace(SNAP_N, snap_files, time_series["clock_time"], sim_cosmo = SIM_COSMO)
-display(birth_pos["birth_place"])
+age_data = ageData(
+    snap_files[SNAP_N],
+    time_series["clock_time"][SNAP_N] * time_series["units"]["time"],
+    sim_cosmo = SIM_COSMO,
+)
+display(age_data)
+println()
+
+birth_pos = birthPlace(
+    SNAP_N,
+    snap_files,
+    time_series["clock_time"],
+    time_series["units"]["time"],
+    sim_cosmo = SIM_COSMO,
+)
+display(birth_pos)
+println()
+
+sfrtxt_data = sfrTxtData(BASE_SRC_PATH, SNAP_NAME, sim_cosmo = SIM_COSMO)
+display(sfrtxt_data)
 println()
 
 ############################################################################################
@@ -236,9 +254,35 @@ massProfilePlot(
 )
 savefig(BASE_OUT_PATH * "test_compare_star_massProfilePlot.png")
 
-sfr_data = sfrTxtData(BASE_SRC_PATH, SNAP_NAME; sim_cosmo = SIM_COSMO)
-sfrTxtPlot(sfr_data, 1, [4, 6], title = "run_A_01", bins = 50, scale = (:identity, :log10))
+sfrTxtPlot(
+    sfrtxt_data,
+    1,
+    [4, 6],
+    title = "run_A_01",
+    bins = 50,
+    scale = (:identity, :log10),
+)
 savefig(BASE_OUT_PATH * "test_sfrTxtPlot.png")
+
+temperatureHistogramPlot(temp_data, 1UnitfulAstro.Myr, bins = 30)
+savefig(BASE_OUT_PATH * "test_temperatureHistogramPlot.png")
+
+rhoTempPlot(temp_data, density, 1UnitfulAstro.Myr)
+savefig(BASE_OUT_PATH * "test_rhoTempPlot.png")
+
+KennicuttSchmidtPlot(
+    gas_mass,
+    temp_data,
+    star_mass,
+    age_data,
+    pos,
+    3.0e4Unitful.K,
+    200UnitfulAstro.Myr,
+    BOX_SIZE,
+    1UnitfulAstro.Myr,
+    bins = 80,
+)
+savefig(BASE_OUT_PATH * "test_KennicuttSchmidtPlot.png")
 
 ############################################################################################
 # TEST OF PIPELINE FUNCTIONS.
@@ -455,6 +499,35 @@ sfrTxtPipeline(
     scale = (:identity, :log10),
 )
 
+temperatureHistogramPipeline(
+    SNAP_NAME,
+    BASE_SRC_PATH,
+    "temperature_histogram_animation",
+    FPS,
+    output_path = BASE_OUT_PATH * "temperature_histogram/",
+    sim_cosmo = SIM_COSMO,
+)
+
+rhoTempPipeline(
+    SNAP_NAME,
+    BASE_SRC_PATH,
+    "rho_vs_temp_animation",
+    FPS,
+    output_path = BASE_OUT_PATH * "rho_vs_temp/",
+    sim_cosmo = SIM_COSMO,
+)
+
+KennicuttSchmidtPipeline(
+    SNAP_NAME,
+    BASE_SRC_PATH;
+    output_path = BASE_OUT_PATH * "Kennicutt_Schmidt/",
+    sim_cosmo = SIM_COSMO,
+    max_r = BOX_SIZE,
+    box_size = BOX_SIZE,
+    bins = 80,
+    time_unit = UnitfulAstro.yr,
+)
+
 ############################################################################################
 # TEST OF AUXILIARY FUNCTIONS.
 ############################################################################################
@@ -475,7 +548,7 @@ savefig(BASE_OUT_PATH * "test_smoothWindow.png")
 
 positions = pos["gas"]
 distances = sqrt.(positions[1, :] .^ 2 .+ positions[2, :] .^ 2 .+ positions[3, :] .^ 2)
-box_size = ustrip(Float64, UnitfulAstro.Mpc, BOX_SIZE)
+box_size = ustrip(Float64, pos["unit"], BOX_SIZE)
 r, ρ = densityProfile(gas_mass["mass"], distances, box_size, 80)
 plot(r, ρ, lw = 2, xlabel = "r / $(pos["unit"])", ylabel = L"\rho", legend = false)
 savefig(BASE_OUT_PATH * "test_densityProfile.png")
@@ -500,6 +573,37 @@ plot(
     legend = false,
 )
 savefig(BASE_OUT_PATH * "test_CMDF.png")
+
+pos_gas = pos["gas"]
+dist_gas = sqrt.(pos_gas[1, :] .^ 2 + pos_gas[2, :] .^ 2)
+pos_stars = pos["stars"]
+dist_stars = sqrt.(pos_stars[1, :] .^ 2 + pos_stars[2, :] .^ 2)
+KSL = KennicuttSchmidtLaw(
+    gas_mass["mass"],
+    dist_gas,
+    temp_data["T"],
+    star_mass["mass"],
+    dist_stars,
+    age_data["ages"],
+    ustrip(Float64, temp_data["unit"], 3e4Unitful.K),
+    ustrip(Float64, age_data["unit"], 200UnitfulAstro.Myr),
+    ustrip(Float64, pos["unit"], BOX_SIZE),
+    bins = 80,
+)
+linear_model = KSL["LM"]
+a = round(coef(linear_model)[1], sigdigits = 1)
+m = round(coef(linear_model)[2], digits = 1)
+a_error = round(stderror(linear_model)[1], sigdigits = 1)
+m_error = round(stderror(linear_model)[2], sigdigits = 1)
+scatter(KSL["RHO"], KSL["SFR"], label = "Data", xlabel = L"log(\rho)", ylabel = L"log(SFR)")
+pl = plot!(KSL["RHO"], predict(linear_model), label = "Fit")
+annotate!(relative(pl, 0.5, 0.95)..., text(L"SFR = A\,\rho^m", "Courier", 8, :center))
+annotate!(relative(pl, 0.5, 0.9)..., text(L"m = %$m \pm %$m_error", "Courier", 8, :center))
+annotate!(
+    relative(pl, 0.5, 0.85)...,
+    text(L"log(A) = %$a \pm %$a_error", "Courier", 8, :center),
+)
+savefig(BASE_OUT_PATH * "test_KennicuttSchmidtLaw.png")
 
 ############################################################################################
 # DELETE ALL GENERATED TESTING FILES.

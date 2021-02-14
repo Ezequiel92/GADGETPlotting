@@ -630,7 +630,7 @@ function gasStarEvolutionPlot(
     index::Int64,
 )::Plots.Plot
 
-    # Unit formatting for the axes labels.
+    # Formatting for the axes labels.
     time_unit = time_series["units"]["time"]
     length_unit = position_data["unit"]
     sfr_unit = string(time_series["units"]["sfr"])
@@ -668,7 +668,7 @@ function gasStarEvolutionPlot(
     baryonic_frac = [reduced_gas reduced_stars]
 
     # Data for the time stamp.
-    clock = round(t[index], digits = 2)
+    clock = round(t[index], sigdigits = 4)
     # Upper limit for the time axis label.     
     t_end = ceil(t[end]) * 1.025
     # Upper limit for the SFR axis label.         
@@ -764,7 +764,7 @@ function gasStarEvolutionPlot(
 end
 
 """
-    function CMDFPlot(
+    CMDFPlot(
         m_data::Dict{String, Any}, 
         z_data::Dict{String, Any},
         time::Unitful.Quantity;
@@ -773,14 +773,14 @@ end
 	
 Make a cumulative metallicity distribution function plot, for a given time step.
 
-`mass_data` and `metallicity_data` must be in the same units.
+`m_data` and `z_data` must be in the same units.
 
 # Arguments
 - `m_data::Dict{String, Any}`: Return value of the massData function.
 - `z_data::Dict{String, Any}`: Return value of the zData function.
 - `time::Unitful.Quantity`: Time with units for the time stamp of the plot. 
   All available time units in Unitful and UnitfulAstro can be used, e.g. UnitfulAstro.Myr.
-- `bins::Int64`: Number of subdivisions of the metallicity to be used for the profile.
+- `bins::Int64`: Number of subdivisions of the metallicity to construct the plot.
 - `x_norm::Bool = false`: If the x axis will be normalize to its maximum value. 
 
 # Returns
@@ -802,7 +802,7 @@ function CMDFPlot(
         error("Mass and metallicity must be in the same units.")
     )
 
-    # Get mass data.
+    # Get the mass data.
     mass_data = m_data["mass"]
     metallicity_data = z_data["Z"]
 
@@ -853,7 +853,7 @@ end
 Make a cumulative metallicity distribution function plot of several datasets, 
 for a given time step.
 
-`mass_data` and `metallicity_data` must be in the same units.
+`m_data` and `z_data` must be in the same units.
 
 # Arguments
 - `m_data::Vector{Dict{String, Any}}`: Return values of the massData function.
@@ -861,7 +861,7 @@ for a given time step.
 - `time::Unitful.Quantity`: Time with units for the time stamp of the plot. 
   All available time units in Unitful and UnitfulAstro can be used, e.g. UnitfulAstro.Myr.
 - `labels::Array{String, 2}`: Labels for the different simulations.
-- `bins::Int64`: Number of subdivisions of the metallicity to be used for the profile.
+- `bins::Int64`: Number of subdivisions of the metallicity to construct the plot.
 - `x_norm::Bool = false`: If the x axis will be normalize to its maximum value. 
 
 # Returns
@@ -888,14 +888,14 @@ function CMDFPlot(
 
     mass_z_units = get.(z_data, "unit", 0)
     if !all(x -> x == mass_z_units[1], mass_z_units)
-        error("The units of mass are not the same among datasets.")
+        error("The units of metallicity are not the same among datasets.")
     else
         z_unit = mass_z_units[1]
     end
 
-    (m_unit == z_unit || error("Mass and metallicity must be in the same units."))
+    m_unit == z_unit || error("Mass and metallicity must be in the same units.")
 
-    # Get mass data.
+    # Get the mass data.
     masses = get.(m_data, "mass", 0)
     metallicities = get.(z_data, "Z", 0)
 
@@ -1010,7 +1010,7 @@ function timeSeriesPlot(
 
     pgfplotsx()
 
-    # Unit formatting for the axes labels.
+    # Formatting for the axes labels.
     time_unit = time_series["units"]["time"]
     sfr_unit = string(time_series["units"]["sfr"])
     mass_unit = string(time_series["units"]["mass"])
@@ -1148,7 +1148,7 @@ function scaleFactorSeriesPlot(
 
     pgfplotsx()
 
-    # Unit formatting for the axes labels.
+    # Formatting for the axes labels.
     sfr_unit = string(time_series["units"]["sfr"])
     mass_unit = string(time_series["units"]["mass"])
 
@@ -1285,7 +1285,7 @@ function redshiftSeriesPlot(
 
     pgfplotsx()
 
-    # Unit formatting for the axes labels.
+    # Formatting for the axes labels.
     sfr_unit = string(time_series["units"]["sfr"])
     mass_unit = string(time_series["units"]["mass"])
 
@@ -1517,7 +1517,7 @@ function compareSimulationsPlot(
     ylabel = data[1]["labels"][y_quantity]
     xlabel = data[1]["labels"][x_quantity]
 
-    # Unit formatting for the x axis.
+    # Formatting for the x axis.
     if x_quantity == "clock_time"
         unit = data[1]["units"]["time"]
 
@@ -1579,7 +1579,7 @@ function compareSimulationsPlot(
         xlabel *= L"\ / \, 10^{%$x_factor}"
     end
 
-    # Unit formatting for the y axis.
+    # Formatting for the y axis.
     if y_quantity == "clock_time"
         unit = data[1]["units"]["time"]
 
@@ -1641,7 +1641,6 @@ function compareSimulationsPlot(
         ylabel *= L"\ / \, 10^{%$y_factor}"
     end
 
-    # Final figure.
     return plot(
         hcat(x_data...),
         hcat(y_data...);
@@ -1686,9 +1685,6 @@ Make a histogram of the densities of the gas particles.
 - `bins::Int64 = 20`: Number of bins to use in the histogram.
 - `factor::Int64 = 0`: Numerical exponent to scale `density_data`, e.g. if factor = 10 
   the y axis will be scaled by 10^10. The default is 0, i.e. no scaling.
-- `density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3`: Unit of density 
-  to be used in the output, all available density units in Unitful and UnitfulAstro can 
-  be used, e.g. UnitfulAstro.Msun / UnitfulAstro.kpc^3, which is the default.
 	
 # Returns
 - The plot generated by the PGFPlotsX backend of Plots.jl.
@@ -1698,18 +1694,17 @@ function densityHistogramPlot(
     time::Unitful.Quantity;
     bins::Int64 = 20,
     factor::Int64 = 0,
-    density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3,
 )::Plots.Plot
 
     pgfplotsx()
 
-    # Set to the correct units.
-    ρ = @. ustrip(Float64, density_unit, density_data["gas_density"] * density_data["unit"])
+    # Get the density data.
+    ρ = density_data["gas_density"]
     # Scale data by 10^factor.
     ρ ./= 10^factor
 
-    # Unit formatting for the x axis label.
-    str_unit = string(density_unit)
+    # Formatting for the x axis label.
+    str_unit = string(density_data["unit"])
     xlabel = L"\rho \ / \,"
     if factor != 0
         xlabel *= replace(
@@ -1727,7 +1722,6 @@ function densityHistogramPlot(
     clock = round(ustrip(time), digits = 2)
     time_unit = unit(time)
 
-    # Final figure.
     return histogram(
         ρ,
         bins = range(0, stop = maximum(ρ), length = bins),
@@ -1771,9 +1765,6 @@ Make a density profile plot for a given time step.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `position_data["box_size"]` if vacuum boundary conditions were used, and
   it will scale `position_data["box_size"] / 2` if periodic boundary conditions were used.
-- `density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3`: Unit of density 
-  to be used in the output, all available density units in Unitful and UnitfulAstro can 
-  be used, e.g. UnitfulAstro.Msun / UnitfulAstro.kpc^3, which is the default.
 
 # Returns
 - The plot generated by the PGFPlotsX backend of Plots.jl.
@@ -1786,7 +1777,6 @@ function densityProfilePlot(
     bins::Int64 = 100,
     factor::Int64 = 0,
     box_factor::Float64 = 1.0,
-    density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3,
 )::Plots.Plot
 
     pgfplotsx()
@@ -1796,6 +1786,9 @@ function densityProfilePlot(
 
     pos = position_data[type]
     length_unit = position_data["unit"]
+
+    # Set the units.
+    density_unit = mass_data["unit"] / (length_unit^3)
 
     if isempty(pos)
         # In the case that there are no particles.
@@ -1813,8 +1806,6 @@ function densityProfilePlot(
     end
 
     r, ρ = densityProfile(masses, distances, r_max, bins)
-    # Set correct units.
-    ρ = @. ustrip(Float64, density_unit, ρ * (mass_data["unit"] / (length_unit^3)))
     # Scale data by 10^factor.
     ρ ./= 10^factor
 
@@ -1835,7 +1826,7 @@ function densityProfilePlot(
     clock = round(ustrip(time), digits = 2)
     time_unit = unit(time)
 
-    # Unit formatting for the y axis label.
+    # Formatting for the y axis label.
     ρ_unit = string(density_unit)
     if type == "gas"
         ylabel = L"\rho_{\mathrm{gas}} \ / \,"
@@ -1856,7 +1847,6 @@ function densityProfilePlot(
         )
     end
 
-    # Final figure.
     return plot(
         r,
         ρ,
@@ -1906,9 +1896,6 @@ Make a density profile plot comparing several datasets, for a given time step.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `position_data["box_size"]` if vacuum boundary conditions were used, and
   it will scale `position_data["box_size"] / 2` if periodic boundary conditions were used.
-- `density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3`: Unit of density 
-  to be used in the output, all available density units in Unitful and UnitfulAstro can 
-  be used, e.g. UnitfulAstro.Msun / UnitfulAstro.kpc^3, which is the default.
 
 # Returns
 - The plot generated by the PGFPlotsX backend of Plots.jl.
@@ -1922,8 +1909,6 @@ function densityProfilePlot(
     bins::Int64 = 100,
     factor::Int64 = 0,
     box_factor::Float64 = 1.0,
-    length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
-    density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3,
 )::Plots.Plot
 
     pgfplotsx()
@@ -1947,7 +1932,7 @@ function densityProfilePlot(
     if !all(x -> x == mass_units[1], mass_units)
         error("The units of mass are not the same among datasets.")
     else
-        mass_unit = string(mass_units[1])
+        mass_unit = mass_units[1]
     end
 
     periodicities = get.(position_data, "periodic", 0)
@@ -1959,6 +1944,8 @@ function densityProfilePlot(
 
     masses = get.(mass_data, "mass", 0)
     positions = get.(position_data, type, 0)
+    # Set the units.
+    density_unit = mass_unit / (length_unit^3)
 
     distances = Vector{Float64}[]
     for pos in positions
@@ -1982,12 +1969,6 @@ function densityProfilePlot(
     ρ = Vector{Float64}[]
     for (mass, distance, max_r) in zip(masses, distances, max_rs)
         r_result, ρ_result = densityProfile(mass, distance, max_r, bins)
-        # Set correct units.
-        ρ_result = @. ustrip(
-            Float64, 
-            density_unit, 
-            ρ_result * (mass_units[1] / (length_unit^3))
-        )
         # Scale data by 10^factor.
         ρ_result ./= 10^factor
 
@@ -2028,7 +2009,7 @@ function densityProfilePlot(
     clock = round(ustrip(time), digits = 2)
     time_unit = unit(time)
 
-    # Unit formatting for the y axis label.
+    # Formatting for the y axis label.
     ρ_unit = string(density_unit)
     if factor != 0
         ρ_unit = replace(
@@ -2050,7 +2031,6 @@ function densityProfilePlot(
         ylabel = L"Dark matter density %$ρ_unit"
     end
 
-    # Final figure.
     return plot(
         hcat(r...),
         hcat(ρ...),
@@ -2172,7 +2152,6 @@ function metallicityProfilePlot(
         ylabel = L"\mathrm{Star} \ \mathrm{Z} \ / \ \mathrm{Z_{\odot}}"
     end
 
-    # Final figure.
     return plot(
         r,
         z,
@@ -2338,7 +2317,6 @@ function metallicityProfilePlot(
         ylabel = L"\mathrm{Star} \ \mathrm{Z} \ / \ \mathrm{Z_{\odot}}"
     end
 
-    # Final figure.
     return plot(
         hcat(r...),
         hcat(z...),
@@ -2390,9 +2368,6 @@ Make a accumulated mass profile plot for a given time step.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `position_data["box_size"]` if vacuum boundary conditions were used, and
   it will scale `position_data["box_size"] / 2` if periodic boundary conditions were used.
-- `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
-  all available mass units in Unitful and UnitfulAstro can be used, 
-  e.g. UnitfulAstro.Msun, which is the default.
 
 # Returns
 - The plot generated by the PGFPlotsX backend of Plots.jl.
@@ -2405,13 +2380,14 @@ function massProfilePlot(
     bins::Int64 = 100,
     factor::Int64 = 0,
     box_factor::Float64 = 1.0,
-    mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
 )::Plots.Plot
 
     pgfplotsx()
 
     type = mass_data["type"]
     masses = mass_data["mass"]
+    mass_unit = mass_data["unit"]
+
     pos = position_data[type]
     length_unit = position_data["unit"]
 
@@ -2431,8 +2407,6 @@ function massProfilePlot(
     end
 
     r, m = massProfile(masses, distances, r_max, bins)
-    # Set correct units.
-    m = @. ustrip(Float64, mass_unit, m * mass_data["unit"])
     # Scale data by 10^factor.
     m ./= 10^factor
 
@@ -2453,7 +2427,7 @@ function massProfilePlot(
     clock = round(ustrip(time), digits = 2)
     time_unit = unit(time)
 
-    # Unit formatting for the y axis label.
+    # Formatting for the y axis label.
     m_unit = string(mass_unit)
     if factor != 0
         m_unit = replace(
@@ -2472,7 +2446,6 @@ function massProfilePlot(
         ylabel = L"Dark matter mass %$m_unit"
     end
 
-    # Final figure.
     return plot(
         r,
         m,
@@ -2521,9 +2494,6 @@ Make a accumulated mass profile plot of several datasets, for a given time step.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `position_data["box_size"]` if vacuum boundary conditions were used, and
   it will scale `position_data["box_size"] / 2` if periodic boundary conditions were used.
-- `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
-  all available mass units in Unitful and UnitfulAstro can be used, 
-  e.g. UnitfulAstro.Msun, which is the default.
 
 # Returns
 - The plot generated by the PGFPlotsX backend of Plots.jl.
@@ -2537,8 +2507,6 @@ function massProfilePlot(
     bins::Int64 = 100,
     factor::Int64 = 0,
     box_factor::Float64 = 1.0,
-    length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
-    mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
 )::Plots.Plot
 
     pgfplotsx()
@@ -2558,6 +2526,13 @@ function massProfilePlot(
         length_unit = length_units[1]
     end
 
+    mass_units = get.(mass_data, "unit", 0)
+    if !all(x -> x == mass_units[1], mass_units)
+        error("The units of mass are not the same among datasets.")
+    else
+        mass_unit = mass_units[1]
+    end
+
     periodicities = get.(position_data, "periodic", 0)
     if !all(x -> x == periodicities[1], periodicities)
         error("The boundary conditions are not the same among datasets.")
@@ -2566,7 +2541,6 @@ function massProfilePlot(
     end
 
     masses = get.(mass_data, "mass", 0)
-    mass_units = get.(mass_data, "unit", 0)
     positions = get.(position_data, type, 0)
 
     distances = Vector{Float64}[]
@@ -2589,10 +2563,8 @@ function massProfilePlot(
 
     r = Vector{Float64}[]
     m = Vector{Float64}[]
-    for (mass, unit, distance, max_r) in zip(masses, mass_units, distances, max_rs)
+    for (mass, distance, max_r) in zip(masses, distances, max_rs)
         r_result, m_result = massProfile(mass, distance, max_r, bins)
-        # Set correct units.
-        m_result = @. ustrip(Float64, mass_unit, m_result * unit)
         # Scale data by 10^factor.
         m_result ./= 10^factor
 
@@ -2633,7 +2605,7 @@ function massProfilePlot(
     clock = round(ustrip(time), digits = 2)
     time_unit = unit(time)
 
-    # Unit formatting for the y axis label.
+    # Formatting for the y axis label.
     m_unit = string(mass_unit)
     if factor != 0
         m_unit = replace(
@@ -2652,7 +2624,6 @@ function massProfilePlot(
         ylabel = L"Dark matter mass %$m_unit"
     end
 
-    # Final figure.
     return plot(
         hcat(r...),
         hcat(m...),
@@ -2681,7 +2652,7 @@ end
 
 """
     sfrTxtPlot(
-        data::Dict{Int64, Vector{Float64}},
+        data::Dict{Union{Int64, String}, Any},
         x_axis::Int64,
         y_axis::Vector{Int64}; 
         <keyword arguments>
@@ -2693,7 +2664,7 @@ Make a plot of column `y_axis` vs. column `x_axis`, of the sfr.txt text file.
 THIS FUNCTION NEEDS A FILE (sfr.txt) WHICH IS NOT PRODUCED BY ANY PUBLIC VERSION OF GADGET.
 
 # Arguments
-- `data::Dict{Int64, Vector{Float64}}`: Return values of the sfrTxtData function.
+- `data::Dict{Union{Int64, String}, Any}`: Return values of the sfrTxtData function.
 - `x_axis::Int64`: Column number for the x axis.
 - `y_axis::Vector{Int64}`: Vector of columns numbers for the y axis.
 - `title::String = ""`: Title for the figure. If an empty string is given
@@ -2707,35 +2678,28 @@ THIS FUNCTION NEEDS A FILE (sfr.txt) WHICH IS NOT PRODUCED BY ANY PUBLIC VERSION
 - `min_filter::NTuple{2, Float64} = (-Inf, -Inf)`: Value filter for the x and y axes.
   If a value of the x data is lower than min_filter[1], then it is deleted. Equivalently 
   with the y axis and min_filter[2]. The default is -Inf for both, i.e. no filtering.
-- `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
-  all available mass units in Unitful and UnitfulAstro can be used, 
-  e.g. UnitfulAstro.Msun, which is the default.
-- `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
-  all available time units in Unitful and UnitfulAstro can be used, 
-  e.g. UnitfulAstro.Myr, which is the default.
-- `sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr`: Unit of mass/time to 
-  be used in the output, all available time and mass units in Unitful and UnitfulAstro 
-  can be used, e.g. UnitfulAstro.Msun/UnitfulAstro.yr, which is the default.
 
 # Returns
 - The plot generated by the PGFPlotsX backend of Plots.jl.
 """
 function sfrTxtPlot(
-    data::Dict{Int64, Vector{Float64}},
+    data::Dict{Union{Int64, String}, Any},
     x_axis::Int64,
     y_axis::Vector{Int64};
     title::String = "",
     bins::Int64 = 0,
     scale::NTuple{2, Symbol} = (:identity, :identity),
     min_filter::NTuple{2, Float64} = (-Inf, -Inf),
-    mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
-    time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
-    sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr,
 )::Plots.Plot
 
     pgfplotsx()
 
-    # Unit formatting for the axes labels.
+    # Get the units.
+    mass_unit = data["units"]["mass"]
+    time_unit = data["units"]["time"]
+    sfr_unit = data["units"]["sfr"]
+
+    # Formatting for the axes labels.
     m_unit = replace(string(mass_unit), "M⊙" => L"\, / \mathrm{M}_{\odot}")
     str_sfr_unit = replace(
         replace(string(sfr_unit), "M⊙" => L"$\, / \ \left(\mathrm{M_{\odot} \,"),
@@ -2752,7 +2716,7 @@ function sfrTxtPlot(
         "SFR $str_sfr_unit",
     ]
 
-    # Parameter configuration of the figure.
+    # Configuration of the parameters for the plot.
     figure = plot(
         xscale = scale[1],
         yscale = scale[2],
@@ -2812,3 +2776,489 @@ function sfrTxtPlot(
 
     return figure
 end
+
+"""
+    temperatureHistogramPlot(
+        temperature_data::Dict{String, Any},
+        time::Unitful.Quantity; 
+        <keyword arguments>
+    )::Plots.Plot
+
+Make a histogram of the lgarithm of the gas particles' temperatures.
+
+# Arguments
+- `temperature_data::Dict{String,Any}`: Return value of the tempData function.
+- `time::Unitful.Quantity`: Time with units for the time stamp of the plot. 
+  All available time units in Unitful and UnitfulAstro can be used, e.g. UnitfulAstro.Myr.
+- `bins::Int64 = 20`: Number of bins to use in the histogram.
+	
+# Returns
+- The plot generated by the PGFPlotsX backend of Plots.jl.
+"""
+function temperatureHistogramPlot(
+    temperature_data::Dict{String, Any},
+    time::Unitful.Quantity;
+    bins::Int64 = 20,
+)::Plots.Plot
+
+    pgfplotsx()
+
+    T = temperature_data["T"]
+    temp_unit = temperature_data["unit"]
+
+    # Non zero check.
+    if any(x -> isequal(x, 0.0), T)
+        error("There are temperatures equal to 0!.")
+    end
+
+    # Set logarithmic scaling.
+    T = log10.(T)
+
+    # Formatting for the x axis label.
+    xlabel = L"\log_{10}(\mathrm{T} \, / \, \mathrm{%$temp_unit})"
+
+    # Magnitude and unit for the time stamp.
+    clock = round(ustrip(time), digits = 2)
+    time_unit = unit(time)
+
+    return histogram(
+        T,
+        bins = range(0, stop = maximum(T), length = bins),
+        xlabel = xlabel,
+        normalize = :probability,
+        size = (1000, 800),
+        framestyle = :box,
+        legend = false,
+        xtickfontsize = 28,
+        ytickfontsize = 28,
+        xguidefontsize = 30,
+        yguidefontsize = 30,
+        ticklabel_shift = ".1cm",
+        add = "\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.1, 0.95) {$clock\$\\,\$$time_unit};",
+        extra_kwargs = :subplot,
+    )
+end
+
+"""
+    rhoTempPlot(
+        temperature_data::Dict{String, Any},
+        density_data::Dict{String, Any},
+        time::Unitful.Quantity,
+    )::Plots.Plot
+
+Make a plot of log10(ρ) vs. log10(T), for the gas particles at a given time step.
+
+# Arguments
+- `temperature_data::Dict{String,Any}`: Return value of the tempData function.
+- `density_data::Dict{String, Any}`: Return value of the densityData function.
+- `time::Unitful.Quantity`: Time with units for the time stamp of the plot. 
+  All available time units in Unitful and UnitfulAstro can be used, e.g. UnitfulAstro.Myr.
+	
+# Returns
+- The plot generated by the PGFPlotsX backend of Plots.jl.
+"""
+function rhoTempPlot(
+    temperature_data::Dict{String, Any},
+    density_data::Dict{String, Any},
+    time::Unitful.Quantity,
+)::Plots.Plot
+
+    pgfplotsx()
+
+    T = temperature_data["T"]
+    temp_unit = temperature_data["unit"]
+    ρ = density_data["gas_density"]
+    density_unit = string(density_data["unit"])
+
+    # Non zero check.
+    if any(x -> isequal(x, 0.0), T)
+        error("There are temperatures equal to 0!.")
+    end
+    if any(x -> isequal(x, 0.0), ρ)
+        error("There are densities equal to 0!.")
+    end
+
+    # Set logarithmic scaling.
+    T = log10.(T)
+    ρ = log10.(ρ)
+
+    # Formatting for the x axis label.
+    xlabel = L"\log_{10}(\mathrm{T} \, / \, \mathrm{%$temp_unit})"
+
+    # Formatting for the y axis label.
+    ylabel = replace(
+        replace(
+            density_unit, 
+            "M⊙" => L"$\log_{10}\!\left(\rho \, / \, \mathrm{M_{\odot} \,",
+        ),
+        "^-3" => L"^{-3}}\right)$",
+    )
+
+    # Magnitude and unit for the time stamp.
+    clock = round(ustrip(time), digits = 2)
+    time_unit = unit(time)
+
+    return scatter(
+        T,
+        ρ;
+        xlabel,
+        ylabel,
+        size = (1000, 800),
+        framestyle = :box,
+        legend = false,
+        xtickfontsize = 28,
+        ytickfontsize = 28,
+        xguidefontsize = 30,
+        yguidefontsize = 30,
+        markersize = 2,
+        markerstrokealpha = 0,
+        markercolor = :darkorange2,
+        ticklabel_shift = ".1cm",
+        add = "\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$time_unit};",
+        extra_kwargs = :subplot,
+    )
+end
+
+"""
+    KennicuttSchmidtPlot(
+        gas_mass_data::Dict{String, Any},
+        temperature_data::Dict{String, Any},
+        star_mass_data::Dict{String, Any},
+        age_data::Dict{String, Any},
+        pos_data::Dict{String, Any},
+        temp_filter::Unitful.Quantity,
+        age_filter::Unitful.Quantity,
+        max_r::Unitful.Quantity,
+        time::Unitful.Quantity;
+        <keyword arguments>
+    )::Plots.Plot
+
+Make a plot of the Kennicutt-Schmidt law for a given snapshot, with its fit and 
+the measured values superimposed for comparsion. 
+
+# Arguments
+- `gas_mass_data::Dict{String, Any}`: Return value of the massData function, for gas.
+- `temperature_data::Dict{String, Any}`: Return value of the tempData function.
+- `star_mass_data::Dict{String, Any}`: Return value of the massData function, for stars.
+- `age_data::Dict{String, Any}`: Return value of the ageData function.
+- `pos_data::Dict{String, Any}`: Return value of the positionData function.
+- `temp_filter::Unitful.Quantity`: Maximum temperature allowed for the gas particles.
+- `age_filter::Unitful.Quantity`: Maximum age allowed for the stars.
+- `max_r::Float64`: Maximum distance up to which the parameters will be calculated.
+- `time::Unitful.Quantity`: Time with units for the time stamp of the plot. 
+- `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. 
+  It has to be at least 5.
+	
+# Returns
+- The plot generated by the PGFPlotsX backend of Plots.jl.
+"""
+function KennicuttSchmidtPlot(
+    gas_mass_data::Dict{String, Any},
+    temperature_data::Dict{String, Any},
+    star_mass_data::Dict{String, Any},
+    age_data::Dict{String, Any},
+    pos_data::Dict{String, Any},
+    temp_filter::Unitful.Quantity,
+    age_filter::Unitful.Quantity,
+    max_r::Unitful.Quantity,
+    time::Unitful.Quantity;
+    bins::Int64 = 50,
+)::Union{Plots.Plot, Nothing}
+
+    pgfplotsx()
+
+    # Masses.
+    gas_mass = gas_mass_data["mass"]
+    gas_mass_unit = gas_mass_data["unit"]
+    
+    star_mass = star_mass_data["mass"]
+    star_mass_unit = star_mass_data["unit"]
+
+    #U Unit consistency check.
+    gas_mass_unit == star_mass_unit || error("Star and gas mass units must be the same.")
+
+    # Positions.
+    gas_pos = pos_data["gas"]
+    star_pos = pos_data["stars"]
+    length_unit = pos_data["unit"]
+    max_R = ustrip(Float64, length_unit, max_r)
+    dist_gas = sqrt.(gas_pos[1, :] .^ 2 + gas_pos[2, :] .^ 2)
+    dist_stars = sqrt.(star_pos[1, :] .^ 2 + star_pos[2, :] .^ 2)
+
+    # Temperatures
+    gas_temp = temperature_data["T"]
+    temp_unit = temperature_data["unit"]
+    T_filter = ustrip(Float64, temp_unit, temp_filter)
+
+    # Ages.
+    star_age = age_data["ages"]
+    time_unit = age_data["unit"]
+    time_filter = ustrip(Float64, time_unit, age_filter)
+
+    
+    ksl = KennicuttSchmidtLaw(
+        gas_mass,
+        dist_gas,
+        gas_temp,
+        star_mass,
+        dist_stars,
+        star_age,
+        T_filter,
+        time_filter,
+        max_R;
+        bins,
+    )
+
+    if ksl === nothing
+        return nothing
+    end
+
+    # Data to be plotted.
+    density_data = ksl["RHO"]
+    sfr_data = ksl["SFR"]
+
+    # Get linear fit.
+    linear_model = ksl["LM"]
+    coeff = coef(linear_model)
+    errors = stderror(linear_model)
+
+    # Sets the slope and intercept with the right amount of digits for display.
+    # It only works for errors between 0 and 1, otherwise gives more digits than it should.
+    intercept = round(coeff[1], digits = Int(abs(floor(log10(errors[1])))))
+    slope = round(coeff[2], digits = Int(abs(floor(log10(errors[2])))))
+    intercept_error = round(errors[1], sigdigits = 1)
+    slope_error = round(errors[2], sigdigits = 1)
+
+    # Formatting for the x axis label.
+    density_unit = gas_mass_unit / length_unit^2
+    xlabel = replace(
+        replace(
+            string(density_unit), 
+            "M⊙" => L"$\log_{10}\!\left(\Sigma_\mathrm{gas} \, / \, \mathrm{M_{\odot} \,",
+        ),
+        "^-2" => L"^{-2}}\right)$",
+    )
+
+    # Formatting for the y axis label.
+    sfr_unit = gas_mass_unit / time_unit /length_unit^2
+    ylabel = replace(
+        replace(
+            replace(
+                string(sfr_unit), 
+                "M⊙" => L"$\log_{10}\!\left(\Sigma_\mathrm{SFR} \, / \, \mathrm{M_{\odot} \,",
+            ),
+            "^-1" => "^{-1} \\,",
+        ), 
+        "^-2" => L"^{-2}}\right)$",
+    )
+
+    # Magnitude and unit for the time stamp.
+    clock = round(ustrip(time), digits = 2)
+    clock_unit = unit(time)
+
+    # Scatter plot of the simulated data.
+    figure = scatter(
+        density_data, 
+        sfr_data, 
+        label = "Simulation", 
+        xlabel = xlabel, 
+        ylabel = ylabel,
+        size = (1200, 1000),
+        framestyle = :box,
+        xtickfontsize = 28,
+        ytickfontsize = 28,
+        xguidefontsize = 30,
+        yguidefontsize = 30,
+        legendfontsize = 25,
+        markersize = 6,
+        markercolor = :darkorange2,
+        legend = :bottomright,
+        background_color_legend = nothing,
+        foreground_color_legend = nothing,
+    )
+
+    # Comparison line using the measured values by Kennicutt (1998).
+    sorted_density = sort(density_data)
+	KS_intercept = ustrip(Float64, sfr_unit, KENNICUTT98_INTERCEPT)
+	KS_intercept *= ustrip(Float64, density_unit, KENNICUTT98_RHO_UNIT)^(-KENNICUTT98_SLOPE)
+	y_KS_98 = log10(KS_intercept) .+ KENNICUTT98_SLOPE .* sorted_density
+
+    plot!(
+        figure, 
+        sorted_density, 
+        y_KS_98, 
+        ls = :auto,
+        lw = 3,
+        color = :blueviolet,
+        label = "Kennicutt 1998",
+    )
+
+    # Linear fit plot.
+    plot!(
+        figure, 
+        density_data, 
+        predict(linear_model), 
+        lw = 3,
+        color = :red,
+        label = "Fit",
+        ticklabel_shift = ".1cm",
+        add = "\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$clock_unit};",
+        extra_kwargs = :subplot,
+    )
+
+    # Annotations with the fitted parameters and its errors.
+    annotate!(
+        relative(figure, 0.05, 0.95)...,
+        text(
+            L"\Sigma_\mathrm{SFR} = \mathrm{A}\,\Sigma_\mathrm{gas}^{\,\mathrm{N}}", 
+            20, 
+            :left,
+        ),
+    )
+    annotate!(
+        relative(figure, 0.05, 0.9)...,
+        text(
+            L"\mathrm{N} = %$slope \pm %$slope_error", 
+            "Courier", 
+            20, 
+            :left,
+        ),
+    )
+    annotate!(
+        relative(figure, 0.05, 0.85)...,
+        text(
+            L"\mathrm{log}_{10}(\mathrm{A}) = %$intercept \pm %$intercept_error",
+            20, 
+            :left,
+        ),
+    )
+
+    return figure
+end
+
+
+
+# function KennicuttSchmidtPlot(
+#     sfr_data::Vector{Float64},
+#     density_data::Vector{Float64},
+#     linear_model::LinearModel,
+#     time::Unitful.Quantity,
+#     density_unit::Unitful.FreeUnits,
+#     sfr_unit::Unitful.FreeUnits,
+# )::Plots.Plot
+
+#     pgfplotsx()
+
+#     coeff = coef(linear_model)
+#     errors = stderror(linear_model)
+
+#     # Sets the slope and intercept with the right amount of digits for display.
+#     # It only works for errors between 0 and 1, otherwise gives more digits than it should.
+#     intercept = round(coeff[1], digits = Int(abs(floor(log10(errors[1])))))
+#     slope = round(coeff[2], digits = Int(abs(floor(log10(errors[2])))))
+#     intercept_error = round(errors[1], sigdigits = 1)
+#     slope_error = round(errors[2], sigdigits = 1)
+
+#     # Formatting for the x axis label.
+# 	ρ_unit = string(density_unit)
+#     xlabel = replace(
+#         replace(
+#             ρ_unit, 
+#             "M⊙" => L"$\log_{10}\!\left(\Sigma_\rho \, / \, \mathrm{M_{\odot} \,",
+#         ),
+#         "^-2" => L"^{-2}}\right)$",
+#     )
+
+#     # Formatting for the y axis label.
+#     str_unit = string(sfr_unit)
+#     ylabel = replace(
+#         replace(
+#             replace(
+#                 str_unit, 
+#                 "M⊙" => L"$\log_{10}\!\left(\Sigma_\mathrm{SFR} \, / \, \mathrm{M_{\odot} \,",
+#             ),
+#             "^-1" => "^{-1} \\,",
+#         ), 
+#         "^-2" => L"^{-2}}\right)$",
+#     )
+
+#     # Magnitude and unit for the time stamp.
+#     clock = round(ustrip(time), digits = 2)
+#     time_unit = unit(time)
+
+#     figure = scatter(
+#         density_data, 
+#         sfr_data, 
+#         label = "Simulation", 
+#         xlabel = xlabel, 
+#         ylabel = ylabel,
+#         size = (1200, 1000),
+#         framestyle = :box,
+#         xtickfontsize = 28,
+#         ytickfontsize = 28,
+#         xguidefontsize = 30,
+#         yguidefontsize = 30,
+#         legendfontsize = 25,
+#         markersize = 6,
+#         markercolor = :darkorange2,
+#         legend = :bottomright,
+#         background_color_legend = nothing,
+#         foreground_color_legend = nothing,
+#     )
+
+#     # Comparison line using the measured values by Kennicutt (1998).
+# 	KS_intercept = ustrip(Float64, sfr_unit, KENNICUTT98_INTERCEPT)
+# 	KS_intercept *= ustrip(Float64, density_unit, KENNICUTT98_RHO_UNIT)^(-KENNICUTT98_SLOPE)
+# 	y_KS_98 = log10(KS_intercept) .+ KENNICUTT98_SLOPE .* density_data
+
+#     plot!(
+#         figure, 
+#         density_data, 
+#         y_KS_98, 
+#         ls = :auto,
+#         lw = 3,
+#         color = :blueviolet,
+#         label = "Kennicutt 1998",
+#     )
+
+#     plot!(
+#         figure, 
+#         density_data, 
+#         predict(linear_model), 
+#         lw = 3,
+#         color = :red,
+#         label = "Fit",
+#         ticklabel_shift = ".1cm",
+#         add = "\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$time_unit};",
+#         extra_kwargs = :subplot,
+#     )
+
+#     # Annotations with the fitted parameters and its errors.
+#     annotate!(
+#         relative(figure, 0.05, 0.95)...,
+#         text(
+#             L"\mathrm{SFR = A}\,\rho^\mathrm{m}", 
+#             20, 
+#             :left,
+#         ),
+#     )
+#     annotate!(
+#         relative(figure, 0.05, 0.9)...,
+#         text(
+#             L"\mathrm{m} = %$slope \pm %$slope_error", 
+#             "Courier", 
+#             20, 
+#             :left,
+#         ),
+#     )
+#     annotate!(
+#         relative(figure, 0.05, 0.85)...,
+#         text(
+#             L"\mathrm{log}_{10}(\mathrm{A}) = %$intercept \pm %$intercept_error",
+#             20, 
+#             :left,
+#         ),
+#     )
+
+#     return figure
+# end
