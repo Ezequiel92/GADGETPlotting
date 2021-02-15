@@ -819,7 +819,7 @@ function CMDFPlot(
     end
 
     # Magnitude and unit for the time stamp.
-    clock = round(ustrip(time), digits = 2)
+    clock = round(ustrip(time), sigdigits = 4)
     time_unit = unit(time)
 
     return plot(
@@ -919,7 +919,7 @@ function CMDFPlot(
     end
 
     # Magnitude and unit for the time stamp.
-    clock = round(ustrip(time), digits = 2)
+    clock = round(ustrip(time), sigdigits = 4)
     time_unit = unit(time)
 
     return plot(
@@ -1719,7 +1719,7 @@ function densityHistogramPlot(
     end
 
     # Magnitude and unit for the time stamp.
-    clock = round(ustrip(time), digits = 2)
+    clock = round(ustrip(time), sigdigits = 4)
     time_unit = unit(time)
 
     return histogram(
@@ -1823,7 +1823,7 @@ function densityProfilePlot(
     end
 
     # Magnitude and unit for the time stamp.
-    clock = round(ustrip(time), digits = 2)
+    clock = round(ustrip(time), sigdigits = 4)
     time_unit = unit(time)
 
     # Formatting for the y axis label.
@@ -2006,7 +2006,7 @@ function densityProfilePlot(
     end
 
     # Magnitude and unit for the time stamp.
-    clock = round(ustrip(time), digits = 2)
+    clock = round(ustrip(time), sigdigits = 4)
     time_unit = unit(time)
 
     # Formatting for the y axis label.
@@ -2142,7 +2142,7 @@ function metallicityProfilePlot(
     end
 
     # Magnitude and unit for the time stamp.
-    clock = round(ustrip(time), digits = 2)
+    clock = round(ustrip(time), sigdigits = 4)
     time_unit = unit(time)
 
     # Formatting for the y axis label.
@@ -2307,7 +2307,7 @@ function metallicityProfilePlot(
     end
 
     # Magnitude and unit for the time stamp.
-    clock = round(ustrip(time), digits = 2)
+    clock = round(ustrip(time), sigdigits = 4)
     time_unit = unit(time)
 
     # Formatting for the y axis label.
@@ -2424,7 +2424,7 @@ function massProfilePlot(
     end
 
     # Magnitude and unit for the time stamp.
-    clock = round(ustrip(time), digits = 2)
+    clock = round(ustrip(time), sigdigits = 4)
     time_unit = unit(time)
 
     # Formatting for the y axis label.
@@ -2602,7 +2602,7 @@ function massProfilePlot(
     end
 
     # Magnitude and unit for the time stamp.
-    clock = round(ustrip(time), digits = 2)
+    clock = round(ustrip(time), sigdigits = 4)
     time_unit = unit(time)
 
     # Formatting for the y axis label.
@@ -2818,7 +2818,7 @@ function temperatureHistogramPlot(
     xlabel = L"\log_{10}(\mathrm{T} \, / \, \mathrm{%$temp_unit})"
 
     # Magnitude and unit for the time stamp.
-    clock = round(ustrip(time), digits = 2)
+    clock = round(ustrip(time), sigdigits = 4)
     time_unit = unit(time)
 
     return histogram(
@@ -2895,7 +2895,7 @@ function rhoTempPlot(
     )
 
     # Magnitude and unit for the time stamp.
-    clock = round(ustrip(time), digits = 2)
+    clock = round(ustrip(time), sigdigits = 4)
     time_unit = unit(time)
 
     return scatter(
@@ -3053,7 +3053,7 @@ function KennicuttSchmidtPlot(
     )
 
     # Magnitude and unit for the time stamp.
-    clock = round(ustrip(time), digits = 2)
+    clock = round(ustrip(time), sigdigits = 4)
     clock_unit = unit(time)
 
     # Scatter plot of the simulated data.
@@ -3135,130 +3135,3 @@ function KennicuttSchmidtPlot(
 
     return figure
 end
-
-
-
-# function KennicuttSchmidtPlot(
-#     sfr_data::Vector{Float64},
-#     density_data::Vector{Float64},
-#     linear_model::LinearModel,
-#     time::Unitful.Quantity,
-#     density_unit::Unitful.FreeUnits,
-#     sfr_unit::Unitful.FreeUnits,
-# )::Plots.Plot
-
-#     pgfplotsx()
-
-#     coeff = coef(linear_model)
-#     errors = stderror(linear_model)
-
-#     # Sets the slope and intercept with the right amount of digits for display.
-#     # It only works for errors between 0 and 1, otherwise gives more digits than it should.
-#     intercept = round(coeff[1], digits = Int(abs(floor(log10(errors[1])))))
-#     slope = round(coeff[2], digits = Int(abs(floor(log10(errors[2])))))
-#     intercept_error = round(errors[1], sigdigits = 1)
-#     slope_error = round(errors[2], sigdigits = 1)
-
-#     # Formatting for the x axis label.
-# 	ρ_unit = string(density_unit)
-#     xlabel = replace(
-#         replace(
-#             ρ_unit, 
-#             "M⊙" => L"$\log_{10}\!\left(\Sigma_\rho \, / \, \mathrm{M_{\odot} \,",
-#         ),
-#         "^-2" => L"^{-2}}\right)$",
-#     )
-
-#     # Formatting for the y axis label.
-#     str_unit = string(sfr_unit)
-#     ylabel = replace(
-#         replace(
-#             replace(
-#                 str_unit, 
-#                 "M⊙" => L"$\log_{10}\!\left(\Sigma_\mathrm{SFR} \, / \, \mathrm{M_{\odot} \,",
-#             ),
-#             "^-1" => "^{-1} \\,",
-#         ), 
-#         "^-2" => L"^{-2}}\right)$",
-#     )
-
-#     # Magnitude and unit for the time stamp.
-#     clock = round(ustrip(time), digits = 2)
-#     time_unit = unit(time)
-
-#     figure = scatter(
-#         density_data, 
-#         sfr_data, 
-#         label = "Simulation", 
-#         xlabel = xlabel, 
-#         ylabel = ylabel,
-#         size = (1200, 1000),
-#         framestyle = :box,
-#         xtickfontsize = 28,
-#         ytickfontsize = 28,
-#         xguidefontsize = 30,
-#         yguidefontsize = 30,
-#         legendfontsize = 25,
-#         markersize = 6,
-#         markercolor = :darkorange2,
-#         legend = :bottomright,
-#         background_color_legend = nothing,
-#         foreground_color_legend = nothing,
-#     )
-
-#     # Comparison line using the measured values by Kennicutt (1998).
-# 	KS_intercept = ustrip(Float64, sfr_unit, KENNICUTT98_INTERCEPT)
-# 	KS_intercept *= ustrip(Float64, density_unit, KENNICUTT98_RHO_UNIT)^(-KENNICUTT98_SLOPE)
-# 	y_KS_98 = log10(KS_intercept) .+ KENNICUTT98_SLOPE .* density_data
-
-#     plot!(
-#         figure, 
-#         density_data, 
-#         y_KS_98, 
-#         ls = :auto,
-#         lw = 3,
-#         color = :blueviolet,
-#         label = "Kennicutt 1998",
-#     )
-
-#     plot!(
-#         figure, 
-#         density_data, 
-#         predict(linear_model), 
-#         lw = 3,
-#         color = :red,
-#         label = "Fit",
-#         ticklabel_shift = ".1cm",
-#         add = "\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$time_unit};",
-#         extra_kwargs = :subplot,
-#     )
-
-#     # Annotations with the fitted parameters and its errors.
-#     annotate!(
-#         relative(figure, 0.05, 0.95)...,
-#         text(
-#             L"\mathrm{SFR = A}\,\rho^\mathrm{m}", 
-#             20, 
-#             :left,
-#         ),
-#     )
-#     annotate!(
-#         relative(figure, 0.05, 0.9)...,
-#         text(
-#             L"\mathrm{m} = %$slope \pm %$slope_error", 
-#             "Courier", 
-#             20, 
-#             :left,
-#         ),
-#     )
-#     annotate!(
-#         relative(figure, 0.05, 0.85)...,
-#         text(
-#             L"\mathrm{log}_{10}(\mathrm{A}) = %$intercept \pm %$intercept_error",
-#             20, 
-#             :left,
-#         ),
-#     )
-
-#     return figure
-# end

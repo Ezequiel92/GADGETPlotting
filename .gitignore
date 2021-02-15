@@ -1,4 +1,3 @@
-# Test files and results
-test_snapshots/snap_*
-test_snapshots/sfr.txt
-results/*
+# Test files and results.
+test/test_snapshots/*
+test/test_results/*

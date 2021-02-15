@@ -2012,18 +2012,61 @@ function rhoTempPipeline(
     return nothing
 end
 
+"""
+    KennicuttSchmidtPipeline(
+        base_name::String,
+        source_path::String; 
+        <keyword arguments>
+    )::Nothing
 
+Save the results of the KennicuttSchmidtPlot function as one image per snapshot.
 
+It will produce output only for the snapshots that have enough young stars to produce 
+at least five data points for the fitting.
 
-
+# Arguments
+- `base_name::String`: Base names of the snapshot files, set in the GADGET 
+  variable SnapshotFileBase.
+- `source_path::String`: Paths to the directories containing the snapshot files, 
+  set in the GADGET variable OutputDir.
+- `output_path::String = "Kennicutt_Schmidt/"`: Path to the output directory. The images 
+  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+  is the number of the snapshot. The GIF and the video will be stored in `output_path`.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
+  0 -> Newtonian simulation (static universe).
+  1 -> Cosmological simulation (expanding universe).
+- `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
+  i.e. all snapshots will be plotted.
+- `temp_filter::Unitful.Quantity`: Maximum temperature allowed for the gas particles.
+- `age_filter::Unitful.Quantity`: Maximum age allowed for the stars.
+- `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
+  if vacuum boundary conditions were used. It has to have units, e.g. 1000UnitfulAstro.kpc, 
+  which is the default. Its units don't have to be the same as `length_unit`.
+- `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. 
+  It has to be at least 5.
+- `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
+  all available time units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.Myr, which is the default.
+- `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
+  all available mass units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.Msun, which is the default.
+- `temp_unit::Unitful.FreeUnits = Unitful.K`: Unit of temperature to be used in the 
+  output, all available temperature units in Unitful and UnitfulAstro can be used, 
+  e.g. Unitful.K, which is the default.
+- `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
+  output, all available length units in Unitful and UnitfulAstro can be used, 
+  e.g. UnitfulAstro.kpc, which is the default.
+- `format::String = ".png"`: File format of the output figure. All formats supported by 
+  pgfplotsx can be used, namely ".pdf", ".tex", ".svg" and ".png", which is the default. 
+"""
 function KennicuttSchmidtPipeline(
     base_name::String,
     source_path::String;
     output_path::String = "Kennicutt_Schmidt/",
     sim_cosmo::Int64 = 0,
+    step::Int64 = 1,
     temp_filter::Unitful.Quantity = 3e4Unitful.K,
     age_filter::Unitful.Quantity = 200UnitfulAstro.Myr,
-    max_r::Unitful.Quantity = 1000UnitfulAstro.kpc,
     box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
     bins::Int64 = 50,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
@@ -2046,14 +2089,17 @@ function KennicuttSchmidtPipeline(
     # Create a directory to store the figures, if it doesn't exist.
     mkpath(output_path * "images/")
 
-    @inbounds for (i, snapshot) in enumerate(snap_files)
+    # Generate and store the plots.
+    short_snaps = @view snap_files[1:step:end] 
+
+    @inbounds for (i, snapshot) in enumerate(short_snaps)
 
         header = read_header(snapshot)
         if header.nall[5] != 0
             
-            number = snap_numbers[i]
+            number = snap_numbers[1 + step * (i - 1)]
             # Clock time of the snapshot i.
-            now = uconvert(time_unit, clock[i] * clock_unit)
+            now = uconvert(time_unit, clock[1 + step * (i - 1)] * clock_unit)
 
             # Gas masses.
             gas_mass_data = massData(snapshot, "gas"; sim_cosmo, mass_unit)
@@ -2074,8 +2120,8 @@ function KennicuttSchmidtPipeline(
                 pos_data,
                 temp_filter,
                 age_filter,
-                max_r,
-                clock[i] * clock_unit;
+                box_size,
+                clock[1 + step * (i - 1)] * clock_unit;
                 bins,
             )
 

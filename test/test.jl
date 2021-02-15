@@ -1,20 +1,20 @@
 ############################################################################################
 # Testing script for GADGETPlotting.jl.
-# It can be run as is and it shouldn't throw any errors.
+# When run as is, it shouldn't throw any errors.
 #
 # NOTE:
 # This script is not intended to be a comprehensive test of the functionality, 
-# but just to be a check that nothing is seriously broken, and to give examples
+# but just to be a check that nothing is seriously broken, and to give an example
 # on how to use every functions.
 ############################################################################################
 
-include("src/GADGETPlotting.jl")
+include("../src/GADGETPlotting.jl")
 
 "Base path to the directories where the output images and animations will be saved."
-const BASE_OUT_PATH = "results/"
+const BASE_OUT_PATH = "test/test_results/"
 
 "Directory containing the snapshot files."
-const BASE_SRC_PATH = "test_snapshots/"
+const BASE_SRC_PATH = "test/test_snapshots/"
 
 "Base name of the snapshot files, set in the GADGET variable SnapshotFileBase."
 const SNAP_NAME = "snap"
@@ -522,7 +522,6 @@ KennicuttSchmidtPipeline(
     BASE_SRC_PATH;
     output_path = BASE_OUT_PATH * "Kennicutt_Schmidt/",
     sim_cosmo = SIM_COSMO,
-    max_r = BOX_SIZE,
     box_size = BOX_SIZE,
     bins = 80,
     time_unit = UnitfulAstro.yr,
@@ -606,9 +605,9 @@ annotate!(
 savefig(BASE_OUT_PATH * "test_KennicuttSchmidtLaw.png")
 
 ############################################################################################
-# DELETE ALL GENERATED TESTING FILES.
+# DELETE ALL TESTING FILES PRODUCED.
 ############################################################################################
 
-# rm(BASE_OUT_PATH, recursive = true)
+rm(BASE_OUT_PATH, recursive = true)
 
 println("Everything worked just fine!!")
