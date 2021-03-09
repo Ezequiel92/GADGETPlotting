@@ -1,6 +1,6 @@
 # GADGET Plotting
 
-![GitHub](https://img.shields.io/github/license/Ezequiel92/GADGETPlotting)
+[![GitHub](https://img.shields.io/github/license/Ezequiel92/GADGETPlotting)](https://github.com/Ezequiel92/GADGETPlotting/blob/main/LICENSE) ![Maintenance](https://img.shields.io/maintenance/yes/2021) [![ForTheBadge built-with-science](http://ForTheBadge.com/images/badges/built-with-science.svg)](https://GitHub.com/Ezequiel92/)
 
 Julia script for creating plots, GIFs and videos from the data produce by GAGET2/3/4 simulations.
 
