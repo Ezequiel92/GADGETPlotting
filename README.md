@@ -1,5 +1,7 @@
 # GADGET Plotting
 
+![GitHub](https://img.shields.io/github/license/Ezequiel92/GADGETPlotting)
+
 Julia script for creating plots, GIFs and videos from the data produce by GAGET2/3/4 simulations.
 
 - It only works with the traditional output format (binary data) which is the default in GADGET2/3 (`SnapFormat = 1`) and a compatibility option in GADGET4 (`SnapFormat = 1`).
