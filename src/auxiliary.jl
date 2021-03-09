@@ -537,3 +537,76 @@ function KennicuttSchmidtLaw(
 
     return Dict("RHO" => x_data, "SFR" => y_data, "LM" => linear_model)
 end
+
+"""
+    error_string(mean::Float64, error::Float64)::String
+
+Give the mean and error in a string with the standar formating.
+
+It follows the traditional rules for error printing, the error with only one significant 
+digit, unles such digit is a one, in which case, two significant digits are printed. 
+The mean will have a presition such as to match the error.
+
+# Arguments 
+- `mean::Float64`: Mean value.
+- `error::Float64`: Error value. It must be positive.
+
+# Returns
+- A Tuple with the formatted mean and error.
+
+# Examples
+```julia-repl
+julia> error_string(69.42069, 0.038796)
+(69.42, 0.04)
+
+julia> error_string(69.42069, 0.018796)
+(69.421, 0.019)
+
+julia> error_string(69.42069, 0.0)
+(69.42069, 0.0)
+
+julia> error_string(69.42069, 73.4)
+(0.0, 70.0)
+```
+"""
+function error_string(mean::Float64, error::Float64)::NTuple{2, Float64}
+    error >= 0.0 || error("The error must be a positive number.")
+
+    if error == 0.0
+        round_mean = mean
+        round_error = error
+    else
+        sigdigit_pos = abs(log10(abs(error)))
+        extra = 0
+
+        if error < 1.0
+            if abs(mean) < error
+                round_mean = 0.0
+            else
+                first_dig = trunc(error * 10^(floor(sigdigit_pos) + 1))
+                if first_dig == 1.0
+                    extra = 1
+                end
+                digits = ceil(Int64, sigdigit_pos) + extra
+                round_mean = round(mean; digits)
+            end
+        else
+            if abs(mean) < error
+                round_mean = 0.0
+            else
+                first_dig = trunc(error / 10^(floor(sigdigit_pos)))
+                if first_dig == 1
+                    extra = 1
+                end
+
+                sigdigits =
+                    ceil(Int64, log10(abs(mean))) - ceil(Int64, sigdigit_pos) + 1 + extra
+                round_mean = round(mean; sigdigits)
+            end
+        end
+
+        round_error = round(error, sigdigits = 1 + extra)
+    end
+
+    return round_mean, round_error
+end

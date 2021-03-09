@@ -2995,14 +2995,13 @@ function KennicuttSchmidtPlot(
     time_unit = age_data["unit"]
     time_filter = ustrip(Float64, time_unit, age_filter)
 
-    
     ksl = KennicuttSchmidtLaw(
-        gas_mass,
-        dist_gas,
-        gas_temp,
-        star_mass,
-        dist_stars,
-        star_age,
+        copy(gas_mass),
+        copy(dist_gas),
+        copy(gas_temp),
+        copy(star_mass),
+        copy(dist_stars),
+        copy(star_age),
         T_filter,
         time_filter,
         max_R;
@@ -3023,11 +3022,8 @@ function KennicuttSchmidtPlot(
     errors = stderror(linear_model)
 
     # Sets the slope and intercept with the right amount of digits for display.
-    # It only works for errors between 0 and 1, otherwise gives more digits than it should.
-    intercept = round(coeff[1], digits = Int(abs(floor(log10(errors[1])))))
-    slope = round(coeff[2], digits = Int(abs(floor(log10(errors[2])))))
-    intercept_error = round(errors[1], sigdigits = 1)
-    slope_error = round(errors[2], sigdigits = 1)
+    intercept, intercept_error = error_string(coeff[1], errors[1])
+    slope, slope_error = error_string(coeff[2], errors[2])
 
     # Formatting for the x axis label.
     density_unit = gas_mass_unit / length_unit^2

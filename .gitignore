@@ -1,3 +1,2 @@
-# Test files and results.
-test/test_snapshots/*
-test/test_results/*
+example/test_data/*
+example/example_results/*

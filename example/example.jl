@@ -1,20 +1,21 @@
 ############################################################################################
-# Testing script for GADGETPlotting.jl.
+# Example script for GADGETPlotting.jl.
 # When run as is, it shouldn't throw any errors.
 #
 # NOTE:
 # This script is not intended to be a comprehensive test of the functionality, 
 # but just to be a check that nothing is seriously broken, and to give an example
-# on how to use every functions.
+# on how to load GADGETPlotting.jl and how to use every functions.
 ############################################################################################
 
-include("../src/GADGETPlotting.jl")
+push!(LOAD_PATH, "./src/")
+using GADGETPlotting, Unitful, UnitfulAstro, Plots, LaTeXStrings, GLM
 
 "Base path to the directories where the output images and animations will be saved."
-const BASE_OUT_PATH = "test/test_results/"
+const BASE_OUT_PATH = joinpath(@__DIR__, "example_results/")
 
 "Directory containing the snapshot files."
-const BASE_SRC_PATH = "test/test_snapshots/"
+const BASE_SRC_PATH = joinpath(@__DIR__, "test_data/")
 
 "Base name of the snapshot files, set in the GADGET variable SnapshotFileBase."
 const SNAP_NAME = "snap"
@@ -34,19 +35,19 @@ const SNAP_N = 21
 mkpath(BASE_OUT_PATH)
 
 ############################################################################################
-# TEST OF DATA ACQUISITION FUNCTIONS.
+# DATA ACQUISITION FUNCTIONS.
 ############################################################################################
 
-snaps = getSnapshots(SNAP_NAME, BASE_SRC_PATH)
+snaps = GADGETPlotting.getSnapshots(SNAP_NAME, BASE_SRC_PATH)
 snap_files = snaps["snap_files"]
 display(snaps)
 println()
 
-time_series = timeSeriesData(snap_files, sim_cosmo = SIM_COSMO)
+time_series = GADGETPlotting.timeSeriesData(snap_files, sim_cosmo = SIM_COSMO)
 display(time_series)
 println()
 
-pos = positionData(
+pos = GADGETPlotting.positionData(
     snap_files[SNAP_N],
     sim_cosmo = SIM_COSMO,
     box_size = BOX_SIZE,
@@ -55,39 +56,39 @@ pos = positionData(
 display(pos)
 println()
 
-density = densityData(snap_files[SNAP_N], sim_cosmo = SIM_COSMO)
+density = GADGETPlotting.densityData(snap_files[SNAP_N], sim_cosmo = SIM_COSMO)
 display(density)
 println()
 
-hsml = hsmlData(snap_files[SNAP_N], sim_cosmo = SIM_COSMO)
+hsml = GADGETPlotting.hsmlData(snap_files[SNAP_N], sim_cosmo = SIM_COSMO)
 display(hsml)
 println()
 
-gas_mass = massData(snap_files[SNAP_N], "gas", sim_cosmo = SIM_COSMO)
+gas_mass = GADGETPlotting.massData(snap_files[SNAP_N], "gas", sim_cosmo = SIM_COSMO)
 display(gas_mass)
 println()
 
-dm_mass = massData(snap_files[SNAP_N], "dark_matter", sim_cosmo = SIM_COSMO)
+dm_mass = GADGETPlotting.massData(snap_files[SNAP_N], "dark_matter", sim_cosmo = SIM_COSMO)
 display(dm_mass)
 println()
 
-star_mass = massData(snap_files[SNAP_N], "stars", sim_cosmo = SIM_COSMO)
+star_mass = GADGETPlotting.massData(snap_files[SNAP_N], "stars", sim_cosmo = SIM_COSMO)
 display(star_mass)
 println()
 
-gas_z = zData(snap_files[SNAP_N], "gas", sim_cosmo = SIM_COSMO)
+gas_z = GADGETPlotting.zData(snap_files[SNAP_N], "gas", sim_cosmo = SIM_COSMO)
 display(gas_z)
 println()
 
-star_z = zData(snap_files[SNAP_N], "stars", sim_cosmo = SIM_COSMO)
+star_z = GADGETPlotting.zData(snap_files[SNAP_N], "stars", sim_cosmo = SIM_COSMO)
 display(star_z)
 println()
 
-temp_data = tempData(snap_files[SNAP_N], sim_cosmo = SIM_COSMO)
+temp_data = GADGETPlotting.tempData(snap_files[SNAP_N], sim_cosmo = SIM_COSMO)
 display(temp_data)
 println()
 
-age_data = ageData(
+age_data = GADGETPlotting.ageData(
     snap_files[SNAP_N],
     time_series["clock_time"][SNAP_N] * time_series["units"]["time"],
     sim_cosmo = SIM_COSMO,
@@ -95,7 +96,7 @@ age_data = ageData(
 display(age_data)
 println()
 
-birth_pos = birthPlace(
+birth_pos = GADGETPlotting.birthPlace(
     SNAP_N,
     snap_files,
     time_series["clock_time"],
@@ -105,12 +106,12 @@ birth_pos = birthPlace(
 display(birth_pos)
 println()
 
-sfrtxt_data = sfrTxtData(BASE_SRC_PATH, SNAP_NAME, sim_cosmo = SIM_COSMO)
+sfrtxt_data = GADGETPlotting.sfrTxtData(BASE_SRC_PATH, SNAP_NAME, sim_cosmo = SIM_COSMO)
 display(sfrtxt_data)
 println()
 
 ############################################################################################
-# TEST OF PLOTTING FUNCTIONS.
+# PLOTTING FUNCTIONS.
 ############################################################################################
 
 scatterGridPlot(pos)
@@ -285,7 +286,7 @@ KennicuttSchmidtPlot(
 savefig(BASE_OUT_PATH * "test_KennicuttSchmidtPlot.png")
 
 ############################################################################################
-# TEST OF PIPELINE FUNCTIONS.
+# PIPELINE FUNCTIONS.
 ############################################################################################
 
 gr()
@@ -528,19 +529,25 @@ KennicuttSchmidtPipeline(
 )
 
 ############################################################################################
-# TEST OF AUXILIARY FUNCTIONS.
+# AUXILIARY FUNCTIONS.
 ############################################################################################
 
 fig2D = plot(rand(100))
-println(relative(fig2D, 0.5, 0.5))
+println(GADGETPlotting.relative(fig2D, 0.5, 0.5))
 fig3D = surface(rand(100, 100))
-println(relative(fig3D, 0.5, 0.5, 0.5))
+println(GADGETPlotting.relative(fig3D, 0.5, 0.5, 0.5))
 
-makeVideo(BASE_OUT_PATH * "scatter_grid/images", ".png", BASE_OUT_PATH, "test_video", FPS)
+GADGETPlotting.makeVideo(
+    BASE_OUT_PATH * "scatter_grid/images", 
+    ".png", 
+    BASE_OUT_PATH, 
+    "test_video", 
+    FPS,
+)
 
 x_data = [1:1000...]
 y_data = rand(1000)
-x_smooth, y_smooth = smoothWindow(x_data, y_data, 50)
+x_smooth, y_smooth = GADGETPlotting.smoothWindow(x_data, y_data, 50)
 plot(x_data, y_data, seriestype = :scatter, legend = false)
 plot!(x_smooth, y_smooth, seriestype = :line, lw = 2)
 savefig(BASE_OUT_PATH * "test_smoothWindow.png")
@@ -548,21 +555,27 @@ savefig(BASE_OUT_PATH * "test_smoothWindow.png")
 positions = pos["gas"]
 distances = sqrt.(positions[1, :] .^ 2 .+ positions[2, :] .^ 2 .+ positions[3, :] .^ 2)
 box_size = ustrip(Float64, pos["unit"], BOX_SIZE)
-r, ρ = densityProfile(gas_mass["mass"], distances, box_size, 80)
+r, ρ = GADGETPlotting.densityProfile(gas_mass["mass"], distances, box_size, 80)
 plot(r, ρ, lw = 2, xlabel = "r / $(pos["unit"])", ylabel = L"\rho", legend = false)
 savefig(BASE_OUT_PATH * "test_densityProfile.png")
 
-r, z = metallicityProfile(gas_mass["mass"], distances, gas_z["Z"], box_size, 80)
+r, z = GADGETPlotting.metallicityProfile(
+    gas_mass["mass"], 
+    distances, 
+    gas_z["Z"], 
+    box_size, 
+    80,
+)
 plot(r, z, lw = 2, xlabel = "r / $(pos["unit"])", ylabel = "Z / Zsun", legend = false)
 savefig(BASE_OUT_PATH * "test_metallicityProfile.png")
 
-r, m = massProfile(gas_mass["mass"], distances, box_size, 80)
+r, m = GADGETPlotting.massProfile(gas_mass["mass"], distances, box_size, 80)
 plot(r, m, lw = 2, xlabel = "r / $(pos["unit"])", ylabel = "Mass", legend = false)
 savefig(BASE_OUT_PATH * "test_massProfile.png")
 
 max_z = findmax(star_z["Z"])
 max_Z = max_z[1] / star_mass["mass"][max_z[2]]
-z, m = CMDF(star_mass["mass"], star_z["Z"], max_Z, 50)
+z, m = GADGETPlotting.CMDF(star_mass["mass"], star_z["Z"], max_Z, 50)
 plot(
     z,
     m,
@@ -577,7 +590,7 @@ pos_gas = pos["gas"]
 dist_gas = sqrt.(pos_gas[1, :] .^ 2 + pos_gas[2, :] .^ 2)
 pos_stars = pos["stars"]
 dist_stars = sqrt.(pos_stars[1, :] .^ 2 + pos_stars[2, :] .^ 2)
-KSL = KennicuttSchmidtLaw(
+KSL = GADGETPlotting.KennicuttSchmidtLaw(
     gas_mass["mass"],
     dist_gas,
     temp_data["T"],
@@ -596,18 +609,29 @@ a_error = round(stderror(linear_model)[1], sigdigits = 1)
 m_error = round(stderror(linear_model)[2], sigdigits = 1)
 scatter(KSL["RHO"], KSL["SFR"], label = "Data", xlabel = L"log(\rho)", ylabel = L"log(SFR)")
 pl = plot!(KSL["RHO"], predict(linear_model), label = "Fit")
-annotate!(relative(pl, 0.5, 0.95)..., text(L"SFR = A\,\rho^m", "Courier", 8, :center))
-annotate!(relative(pl, 0.5, 0.9)..., text(L"m = %$m \pm %$m_error", "Courier", 8, :center))
 annotate!(
-    relative(pl, 0.5, 0.85)...,
+    GADGETPlotting.relative(pl, 0.5, 0.95)..., 
+    text(L"SFR = A\,\rho^m", "Courier", 8, :center),
+)
+annotate!(
+    GADGETPlotting.relative(pl, 0.5, 0.9)..., 
+    text(L"m = %$m \pm %$m_error", "Courier", 8, :center),
+)
+annotate!(
+    GADGETPlotting.relative(pl, 0.5, 0.85)...,
     text(L"log(A) = %$a \pm %$a_error", "Courier", 8, :center),
 )
 savefig(BASE_OUT_PATH * "test_KennicuttSchmidtLaw.png")
+
+println(GADGETPlotting.error_string(69.42069, 0.038796))
+println(GADGETPlotting.error_string(69.42069, 0.018796))
+println(GADGETPlotting.error_string(69.42069, 0.0))
+println(GADGETPlotting.error_string(69.42069, 73.4))
 
 ############################################################################################
 # DELETE ALL TESTING FILES PRODUCED.
 ############################################################################################
 
-rm(BASE_OUT_PATH, recursive = true)
+# rm(BASE_OUT_PATH, recursive = true)
 
 println("Everything worked just fine!!")
