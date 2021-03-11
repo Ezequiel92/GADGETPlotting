@@ -458,7 +458,8 @@ Compute mass area density and the SFR area density for the Kennicutt-Schmidt law
 - `star_distance_data::Vector{Float64}`: 2D distances of the stars.
 - `age_data::Vector{Float64}`: Ages of the stars.
 - `temp_filter::Float64`: Maximum temperature allowed for the gas particles.
-- `age_filter::Float64`: Maximum age allowed for the stars.
+- `age_filter::Unitful.Quantity`: Maximum star age allowed for the calculation of the SFR. 
+  It should be approximately equal to the time step of the snapshots.
 - `max_r::Float64`: Maximum distance up to which the parameters will be calculated.
 - `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. 
   It has to be at least 5.
@@ -488,29 +489,30 @@ function KennicuttSchmidtLaw(
     end
 
     # Filter out hot gas particles.
-    deleteat!(gas_mass_data, temperature_data .> temp_filter)
-    deleteat!(gas_distance_data, temperature_data .> temp_filter)
-    filter!(x -> x < temp_filter, temperature_data)
+    cold_gas_mass = deleteat!(copy(gas_mass_data), temperature_data .> temp_filter)
+    cold_gas_distance = deleteat!(copy(gas_distance_data), temperature_data .> temp_filter)
 
     # Filter out old stars.
-    deleteat!(star_mass_data, age_data .> age_filter)
-    deleteat!(star_distance_data, age_data .> age_filter)
-    filter!(x -> x < age_filter, age_data)
+    young_star_mass = deleteat!(copy(star_mass_data), age_data .> age_filter)
+    young_star_distance = deleteat!(copy(star_distance_data), age_data .> age_filter)
 
     r_width = max_r / bins
 
     # Initialize output arrays.
     x_data = Vector{Float64}(undef, bins)
     y_data = Vector{Float64}(undef, bins)
+
     @inbounds for i in eachindex(x_data, y_data)
 
-		idx_gas = findall(x ->  r_width * (i - 1) <= x < r_width * i, gas_distance_data)
-        gas_mass = sum(gas_mass_data[idx_gas])
+        # Gas.
+		idx_gas = findall(x ->  r_width * (i - 1) <= x < r_width * i, cold_gas_distance)
+        gas_mass = sum(cold_gas_mass[idx_gas])
 		# Gas area density for window i.
 		x_data[i] = gas_mass / (π * r_width * r_width * (2 * i - 1))
 
-        idx_star = findall(x ->  r_width * (i - 1) <= x < r_width * i, star_distance_data)
-        sfr = sum(star_mass_data[idx_star]) / age_filter 
+        # Stars.
+        idx_star = findall(x ->  r_width * (i - 1) <= x < r_width * i, young_star_distance)
+        sfr = sum(young_star_mass[idx_star]) / age_filter 
         # SFR area density for window i.
         y_data[i] = sfr / (π * r_width * r_width * (2 * i - 1))		
 		
@@ -526,7 +528,7 @@ function KennicuttSchmidtLaw(
     x_data = log10.(x_data)
     y_data = log10.(y_data)
 
-    # If there are too little data to get a fit return nothing
+    # If there are less than 5 data points return nothing
     if length(x_data) < 5
         return nothing
     end
@@ -539,37 +541,39 @@ function KennicuttSchmidtLaw(
 end
 
 """
-    error_string(mean::Float64, error::Float64)::String
+    format_error(mean::Float64, error::Float64)::String
 
-Give the mean and error in a string with the standar formating.
+Format the mean and error values.
 
-It follows the traditional rules for error printing, the error with only one significant 
-digit, unles such digit is a one, in which case, two significant digits are printed. 
-The mean will have a presition such as to match the error.
+It follows the traditional rules for error presentation. The error has only one significant 
+digit, unles such digit is a one, in which case, two significant digits are used. 
+The mean will have a precision such as to match the error.
 
 # Arguments 
 - `mean::Float64`: Mean value.
 - `error::Float64`: Error value. It must be positive.
 
 # Returns
-- A Tuple with the formatted mean and error.
+- A Tuple with the formatted mean and error values.
 
 # Examples
 ```julia-repl
-julia> error_string(69.42069, 0.038796)
+julia> format_error(69.42069, 0.038796)
 (69.42, 0.04)
 
-julia> error_string(69.42069, 0.018796)
+julia> format_error(69.42069, 0.018796)
 (69.421, 0.019)
 
-julia> error_string(69.42069, 0.0)
+julia> format_error(69.42069, 0.0)
 (69.42069, 0.0)
 
-julia> error_string(69.42069, 73.4)
+julia> format_error(69.42069, 73.4)
 (0.0, 70.0)
 ```
 """
-function error_string(mean::Float64, error::Float64)::NTuple{2, Float64}
+function format_error(mean::Float64, error::Float64)::NTuple{2, Float64}
+
+    # Positive error check.
     error >= 0.0 || error("The error must be a positive number.")
 
     if error == 0.0

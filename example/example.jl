@@ -278,10 +278,11 @@ KennicuttSchmidtPlot(
     age_data,
     pos,
     3.0e4Unitful.K,
-    200UnitfulAstro.Myr,
+    20UnitfulAstro.Myr,
     BOX_SIZE,
     1UnitfulAstro.Myr,
     bins = 80,
+    error_formating = "conf_interval",
 )
 savefig(BASE_OUT_PATH * "test_KennicuttSchmidtPlot.png")
 
@@ -525,6 +526,7 @@ KennicuttSchmidtPipeline(
     sim_cosmo = SIM_COSMO,
     box_size = BOX_SIZE,
     bins = 80,
+    error_formating = "conf_interval",
     time_unit = UnitfulAstro.yr,
 )
 
@@ -623,10 +625,10 @@ annotate!(
 )
 savefig(BASE_OUT_PATH * "test_KennicuttSchmidtLaw.png")
 
-println(GADGETPlotting.error_string(69.42069, 0.038796))
-println(GADGETPlotting.error_string(69.42069, 0.018796))
-println(GADGETPlotting.error_string(69.42069, 0.0))
-println(GADGETPlotting.error_string(69.42069, 73.4))
+println(GADGETPlotting.format_error(69.42069, 0.038796))
+println(GADGETPlotting.format_error(69.42069, 0.018796))
+println(GADGETPlotting.format_error(69.42069, 0.0))
+println(GADGETPlotting.format_error(69.42069, 73.4))
 
 ############################################################################################
 # DELETE ALL TESTING FILES PRODUCED.

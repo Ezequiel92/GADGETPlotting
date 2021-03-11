@@ -2037,13 +2037,19 @@ at least five data points for the fitting.
   1 -> Cosmological simulation (expanding universe).
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
-- `temp_filter::Unitful.Quantity`: Maximum temperature allowed for the gas particles.
-- `age_filter::Unitful.Quantity`: Maximum age allowed for the stars.
+- `temp_filter::Unitful.Quantity = 3e4Unitful.K`: Maximum temperature allowed for the 
+  gas particles.
+- `age_filter::Unitful.Quantity = 20UnitfulAstro.Myr`: Maximum star age allowed for the 
+  calculation of the SFR. It should aproximately equal to the time step of the snapshots.
 - `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
   if vacuum boundary conditions were used. It has to have units, e.g. 1000UnitfulAstro.kpc, 
   which is the default. Its units don't have to be the same as `length_unit`.
 - `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. 
   It has to be at least 5.
+- `error_formating::String = "std_error"`: What to print as error values.
+  The options are:
+  "std_error": `mean ± standard_error`.
+  "conf_interval": `mean ± max(upper_95% - mean, mean - lower_95%)`.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
   all available time units in Unitful and UnitfulAstro can be used, 
   e.g. UnitfulAstro.Myr, which is the default.
@@ -2066,9 +2072,10 @@ function KennicuttSchmidtPipeline(
     sim_cosmo::Int64 = 0,
     step::Int64 = 1,
     temp_filter::Unitful.Quantity = 3e4Unitful.K,
-    age_filter::Unitful.Quantity = 200UnitfulAstro.Myr,
+    age_filter::Unitful.Quantity = 20UnitfulAstro.Myr,
     box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
     bins::Int64 = 50,
+    error_formating::String = "std_error",
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
     temp_unit::Unitful.FreeUnits = Unitful.K,
@@ -2123,6 +2130,7 @@ function KennicuttSchmidtPipeline(
                 box_size,
                 clock[1 + step * (i - 1)] * clock_unit;
                 bins,
+                error_formating,
             )
 
             if figure !== nothing
