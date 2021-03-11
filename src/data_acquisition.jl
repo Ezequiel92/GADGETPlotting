@@ -3,7 +3,7 @@
 ############################################################################################
 
 """
-    function getSnapshots(
+    function getSnapshotPaths(
         base_name::String,
         source_path::String,
     )::Dict{String, Vector{String}}
@@ -24,7 +24,7 @@ Give the paths to the GADGET output files, grouping them by snapshot in a Tuple.
   named as follows: (`source_path` `base_name`_001 ... `source_path` `base_name`_NNN) 
   where NNN is the total number of snapshots.
 """
-function getSnapshots(base_name::String, source_path::String)::Dict{String, Vector{String}}
+function getSnapshotPaths(base_name::String, source_path::String)::Dict{String, Vector{String}}
 
     # Get the full list of paths to every GADGET file in `source_path`.
     file_list = glob(base_name * "_*", source_path)
@@ -75,7 +75,7 @@ The parameters are:
 - "star_bar_frac" (Baryonic star fraction)
 
 # Arguments
-- `snap_files::Vector{String}`: Output of the function getSnapshots corresponding 
+- `snap_files::Vector{String}`: Output of the function getSnapshotPaths corresponding 
   to the key "snap_files", containing an Array with the paths to the snapshots.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -866,7 +866,7 @@ Get the birth location of the stars in a given snapshot.
 
 # Arguments
 - `snap_index::Int64`: Index in `snap_files` of the snapshot whose stars will be located.
-- `snap_files::Vector{String}`: Output of the function getSnapshots corresponding 
+- `snap_files::Vector{String}`: Output of the function getSnapshotPaths corresponding 
   to the key "snap_files", containing an Array with the paths to the snapshots.
 - `time_stamps::Vector{Float64}`: Clock time of every snapshot in `snap_files`.
 - `stamps_unit::Unitful.FreeUnits`: Unit of time of the `time_stamps`.

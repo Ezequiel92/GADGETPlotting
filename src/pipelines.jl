@@ -52,7 +52,7 @@ function scatterGridPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshots(base_name, source_path)
+    sim = getSnapshotPaths(base_name, source_path)
     snap_files = sim["snap_files"]
     snap_numbers = sim["numbers"]
 
@@ -143,7 +143,7 @@ function densityMapPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshots(base_name, source_path)
+    sim = getSnapshotPaths(base_name, source_path)
     snap_files = sim["snap_files"]
     snap_numbers = sim["numbers"]
 
@@ -241,7 +241,7 @@ function starMapPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshots(base_name, source_path)
+    sim = getSnapshotPaths(base_name, source_path)
     snap_files = sim["snap_files"]
     snap_numbers = sim["numbers"]
 
@@ -331,7 +331,7 @@ function gasStarEvolutionPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshots(base_name, source_path)
+    sim = getSnapshotPaths(base_name, source_path)
     snap_files = sim["snap_files"]
     snap_numbers = sim["numbers"]
 
@@ -426,7 +426,7 @@ function CMDFPipeline(
     mkpath(output_path * "images/")
 
     # Get the simulation data.
-    sim = getSnapshots(base_name, source_path)
+    sim = getSnapshotPaths(base_name, source_path)
     snap_files = sim["snap_files"]
     snap_numbers = sim["numbers"]
 
@@ -523,7 +523,7 @@ function CMDFPipeline(
     mkpath(output_path * "images/")
 
     # Get the simulation data.
-    snap_files = [getSnapshots(base_name[i], path)["snap_files"] 
+    snap_files = [getSnapshotPaths(base_name[i], path)["snap_files"] 
                 for (i, path) in enumerate(source_path)]
 
     # Length of the shortest simulation.
@@ -621,7 +621,7 @@ function birthHistogramPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshots(base_name, source_path)
+    sim = getSnapshotPaths(base_name, source_path)
     snap_files = sim["snap_files"]
     snap_numbers = sim["numbers"]
 
@@ -726,7 +726,7 @@ function evolutionSummaryPipeline(
     format::String = ".png",
 )::Nothing
 
-    snap_files = getSnapshots(base_name, source_path)
+    snap_files = getSnapshotPaths(base_name, source_path)
 
     # Create a directory to store the figures, if it doesn't exist.
     mkpath(output_path)
@@ -862,7 +862,7 @@ function compareSimulationsPipeline(
 )::Nothing
 
     time_series = [timeSeriesData(
-                        getSnapshots(name, path)["snap_files"]; 
+                        getSnapshotPaths(name, path)["snap_files"]; 
                         sim_cosmo, 
                         mass_unit, 
                         time_unit, 
@@ -946,7 +946,7 @@ function densityHistogramPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshots(base_name, source_path)
+    sim = getSnapshotPaths(base_name, source_path)
     snap_files = sim["snap_files"]
     snap_numbers = sim["numbers"]
 
@@ -1063,7 +1063,7 @@ function densityProfilePipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshots(base_name, source_path)
+    sim = getSnapshotPaths(base_name, source_path)
     snap_files = sim["snap_files"]
     snap_numbers = sim["numbers"]
 
@@ -1192,7 +1192,7 @@ function densityProfilePipeline(
     mkpath(output_path * "images/")
 
     # Get the simulation data.
-    snap_files = [getSnapshots(base_name[i], path)["snap_files"] 
+    snap_files = [getSnapshotPaths(base_name[i], path)["snap_files"] 
                 for (i, path) in enumerate(source_path)]
     
     # Length of the shortest simulation.
@@ -1304,7 +1304,7 @@ function metallicityProfilePipeline(
     mkpath(output_path * "images/")
 
     # Get the simulation data.
-    sim = getSnapshots(base_name, source_path)
+    sim = getSnapshotPaths(base_name, source_path)
     snap_files = sim["snap_files"]
     snap_numbers = sim["numbers"]
 
@@ -1423,7 +1423,7 @@ function metallicityProfilePipeline(
     mkpath(output_path * "images/")
 
     # Get the simulation data.
-    snap_files = [getSnapshots(base_name[i], path)["snap_files"] 
+    snap_files = [getSnapshotPaths(base_name[i], path)["snap_files"] 
                 for (i, path) in enumerate(source_path)]
 
     # Length of the shortest simulation.
@@ -1545,7 +1545,7 @@ function massProfilePipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshots(base_name, source_path)
+    sim = getSnapshotPaths(base_name, source_path)
     snap_files = sim["snap_files"]
     snap_numbers = sim["numbers"]
 
@@ -1674,7 +1674,7 @@ function massProfilePipeline(
     mkpath(output_path * "images/")
 
     # Get the simulation data.
-    snap_files = [getSnapshots(base_name[i], path)["snap_files"] 
+    snap_files = [getSnapshotPaths(base_name[i], path)["snap_files"] 
                 for (i, path) in enumerate(source_path)]
 
     # Length of the shortest simulation.
@@ -1877,7 +1877,7 @@ function temperatureHistogramPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshots(base_name, source_path)
+    sim = getSnapshotPaths(base_name, source_path)
     snap_files = sim["snap_files"]
     snap_numbers = sim["numbers"]
 
@@ -1969,7 +1969,7 @@ function rhoTempPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshots(base_name, source_path)
+    sim = getSnapshotPaths(base_name, source_path)
     snap_files = sim["snap_files"]
     snap_numbers = sim["numbers"]
 
@@ -2084,7 +2084,7 @@ function KennicuttSchmidtPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshots(base_name, source_path)
+    sim = getSnapshotPaths(base_name, source_path)
     snap_files = sim["snap_files"]
     snap_numbers = sim["numbers"]
 

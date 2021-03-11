@@ -38,7 +38,7 @@ mkpath(BASE_OUT_PATH)
 # DATA ACQUISITION FUNCTIONS.
 ############################################################################################
 
-snaps = GADGETPlotting.getSnapshots(SNAP_NAME, BASE_SRC_PATH)
+snaps = GADGETPlotting.getSnapshotPaths(SNAP_NAME, BASE_SRC_PATH)
 snap_files = snaps["snap_files"]
 display(snaps)
 println()

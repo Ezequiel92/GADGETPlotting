@@ -547,7 +547,7 @@ Format the mean and error values.
 
 It follows the traditional rules for error presentation. The error has only one significant 
 digit, unles such digit is a one, in which case, two significant digits are used. 
-The mean will have a precision such as to match the error.
+The mean will have an amount of digits such as to match the error.
 
 # Arguments 
 - `mean::Float64`: Mean value.
@@ -574,37 +574,34 @@ julia> format_error(69.42069, 73.4)
 function format_error(mean::Float64, error::Float64)::NTuple{2, Float64}
 
     # Positive error check.
-    error >= 0.0 || error("The error must be a positive number.")
+    error >= 0 || error("The error must be a positive number.")
 
-    if error == 0.0
+    if error == 0
         round_mean = mean
         round_error = error
     else
         sigdigit_pos = abs(log10(abs(error)))
-        extra = 0
 
-        if error < 1.0
+        if error < 1
             if abs(mean) < error
+                extra = 0
                 round_mean = 0.0
             else
-                first_dig = trunc(error * 10^(floor(sigdigit_pos) + 1))
-                if first_dig == 1.0
-                    extra = 1
-                end
+                first_digit = trunc(error * 10^(floor(sigdigit_pos) + 1))
+                first_digit == 1 ? extra = 1 : extra = 0
+
                 digits = ceil(Int64, sigdigit_pos) + extra
                 round_mean = round(mean; digits)
             end
         else
             if abs(mean) < error
+                extra = 0
                 round_mean = 0.0
             else
-                first_dig = trunc(error / 10^(floor(sigdigit_pos)))
-                if first_dig == 1
-                    extra = 1
-                end
+                first_digit = trunc(error / 10^(floor(sigdigit_pos)))
+                first_digit == 1 ? extra = 2 : extra = 1
 
-                sigdigits =
-                    ceil(Int64, log10(abs(mean))) - ceil(Int64, sigdigit_pos) + 1 + extra
+                sigdigits = ceil(Int64, log10(abs(mean))) - ceil(Int64, sigdigit_pos) + extra
                 round_mean = round(mean; sigdigits)
             end
         end
