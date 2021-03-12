@@ -83,7 +83,7 @@ function makeVideo(
     # Creates the video with the specified frame rate and filename.
     properties = [:priv_data => ("crf" => "0", "preset" => "ultrafast")]
     encodevideo(
-        output_path * output_filename * ".mp4",
+        joinpath(output_path, output_filename * ".mp4"),
         image_stack,
         framerate = frame_rate,
         AVCodecContextProperties = properties,
@@ -373,7 +373,7 @@ Compute the cumulative metallicity distribution function up to a metallicity `ma
 - `metallicity_data::Vector{Float64}`: Metallicities of the particles. 
 - `max_Z::Float64`: Maximum metallicity up to which the profile will be calculated.
 - `bins::Int64`: Number of subdivisions of [0, `max_Z`] to construct the plot.
-- `x_norm::Bool = false`: If the x axis will be normalize to its maximum value. 
+- `x_norm::Bool = false`: If the x axis will be normalized to its maximum value. 
 
 # Returns
 - A Tuple of two Arrays.
@@ -545,9 +545,9 @@ end
 
 Format the mean and error values.
 
-It follows the traditional rules for error presentation. The error has only one significant 
-digit, unles such digit is a one, in which case, two significant digits are used. 
-The mean will have an amount of digits such as to match the error.
+It follows the traditional rules for error presentation. The error has only one significant  
+digit, unless such digit is a one, in which case, two significant digits are used.  
+The mean will have a number of digits such as to match the error. 
 
 # Arguments 
 - `mean::Float64`: Mean value.

@@ -360,7 +360,7 @@ Get the coordinates of the particles at a specific time step.
 - A dictionary with six entries.
   - Keys "gas", "dark_matter", "stars" => 2 dimensional arrays which contains 
   the positions of the particles of the type given by the key. Each row is a 
-  particle and each column corresponds to coordinates x, y and z respectively.
+  particle and each column correspond to coordinates x, y and z respectively.
   - Key "box_size" => The range of values for the plotting of the positions, 
   i.e. a range of ± `box_size` if vacuum boundary conditions were used, 
   or (0, `header.boxsize`) if periodic boundary conditions were used.
@@ -369,7 +369,7 @@ Get the coordinates of the particles at a specific time step.
   - Key "periodic" => A Boolean indicating the type of boundary condition.
   false -> vacuum boundary condition.
   true -> periodic boundary condition.
-  - Key "unit" => The unit of lengthused, i.e. is a pass-through of `length_unit`. 
+  - Key "unit" => The unit of length used, i.e. is a pass-through of `length_unit`. 
 """
 function positionData(
     snapshot::String;
@@ -839,14 +839,14 @@ function ageData(
         t_conv = GU.t_Myr
     end
 
-    # Stars time of birth. 
+    # Time of birth for the stars. 
     birth_time = read_snap(snapshot, "AGE", 4)
 
     # Unit conversion.
     time_unit = unit(now)
     birth_time = @. ustrip(Float64, time_unit, birth_time * t_conv)
     
-    # Stars ages. 
+    # Ages for the stars.
     clock_now = ustrip(now)
     ages = clock_now .- birth_time
 
@@ -889,7 +889,7 @@ function birthPlace(
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
 )::Dict{String, Any}
 
-    # Bounds check.
+    # Index bound check.
     (
         1 < snap_index <= length(snap_files) ||
         throw(BoundsError("There is no snapshot and index $snap_index."))
@@ -939,7 +939,7 @@ function birthPlace(
         t_conv = GU.t_Myr
     end
 
-    # Stars time of birth. 
+    # Time of birth for the stars.
     ages = read_snap(snapshot, "AGE", 4)
     birth_times = @. ustrip(Float64, time_unit, ages * t_conv)
     time_stamps = @. ustrip(Float64, time_unit, time_stamps * stamps_unit)

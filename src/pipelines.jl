@@ -65,7 +65,7 @@ function scatterGridPipeline(
 
         positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
 
-        # Snashot number.
+        # Snapshot number.
         number = snap_numbers[1 + step * (i - 1)]
 
         savefig(
@@ -116,7 +116,7 @@ and then generate a GIF and a video animating the images.
   "XZ" -> XZ plane alone.
   "YZ" -> YZ plane alone.
   "All" -> The three planes in a single 1x3 figure.
-- `axes::Bool = false`: If true, the axes pasing through (0.0, 0.0) are drawn. If false, 
+- `axes::Bool = false`: If true, the axes passing through (0.0, 0.0) are drawn. If false, 
   no axes are drawn.
 - `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
   if vacuum boundary conditions were used. It has to have units, e.g. 1000UnitfulAstro.kpc, 
@@ -159,7 +159,7 @@ function densityMapPipeline(
         density = densityData(snapshot; sim_cosmo)
         hsml = hsmlData(snapshot; sim_cosmo)
 
-        # Snashot number.
+        # Snapshot number.
         number = snap_numbers[1 + step * (i - 1)]
 
         savefig(
@@ -216,7 +216,7 @@ and then generate a GIF and a video animating the images.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `positions["box_size"]` if vacuum boundary conditions were used, and
   it will scale `positions["box_size"] / 2` if periodic boundary conditions were used.
-- `axes::Bool = false`: If true, the axes pasing through (0.0, 0.0) are drawn. If false, 
+- `axes::Bool = false`: If true, the axes passing through (0.0, 0.0) are drawn. If false, 
   no axes are drawn.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
   output, all available length units in Unitful and UnitfulAstro can be used, 
@@ -254,7 +254,7 @@ function starMapPipeline(
 
         pos = positionData(snapshot; sim_cosmo, box_size, length_unit)
 
-        # Snashot number.
+        # Snapshot number.
         number = snap_numbers[1 + step * (i - 1)]
 
         savefig(
@@ -346,7 +346,7 @@ function gasStarEvolutionPipeline(
 
         positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
 
-        # Snashot number.
+        # Snapshot number.
         number = snap_numbers[1 + step * (i - 1)]
 
         savefig(
@@ -402,7 +402,7 @@ Save the results of the CMDFPlot function as one image per snapshot
   1 -> Cosmological simulation (expanding universe).
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
-- `x_norm::Bool = false`: If the x axis will be normalize to its maximum value. 
+- `x_norm::Bool = false`: If the x axis will be normalized to its maximum value. 
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
   all available time units in Unitful and UnitfulAstro can be used, 
   e.g. UnitfulAstro.Myr, which is the default.
@@ -443,7 +443,7 @@ function CMDFPipeline(
             mass_data = massData(snapshot, "stars"; sim_cosmo)
             z_data = zData(snapshot, "stars"; sim_cosmo)
 
-            # Snashot number.
+            # Snapshot number.
             number = snap_numbers[1 + step * (i - 1)]
 
             savefig(
@@ -498,7 +498,7 @@ Save the results of the CMDFPlot function for several simulations as one image p
   1 -> Cosmological simulation (expanding universe).
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
-- `x_norm::Bool = false`: If the x axis will be normalize to its maximum value. 
+- `x_norm::Bool = false`: If the x axis will be normalized to its maximum value. 
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
   all available time units in Unitful and UnitfulAstro can be used, 
   e.g. UnitfulAstro.Myr, which is the default.
@@ -649,7 +649,7 @@ function birthHistogramPipeline(
                 time_unit = time_data["units"]["time"],
             )
 
-            # Snashot number.
+            # Snapshot number.
             number = snap_numbers[1 + step * (i - 1)]
 
             savefig(
@@ -962,7 +962,7 @@ function densityHistogramPipeline(
 
         density = densityData(snapshot; sim_cosmo)
 
-        # Snashot number.
+        # Snapshot number.
         number = snap_numbers[1 + step * (i - 1)]
 
         savefig(
@@ -1080,7 +1080,7 @@ function densityProfilePipeline(
         positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
         mass = massData(snapshot, type; sim_cosmo)
 
-        # Snashot number.
+        # Snapshot number.
         number = snap_numbers[1 + step * (i - 1)]
 
         savefig(
@@ -1319,7 +1319,7 @@ function metallicityProfilePipeline(
         mass = massData(snapshot, type; sim_cosmo)
         metallicities = zData(snapshot, type; sim_cosmo)
 
-        # Snashot number.
+        # Snapshot number.
         number = snap_numbers[1 + step * (i - 1)]
 
         savefig(
@@ -1562,7 +1562,7 @@ function massProfilePipeline(
         positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
         mass = massData(snapshot, type; sim_cosmo)
 
-        # Snashot number.
+        # Snapshot number.
         number = snap_numbers[1 + step * (i - 1)]
 
         savefig(
@@ -1744,16 +1744,16 @@ THIS FUNCTION NEEDS A FILE (sfr.txt) WHICH IS NOT PRODUCED BY ANY PUBLIC VERSION
 - `title::Vector{String} = String[]`: Titles for the figures. If an empty string is given
   no title is printed, which is the default.
 - `names::Vector{String} = String[]`: Names for the files. If an empty string is given the images
-  will be asign a number, given by the order of `source_path`.
+  will be assigned a number, given by the order of `source_path`.
 - `bins::Int64 = 0`: Number of subdivisions for the smoothing of the data. 
-  The default is 0, i.e. no smoothing. It will apply equaly to every figure produced.
+  The default is 0, i.e. no smoothing. It will apply equally to every figure produced.
 - `scale::NTuple{2, Symbol} = (:identity, :identity)`: Scaling to be used for the x and y 
-  axes. It will apply equaly to every figure produced.
+  axes. It will apply equally to every figure produced.
   The two options are:
   :identity => no scaling.
   :log10 => logarithmic scaling.
 - `min_filter::NTuple{2, Float64} = (-Inf, -Inf)`: Value filter for the x and y axes. 
-  It will apply equaly to every figure produced. If a value of the x data is lower 
+  It will apply equally to every figure produced. If a value of the x data is lower 
   than min_filter[1], then it is deleted. Equivalently with the y axis and min_filter[2]. 
   The default is -Inf for both, i.e. no filtering.
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
@@ -1896,7 +1896,7 @@ function temperatureHistogramPipeline(
 
         temp_data = tempData(snapshot; sim_cosmo, temp_unit)
 
-        # Snashot number.
+        # Snapshot number.
         number = snap_numbers[1 + step * (i - 1)]
 
         savefig(
@@ -1989,7 +1989,7 @@ function rhoTempPipeline(
         temp_data = tempData(snapshot; sim_cosmo, temp_unit)
         density_data = densityData(snapshot; sim_cosmo, density_unit)
 
-        # Snashot number.
+        # Snapshot number.
         number = snap_numbers[1 + step * (i - 1)]
 
         savefig(
@@ -2040,7 +2040,7 @@ at least five data points for the fitting.
 - `temp_filter::Unitful.Quantity = 3e4Unitful.K`: Maximum temperature allowed for the 
   gas particles.
 - `age_filter::Unitful.Quantity = 20UnitfulAstro.Myr`: Maximum star age allowed for the 
-  calculation of the SFR. It should aproximately equal to the time step of the snapshots.
+  calculation of the SFR. It should approximately equal to the time step of the snapshots.
 - `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
   if vacuum boundary conditions were used. It has to have units, e.g. 1000UnitfulAstro.kpc, 
   which is the default. Its units don't have to be the same as `length_unit`.
