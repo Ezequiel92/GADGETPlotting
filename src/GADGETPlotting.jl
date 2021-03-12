@@ -9,6 +9,10 @@ using Unitful, UnitfulAstro
 using Plots, LaTeXStrings, StatsPlots.PlotMeasures, AverageShiftedHistograms, GLM
 using Glob, FileIO, VideoIO, DelimitedFiles, Accessors
 
+if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@optlevel"))
+    @eval Base.Experimental.@optlevel 3
+end
+
 "Hₒ = 100 km s^(-1) Mpc^(-1) in Gyr^(-1)"
 const HUBBLE_CONST = 0.102201
 

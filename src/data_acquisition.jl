@@ -21,7 +21,7 @@ Give the paths to the GADGET output files, grouping them by snapshot in a Tuple.
   - Key "numbers" => A tuple of Strings with the numbers 
   that characterize each snapshot.
   - Key "snap_files" => A tuple of Strings with the paths to the snapshot files,
-  named as follows: (`source_path` `base_name`_001 ... `source_path` `base_name`_NNN) 
+  named as follows: (`source_path`/`base_name`_001 ... `source_path`/`base_name`_NNN) 
   where NNN is the total number of snapshots.
 """
 function getSnapshotPaths(base_name::String, source_path::String)::Dict{String, Vector{String}}
@@ -212,7 +212,7 @@ function timeSeriesData(
                 masses = read_snap(snapshot, "MASS", 0)
                 gas_mass = sum(masses)
             end
-            gas_mass = ustrip(Float64, mass_unit, gas_mass * GU.m_cgs)
+            gas_mass = ustrip(Float64, mass_unit, gas_mass * GU.m_msun)
 
             # Global gas density.
             densities = densityData(
@@ -236,7 +236,7 @@ function timeSeriesData(
             else
                 dm_mass = sum(read_snap(snapshot, "MASS", 1))
             end
-            dm_mass = ustrip(Float64, mass_unit, dm_mass * GU.m_cgs)
+            dm_mass = ustrip(Float64, mass_unit, dm_mass * GU.m_msun)
         else
             # In the case that there are no dark matter particles.
             dm_mass = 0.0
@@ -250,7 +250,7 @@ function timeSeriesData(
             else
                 star_mass = sum(read_snap(snapshot, "MASS", 4))
             end
-            star_mass = ustrip(Float64, mass_unit, star_mass * GU.m_cgs)
+            star_mass = ustrip(Float64, mass_unit, star_mass * GU.m_msun)
         else
             # In the case that there are no star particles.
             star_mass = 0.0
@@ -297,7 +297,7 @@ function timeSeriesData(
             end
 
             sfr_prob = sum(read_snap(snapshot, "SFR", 0))
-            sfr_prob = ustrip(Float64, sfr_unit, sfr_prob * (GU.m_cgs / t_conv))
+            sfr_prob = ustrip(Float64, sfr_unit, sfr_prob * (GU.m_msun / t_conv))
         else
             # In the case that there are no gas particles.
             sfr_prob = 0.0
@@ -401,13 +401,13 @@ function positionData(
         size = round(ustrip(Float64, length_unit, box_size), sigdigits = 1)
     else
         # Periodic boundary conditions.
-        size = round(ustrip(Float64, length_unit, header.boxsize * GU.x_cgs), sigdigits = 1)
+        size = round(ustrip(Float64, length_unit, header.boxsize * GU.x_kpc), sigdigits = 1)
     end
 
     if header.nall[1] != 0
         gas_pos = read_snap(snapshot, "POS", 0)
         # Transformation from internal units to `length_unit`.
-        gas_pos = @. ustrip(Float64, length_unit, gas_pos * GU.x_cgs)
+        gas_pos = @. ustrip(Float64, length_unit, gas_pos * GU.x_kpc)
     else
         # In the case that there are no gas particles.
         gas_pos = Array{Float64}(undef, 3, 0)
@@ -416,7 +416,7 @@ function positionData(
     if header.nall[2] != 0
         dm_pos = read_snap(snapshot, "POS", 1)
         # Transformation from internal units to `length_unit`.
-        dm_pos = @. ustrip(Float64, length_unit, dm_pos * GU.x_cgs)
+        dm_pos = @. ustrip(Float64, length_unit, dm_pos * GU.x_kpc)
     else
         # In the case that there are no dark matter particles.
         dm_pos = Array{Float64}(undef, 3, 0)
@@ -425,7 +425,7 @@ function positionData(
     if header.nall[5] != 0
         star_pos = read_snap(snapshot, "POS", 4)
         # Transformation from internal units to `length_unit`.
-        star_pos = @. ustrip(Float64, length_unit, star_pos * GU.x_cgs)
+        star_pos = @. ustrip(Float64, length_unit, star_pos * GU.x_kpc)
     else
         # In the case that there are no star particles.
         star_pos = Array{Float64}(undef, 3, 0)
@@ -540,7 +540,7 @@ function hsmlData(
     if header.nall[1] != 0
         hsml = read_snap(snapshot, "HSML", 0)
         # Transformation from internal units to `length_unit`.
-        hsml = @. ustrip(Float64, length_unit, hsml * GU.x_cgs)
+        hsml = @. ustrip(Float64, length_unit, hsml * GU.x_kpc)
     else
         # In the case that there are no gas particles.
         hsml = Float64[]
@@ -611,7 +611,7 @@ function massData(
     if header.nall[type_num + 1] != 0
         m = read_snap(snapshot, "MASS", type_num)
         # Transformation from internal units to `mass_unit`.
-        m = @. ustrip(Float64, mass_unit, m * GU.m_cgs)
+        m = @. ustrip(Float64, mass_unit, m * GU.m_msun)
     else
         # In the case that there are no particles.
         m = [Inf]
@@ -685,7 +685,7 @@ function zData(
             # Add up all elements but the ones at position 1 and 7, i.e. H and He.
             z_tot = sum(z[[2, 3, 4, 5, 6, 8, 9, 10, 11, 12], i])
             # Transformation from internal units to `mass_unit`.
-            z_tot = ustrip(Float64, mass_unit, z_tot * GU.m_cgs)
+            z_tot = ustrip(Float64, mass_unit, z_tot * GU.m_msun)
 
             @inbounds Z[i] = z_tot
         end
@@ -755,11 +755,11 @@ function tempData(
 
         # Metallicity.
         z = read_snap(snapshot, "Z", 0)
-        Z = @. ustrip(Float64, mass_unit, z * GU.m_cgs)
+        Z = @. ustrip(Float64, mass_unit, z * GU.m_msun)
 
         # Internal enery per unit mass.
         u = read_snap(snapshot, "U", 0)
-        U = @. uconvert(Unitful.J / mass_unit, u * (GU.E_cgs / GU.m_cgs))
+        U = @. uconvert(Unitful.J / mass_unit, u * (GU.E_cgs / GU.m_msun))
 
         # ne := number_of_electrons / number_of_Hydrogen_atoms.
         ne = read_snap(snapshot, "NE", 0)
@@ -965,7 +965,7 @@ function birthPlace(
 
         # Position of the target star, in the snapshot where it was born.
         raw_pos = read_snap(snap_files[snap_idx], "POS", 4)[:, birth_idx]
-        nursery_pos = @. ustrip(Float64, length_unit, raw_pos * GU.x_cgs)
+        nursery_pos = @. ustrip(Float64, length_unit, raw_pos * GU.x_kpc)
 
         push!(birth_place, nursery_pos)
     end
@@ -1023,7 +1023,7 @@ function sfrTxtData(
 )::Dict{Union{Int64, String}, Any}
 
     # Get header of one snapshot for unit conversion.
-    header = read_header(source_path * base_name * "_000")
+    header = read_header(joinpath(source_path, base_name * "_000"))
 
     # Struct for unit conversion.
     if sim_cosmo == 1
@@ -1052,11 +1052,11 @@ function sfrTxtData(
     end
 
     # Get data from the file.
-    sfr_txt = readdlm(source_path * "sfr.txt", Float64)
+    sfr_txt = readdlm(joinpath(source_path, "sfr.txt"), Float64)
 
     # Column extraction and unit conversion.
     column_1 = @. ustrip(Float64, time_unit, sfr_txt[:, 1] * t_conv)
-    column_2 = @. ustrip(Float64, mass_unit, sfr_txt[:, 2] * GU.m_cgs)
+    column_2 = @. ustrip(Float64, mass_unit, sfr_txt[:, 2] * GU.m_msun)
     column_3 = @. ustrip(
                     Float64, 
                     sfr_unit, 
@@ -1067,8 +1067,8 @@ function sfrTxtData(
                     sfr_unit, 
                     sfr_txt[:, 4] * (UnitfulAstro.Msun / UnitfulAstro.yr)
                 )
-    column_5 = @. ustrip(Float64, mass_unit, sfr_txt[:, 5] * GU.m_cgs)
-    column_6 = @. ustrip(Float64, sfr_unit, sfr_txt[:, 6] * (GU.m_cgs / GU.t_Myr))
+    column_5 = @. ustrip(Float64, mass_unit, sfr_txt[:, 5] * GU.m_msun)
+    column_6 = @. ustrip(Float64, sfr_unit, sfr_txt[:, 6] * (GU.m_msun / GU.t_Myr))
 
     return Dict(
         1 => column_1,

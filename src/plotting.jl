@@ -273,7 +273,18 @@ function densityMapPlot(
     )
 
     if plane == "XY" || plane == "All"
-        sph_density = log10.(sphMapping(pos, hsml, mass, ρ, ρ; param, kernel))
+        sph_density = log10.(
+            sphMapping(
+                pos, 
+                hsml, 
+                mass, 
+                ρ, 
+                ρ; 
+                param, 
+                kernel, 
+                show_progress = false,
+            )
+        )
 
         xy_plot = heatmap(
             binning,
@@ -310,7 +321,18 @@ function densityMapPlot(
         # Active rotation (alibi) of the galaxy, using Euler angles.
         # Rx(-90°) Ry(0°) Rz(0°)
         pos_xz = rotate_3D(pos, -90.0, 0.0, 0.0)
-        sph_density = log10.(sphMapping(pos_xz, hsml, mass, ρ, ρ; param, kernel))
+        sph_density = log10.(
+            sphMapping(
+                pos_xz, 
+                hsml, 
+                mass, 
+                ρ, 
+                ρ; 
+                param, 
+                kernel, 
+                show_progress = false,
+            )
+        )
 
         xz_plot = heatmap(
             binning,
@@ -347,7 +369,18 @@ function densityMapPlot(
         # Active rotation (alibi) of the galaxy, using Euler angles.
         # Rx(-90°) Ry(0°) Rz(-90°)
         pos_yz = rotate_3D(pos, -90.0, 0.0, -90.0)
-        sph_density = log10.(sphMapping(pos_yz, hsml, mass, ρ, ρ; param, kernel))
+        sph_density = log10.(
+            sphMapping(
+                pos_yz, 
+                hsml, 
+                mass, 
+                ρ, 
+                ρ; 
+                param, 
+                kernel, 
+                show_progress = false,
+            )
+        )
 
         yz_plot = heatmap(
             binning,
@@ -2980,7 +3013,7 @@ function KennicuttSchmidtPlot(
     star_mass = star_mass_data["mass"]
     star_mass_unit = star_mass_data["unit"]
 
-    #U Unit consistency check.
+    # Unit consistency check.
     gas_mass_unit == star_mass_unit || error("Star and gas mass units must be the same.")
 
     # Positions.
@@ -3037,12 +3070,12 @@ function KennicuttSchmidtPlot(
     interval_slope = maximum([conf_intval[2,2] - mean_slope, mean_slope - conf_intval[2,1]])
 
     # Sets the slope and intercept with the right amount of digits for display.
-    if error_formating == "std_error"
-        intercept, intercept_error = format_error(mean_intercept, errors[1])
-        slope, slope_error = format_error(mean_slope, errors[2])
-    else
+    if error_formating == "conf_interval"
         intercept, intercept_error = format_error(mean_intercept, interval_intercept)
         slope, slope_error = format_error(mean_slope, interval_slope)
+    else
+        intercept, intercept_error = format_error(mean_intercept, errors[1])
+        slope, slope_error = format_error(mean_slope, errors[2])
     end
 
     # Formatting for the x axis label.
@@ -3093,7 +3126,7 @@ function KennicuttSchmidtPlot(
         foreground_color_legend = nothing,
     )
 
-    # Comparison line using the measured values by Kennicutt (1998).
+    # Comparison line with the measured values by Kennicutt (1998).
     sorted_density = sort(density_data)
 	KS_intercept = ustrip(Float64, sfr_unit, KENNICUTT98_INTERCEPT)
 	KS_intercept *= ustrip(Float64, density_unit, KENNICUTT98_RHO_UNIT)^(-KENNICUTT98_SLOPE)

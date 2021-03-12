@@ -21,8 +21,8 @@ and then generate a GIF and video animating the images.
   set in the GADGET variable OutputDir.
 - `anim_name::String`: Name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
-- `output_path::String = "scatter_grid/"`: Path to the output directory. The images will 
-  be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+- `output_path::String = "scatter_grid"`: Path to the output directory. The images will 
+  be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -43,7 +43,7 @@ function scatterGridPipeline(
     source_path::String,
     anim_name::String,
     frame_rate::Int64; 
-    output_path::String = "scatter_grid/",
+    output_path::String = "scatter_grid",
     sim_cosmo::Int64 = 0,
     step::Int64 = 1,
     box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
@@ -57,7 +57,7 @@ function scatterGridPipeline(
     snap_numbers = sim["numbers"]
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
+    img_path = mkpath(joinpath(output_path, "images"))
 
     # Generate and store the plots.
     short_snaps = @view snap_files[1:step:end]                       
@@ -70,16 +70,16 @@ function scatterGridPipeline(
 
         savefig(
             scatterGridPlot(positions),
-            output_path * "images/" * base_name * "_" * number * format,
+            joinpath(img_path, base_name * "_" * number * format),
         )
 
     end
 
     # Make the GIF.
-    gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+    gif(animation, joinpath(output_path, anim_name * ".gif"), fps = frame_rate)
 
     # Make the video.
-    makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+    makeVideo(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -103,8 +103,8 @@ and then generate a GIF and a video animating the images.
   set in the GADGET variable OutputDir.
 - `anim_name::String`: Name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
-- `output_path::String = "density_map/"`: Path to the output directory. The images will 
-  be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+- `output_path::String = "density_map"`: Path to the output directory. The images will 
+  be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -132,7 +132,7 @@ function densityMapPipeline(
     source_path::String,
     anim_name::String,
     frame_rate::Int64;
-    output_path::String = "density_map/",
+    output_path::String = "density_map",
     sim_cosmo::Int64 = 0,
     step::Int64 = 1,
     plane::String = "All",
@@ -148,7 +148,7 @@ function densityMapPipeline(
     snap_numbers = sim["numbers"]
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
+    img_path = mkpath(joinpath(output_path, "images"))
 
     # Generate and store the plots.
     short_snaps = @view snap_files[1:step:end]                       
@@ -164,16 +164,16 @@ function densityMapPipeline(
 
         savefig(
             densityMapPlot(pos, mass, density, hsml; plane, axes),
-            output_path * "images/" * base_name * "_" * number * format,
+            joinpath(img_path, base_name * "_" * number * format),
         )
         
     end
 
     # Make the GIF.
-    gif(animation, output_path  * anim_name * ".gif", fps = frame_rate)
+    gif(animation, joinpath(output_path, anim_name * ".gif"), fps = frame_rate)
 
     # Make the video.
-    makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+    makeVideo(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -197,8 +197,8 @@ and then generate a GIF and a video animating the images.
   set in the GADGET variable OutputDir.
 - `anim_name::String`: Name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
-- `output_path::String = "star_map/"`: Path to the output directory. The images will 
-  be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+- `output_path::String = "star_map"`: Path to the output directory. The images will 
+  be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -229,7 +229,7 @@ function starMapPipeline(
     source_path::String,
     anim_name::String,
     frame_rate::Int64;
-    output_path::String = "star_map/",
+    output_path::String = "star_map",
     sim_cosmo::Int64 = 0,
     step::Int64 = 1,
     plane::String = "All",
@@ -246,29 +246,29 @@ function starMapPipeline(
     snap_numbers = sim["numbers"]
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
+    img_path = mkpath(joinpath(output_path, "images"))
 
     # Generate and store the plots.
     short_snaps = @view snap_files[1:step:end]                       
     animation = @animate for (i, snapshot) in enumerate(short_snaps)
 
-        pos = positionData( snapshot; sim_cosmo, box_size, length_unit)
+        pos = positionData(snapshot; sim_cosmo, box_size, length_unit)
 
         # Snashot number.
         number = snap_numbers[1 + step * (i - 1)]
 
         savefig(
             starMapPlot(pos; plane, box_factor, axes),
-            output_path * "images/" * base_name * "_" * number * format,
+            joinpath(img_path, base_name * "_" * number * format),
         )
 
     end
 
     # Make the GIF.
-    gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+    gif(animation, joinpath(output_path, anim_name * ".gif"), fps = frame_rate)
 
     # Make the video.
-    makeVideo( output_path * "images/", format, output_path, anim_name, frame_rate)
+    makeVideo(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -292,8 +292,8 @@ generate a GIF and a video animating the whole evolution for all snapshots.
   set in the GADGET variable OutputDir.
 - `anim_name::String`: Name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
-- `output_path::String = "gas_star_evolution/"`: Path to the output directory. The image 
-  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+- `output_path::String = "gas_star_evolution"`: Path to the output directory. The image 
+  will be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
   is the number of the last snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -320,7 +320,7 @@ function gasStarEvolutionPipeline(
     source_path::String,
     anim_name::String,
     frame_rate::Int64;
-    output_path::String = "gas_star_evolution/",
+    output_path::String = "gas_star_evolution",
     sim_cosmo::Int64 = 0,
     step::Int64 = 1,
     box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
@@ -336,7 +336,7 @@ function gasStarEvolutionPipeline(
     snap_numbers = sim["numbers"]
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "TEMP/")
+    temp_path = mkpath(joinpath(output_path, "TEMP"))
 
     time_series = timeSeriesData(snap_files; sim_cosmo, time_unit, sfr_unit)
 
@@ -351,26 +351,26 @@ function gasStarEvolutionPipeline(
 
         savefig(
             gasStarEvolutionPlot(time_series, positions, i),
-            output_path * "TEMP/" * base_name * "_" * number * format,
+            joinpath(temp_path, base_name * "_" * number * format),
         )
 
     end
 
     # Make the GIF.
-    gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+    gif(animation, joinpath(output_path, anim_name * ".gif"), fps = frame_rate)
 
     # Make the video.
-    makeVideo(output_path * "TEMP/", format, output_path, anim_name, frame_rate)
+    makeVideo(temp_path, format, output_path, anim_name, frame_rate)
 
     # Move the last figure out of the temporary directory.
     mv(
-        output_path * "TEMP/" * base_name * "_" * snap_numbers[end] * format,
-        output_path * anim_name * format,
+        joinpath(temp_path, base_name * "_" * snap_numbers[end] * format),
+        joinpath(output_path, anim_name * format),
         force = true,
     )
 
     # Delete the temporary directory and all its contents.
-    rm(output_path * "TEMP/", recursive = true)
+    rm(temp_path, recursive = true)
 
     return nothing
 end
@@ -394,8 +394,8 @@ Save the results of the CMDFPlot function as one image per snapshot
   set in the GADGET variable OutputDir.
 - `anim_name::String`: Name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
-- `output_path::String = "CMDF/"`: Path to the output directory. The images 
-  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+- `output_path::String = "CMDF"`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -414,7 +414,7 @@ function CMDFPipeline(
     source_path::String,
     anim_name::String,
     frame_rate::Int64;
-    output_path::String = "CMDF/",
+    output_path::String = "CMDF",
     sim_cosmo::Int64 = 0,
     step::Int64 = 1,
     x_norm::Bool = false,
@@ -423,7 +423,7 @@ function CMDFPipeline(
 )::Nothing
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
+    img_path = mkpath(joinpath(output_path, "images"))
 
     # Get the simulation data.
     sim = getSnapshotPaths(base_name, source_path)
@@ -454,17 +454,17 @@ function CMDFPipeline(
                     bins = 50, 
                     x_norm
                 ),
-                output_path * "images/" * base_name * "_" * number * format,
+                joinpath(img_path, base_name * "_" * number * format),
             )
         end
 
     end
 
     # Make the GIF.
-    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+    # gif(animation, joinpath(output_path, anim_name * ".gif"), fps = frame_rate)
 
     # Make the video.
-    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -490,8 +490,8 @@ Save the results of the CMDFPlot function for several simulations as one image p
 - `anim_name::String`: Name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
 - `labels::Array{String, 2}`: Labels for the different simulations.
-- `output_path::String = "CMDF/"`: Path to the output directory. The images 
-  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+- `output_path::String = "CMDF"`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -511,7 +511,7 @@ function CMDFPipeline(
     anim_name::String,
     frame_rate::Int64,
     labels::Array{String, 2};
-    output_path::String = "mass_profile/",
+    output_path::String = "CMDF",
     sim_cosmo::Int64 = 0,
     step::Int64 = 1,
     x_norm::Bool = false,
@@ -520,7 +520,7 @@ function CMDFPipeline(
 )::Nothing
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
+    img_path = mkpath(joinpath(output_path, "images"))
 
     # Get the simulation data.
     snap_files = [getSnapshotPaths(base_name[i], path)["snap_files"] 
@@ -559,7 +559,7 @@ function CMDFPipeline(
                     bins = 50, 
                     x_norm
                 ),
-                output_path * "images/frame_" * string(i - 1) * format,
+                joinpath(img_path, "frame_" * string(i - 1) * format),
             )
 
         end
@@ -567,10 +567,10 @@ function CMDFPipeline(
     end
 
     # Make the GIF.
-    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+    # gif(animation, joinpath(output_path, anim_name * ".gif"), fps = frame_rate)
 
     # Make the video.
-    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -594,8 +594,8 @@ Save the results of the birthHistogramPlot function as one image per snapshot
   set in the GADGET variable OutputDir.
 - `anim_name::String`: Name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
-- `output_path::String = "birth_histogram/"`: Path to the output directory. The images 
-  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+- `output_path::String = "birth_histogram"`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -613,7 +613,7 @@ function birthHistogramPipeline(
     source_path::String,
     anim_name::String,
     frame_rate::Int64;
-    output_path::String = "birth_histogram/",
+    output_path::String = "birth_histogram",
     sim_cosmo::Int64 = 0,
     step::Int64 = 1,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
@@ -628,7 +628,7 @@ function birthHistogramPipeline(
     time_data = timeSeriesData(snap_files; sim_cosmo)
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
+    img_path = mkpath(joinpath(output_path, "images"))
 
     # Generate and store the plots.
     short_snaps = @view snap_files[1:step:end] 
@@ -654,16 +654,16 @@ function birthHistogramPipeline(
 
             savefig(
                 birthHistogramPlot(nursery, bins = 50),
-                output_path * "images/" * base_name * "_" * number * format,
+                joinpath(img_path, base_name * "_" * number * format),
             )
         end
     end
 
     # Make the GIF.
-    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+    # gif(animation, joinpath(output_path, anim_name * ".gif"), fps = frame_rate)
 
     # Make the video.
-    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -691,7 +691,7 @@ Args:
   set in the GADGET variable OutputDir.
 - `fig_name::String`: Base name for the figures. The images will be named
   `fig_name`_vs_XXX`format` where XXX is 'time', 'redshift' or 'scale_factor'.
-- `output_path::String = "evolution_summary/"`: Path to the output directory. The images 
+- `output_path::String = "evolution_summary"`: Path to the output directory. The images 
   will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -716,7 +716,7 @@ function evolutionSummaryPipeline(
     base_name::String,
     source_path::String,
     fig_name::String;
-    output_path::String = "evolution_summary/",
+    output_path::String = "evolution_summary",
     sim_cosmo::Int64 = 0,
     mass_factor::Int64 = 0,
     number_factor::Int64 = 0,
@@ -742,7 +742,7 @@ function evolutionSummaryPipeline(
     # Parameters vs. time. 
     savefig(
         timeSeriesPlot(time_series; mass_factor, number_factor),
-        output_path * fig_name * "_vs_time" * format,
+        joinpath(output_path, fig_name * "_vs_time" * format),
     )
 
     if sim_cosmo == 1
@@ -750,12 +750,12 @@ function evolutionSummaryPipeline(
         # Parameters vs. scale factor. 
         savefig(
             scaleFactorSeriesPlot(time_series;mass_factor, number_factor),
-            output_path * fig_name * "_vs_scale_factor" * format,
+            joinpath(output_path, fig_name * "_vs_scale_factor" * format),
         )
         # Parameters vs. redshift. 
         savefig(
             redshiftSeriesPlot(time_series; mass_factor, number_factor),
-            output_path * fig_name * "_vs_redshift" * format,
+            joinpath(output_path, fig_name * "_vs_redshift" * format),
         )
 
     end
@@ -807,7 +807,7 @@ function, namely:
   `fig_name`_`y_quantity`_vs_`x_quantity` `format`.
 - `x_quantity::String`: Physical magnitude for the x axis. 
 - `y_quantity::String`: Physical magnitude for the y axis.
-- `output_path::String = "compare_simulations/"`: Path to the output directory. The images 
+- `output_path::String = "compare_simulations"`: Path to the output directory. The images 
   will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -846,7 +846,7 @@ function compareSimulationsPipeline(
     fig_name::String,
     x_quantity::String,
     y_quantity::String;
-    output_path::String = "compare_simulations/",
+    output_path::String = "compare_simulations",
     sim_cosmo::Int64 = 0,
     title::String = "",
     x_factor::Int64 = 0,
@@ -887,7 +887,7 @@ function compareSimulationsPipeline(
             bins,
             legend_pos,
         ), 
-        output_path * fig_name * "_" * y_quantity * "_vs_" * x_quantity * format,
+        joinpath(output_path, fig_name * "_" * y_quantity * "_vs_" * x_quantity * format),
     )
 
     return nothing
@@ -912,8 +912,8 @@ and then generate a GIF and a video animating the images.
   set in the GADGET variable OutputDir.
 - `anim_name::String`: Name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
-- `output_path::String = "density_histogram/"`: Path to the output directory. The images 
-  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+- `output_path::String = "density_histogram"`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -936,7 +936,7 @@ function densityHistogramPipeline(
     source_path::String,
     anim_name::String,
     frame_rate::Int64;
-    output_path::String = "density_histogram/",
+    output_path::String = "density_histogram",
     sim_cosmo::Int64 = 0,
     step::Int64 = 1,
     factor::Int64 = 0,
@@ -953,7 +953,7 @@ function densityHistogramPipeline(
     time_data = timeSeriesData(snap_files; sim_cosmo, time_unit)
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
+    img_path = mkpath(joinpath(output_path, "images"))
 
     # Generate and store the plots.
     short_snaps = @view snap_files[1:step:end]
@@ -971,16 +971,16 @@ function densityHistogramPipeline(
                 time_data["clock_time"][1 + step * (i - 1)] * time_unit;
                 factor,
             ), 
-            output_path * "images/" * base_name * "_" * number * format,
+            joinpath(img_path, base_name * "_" * number * format),
         )
 
     end
 
     # Make the GIF.
-    # gif(animation, output_path  * anim_name * ".gif", fps = frame_rate)
+    # gif(animation, joinpath(output_path, anim_name * ".gif"), fps = frame_rate)
 
     # Make the video.
-    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -1008,8 +1008,8 @@ and then generate a GIF and a video animating the images.
   "gas" -> Gas particle. 
   "dark_matter" -> Dark matter particle.
   "stars" -> Star particle.
-- `output_path::String = "density_profile/"`: Path to the output directory. The images 
-  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+- `output_path::String = "density_profile"`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -1048,7 +1048,7 @@ function densityProfilePipeline(
     anim_name::String,
     frame_rate::Int64,
     type::String;
-    output_path::String = "density_profile/",
+    output_path::String = "density_profile",
     sim_cosmo::Int64 = 0,
     scale::Symbol = :identity,
     step::Int64 = 1,
@@ -1070,7 +1070,7 @@ function densityProfilePipeline(
     time_data = timeSeriesData(snap_files; sim_cosmo, time_unit)
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
+    img_path = mkpath(joinpath(output_path, "images"))
 
     # Generate and store the plots.
     short_snaps = @view snap_files[1:step:end] 
@@ -1093,16 +1093,16 @@ function densityProfilePipeline(
                 factor,
                 box_factor,
             ),
-            output_path * "images/" * base_name * "_" * number * format,
+            joinpath(img_path, base_name * "_" * number * format),
         )
 
     end
 
     # Make the GIF.
-    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+    # gif(animation, joinpath(output_path, anim_name * ".gif"), fps = frame_rate)
 
     # Make the video.
-    # makeVideo(output_path * "images/", format, output_path * type, anim_name, frame_rate)
+    # makeVideo(img_path, format, output_path * type, anim_name, frame_rate)
 
     return nothing
 end
@@ -1133,8 +1133,8 @@ per snapshot, and then generate a GIF and a video animating the images.
   "dark_matter" -> Dark matter particle.
   "stars" -> Star particle.
 - `labels::Array{String, 2}`: Labels for the different simulations.
-- `output_path::String = "density_profile/"`: Path to the output directory. The images 
-  will be stored in `output_path`images/ and will be named frame_XXX`format` where XXX is 
+- `output_path::String = "density_profile"`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named frame_XXX`format` where XXX is 
   the ordinal of the frame. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -1174,7 +1174,7 @@ function densityProfilePipeline(
     frame_rate::Int64,
     type::String,
     labels::Array{String, 2};
-    output_path::String = "density_profile/",
+    output_path::String = "density_profile",
     sim_cosmo::Int64 = 0,
     scale::Symbol = :identity,
     step::Int64 = 1,
@@ -1189,7 +1189,7 @@ function densityProfilePipeline(
 )::Nothing
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
+    img_path = mkpath(joinpath(output_path, "images"))
 
     # Get the simulation data.
     snap_files = [getSnapshotPaths(base_name[i], path)["snap_files"] 
@@ -1220,15 +1220,15 @@ function densityProfilePipeline(
                 factor,
                 box_factor,
             ),
-            output_path * "images/frame_"  * string(i - 1) * format,
+            joinpath(img_path, "frame_"  * string(i - 1) * format),
         )
     end
 
     # Make the GIF.
-    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+    # gif(animation, joinpath(output_path, anim_name * ".gif"), fps = frame_rate)
 
     # Make the video.
-    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -1257,8 +1257,8 @@ and then generate a GIF and a video animating the images.
   "gas" -> Gas particle. 
   "dark_matter" -> Dark matter particle.
   "stars" -> Star particle.
-- `output_path::String = "metallicity_profile/"`: Path to the output directory. The images 
-  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+- `output_path::String = "metallicity_profile"`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -1288,7 +1288,7 @@ function metallicityProfilePipeline(
     anim_name::String,
     frame_rate::Int64,
     type::String;
-    output_path::String = "metallicity_profile/",
+    output_path::String = "metallicity_profile",
     sim_cosmo::Int64 = 0,
     scale::Symbol = :identity,
     step::Int64 = 1,
@@ -1301,7 +1301,7 @@ function metallicityProfilePipeline(
 )::Nothing
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
+    img_path = mkpath(joinpath(output_path, "images"))
 
     # Get the simulation data.
     sim = getSnapshotPaths(base_name, source_path)
@@ -1332,15 +1332,15 @@ function metallicityProfilePipeline(
                 bins,
                 box_factor,
             ),
-            output_path * "images/" * base_name * "_" * number * format,
+            joinpath(img_path, base_name * "_" * number * format),
         )
     end
 
     # Make the GIF.
-    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+    # gif(animation, joinpath(output_path, anim_name * ".gif"), fps = frame_rate)
 
     # Make the video.
-    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -1371,8 +1371,8 @@ image per snapshot, and then generate a GIF and a video animating the images.
   "dark_matter" -> Dark matter particle.
   "stars" -> Star particle.
 - `labels::Array{String,2}`: Labels for the different simulations.
-- `output_path::String = "metallicity_profile/"`: Path to the output directory. The images 
-  will be stored in `output_path`images/ and will be named frame_XXX`format` where XXX is 
+- `output_path::String = "metallicity_profile"`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named frame_XXX`format` where XXX is 
   the ordinal of the frame. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -1407,7 +1407,7 @@ function metallicityProfilePipeline(
     frame_rate::Int64,
     type::String,
     labels::Array{String, 2};
-    output_path::String = "metallicity_profile/",
+    output_path::String = "metallicity_profile",
     sim_cosmo::Int64 = 0,
     scale::Symbol = :identity,
     step::Int64 = 1,
@@ -1420,7 +1420,7 @@ function metallicityProfilePipeline(
 )::Nothing
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
+    img_path = mkpath(joinpath(output_path, "images"))
 
     # Get the simulation data.
     snap_files = [getSnapshotPaths(base_name[i], path)["snap_files"] 
@@ -1452,16 +1452,16 @@ function metallicityProfilePipeline(
                 bins,
                 box_factor,
             ),
-            output_path * "images/frame_" * string(i - 1) * format,
+            joinpath(img_path, "frame_" * string(i - 1) * format),
         )
 
     end
 
     # Make the GIF.
-    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+    # gif(animation, joinpath(output_path, anim_name * ".gif"), fps = frame_rate)
 
     # Make the video.
-    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -1494,8 +1494,8 @@ and then generate a GIF and a video animating the images.
   The two options are:
   :identity => no scaling.
   :log10 => logarithmic scaling.
-- `output_path::String = "mass_profile/"`: Path to the output directory. The images 
-  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+- `output_path::String = "mass_profile"`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -1530,7 +1530,7 @@ function massProfilePipeline(
     anim_name::String,
     frame_rate::Int64,
     type::String;
-    output_path::String = "mass_profile/",
+    output_path::String = "mass_profile",
     sim_cosmo::Int64 = 0,
     scale::Symbol = :identity,
     step::Int64 = 1,
@@ -1552,7 +1552,7 @@ function massProfilePipeline(
     time_data = timeSeriesData(snap_files; sim_cosmo, time_unit)
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
+    img_path = mkpath(joinpath(output_path, "images"))
 
     # Generate and store the plots.
     short_snaps = @view snap_files[1:step:end] 
@@ -1575,16 +1575,16 @@ function massProfilePipeline(
                 factor,
                 box_factor,
             ),
-            output_path * "images/" * base_name * "_" * number * format,
+            joinpath(img_path, base_name * "_" * number * format),
         )
 
     end
 
     # Make the GIF.
-    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+    # gif(animation, joinpath(output_path, anim_name * ".gif"), fps = frame_rate)
 
     # Make the video.
-    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -1615,8 +1615,8 @@ per snapshot, and then generate a GIF and a video animating the images.
   "dark_matter" -> Dark matter particle.
   "stars" -> Star particle.
 - `labels::Array{String, 2}`: Labels for the different simulations.
-- `output_path::String = "mass_profile/"`: Path to the output directory. The images 
-  will be stored in `output_path`images/ and will be named frame_XXX`format` where XXX is 
+- `output_path::String = "mass_profile"`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named frame_XXX`format` where XXX is 
   the ordinal of the frame. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -1656,7 +1656,7 @@ function massProfilePipeline(
     frame_rate::Int64,
     type::String,
     labels::Array{String, 2};
-    output_path::String = "mass_profile/",
+    output_path::String = "mass_profile",
     sim_cosmo::Int64 = 0,
     scale::Symbol = :identity,
     step::Int64 = 1,
@@ -1671,7 +1671,7 @@ function massProfilePipeline(
 )::Nothing
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
+    img_path = mkpath(joinpath(output_path, "images"))
 
     # Get the simulation data.
     snap_files = [getSnapshotPaths(base_name[i], path)["snap_files"] 
@@ -1702,16 +1702,16 @@ function massProfilePipeline(
                 factor,
                 box_factor,
             ),
-            output_path * "images/frame_" * string(i - 1) * format,
+            joinpath(img_path, "frame_" * string(i - 1) * format),
         )
 
     end
 
     # Make the GIF.
-    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+    # gif(animation, joinpath(output_path, anim_name * ".gif"), fps = frame_rate)
 
     # Make the video.
-    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -1737,7 +1737,7 @@ THIS FUNCTION NEEDS A FILE (sfr.txt) WHICH IS NOT PRODUCED BY ANY PUBLIC VERSION
   set in the GADGET variable OutputDir.
 - `x_axis::Int64`: Column number for the x axis.
 - `y_axis::Vector{Int64}`: Vector of columns numbers for the y axis.
-- `output_path::String = "sfr_txt/"`: Path to the output directory.
+- `output_path::String = "sfr_txt"`: Path to the output directory.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
@@ -1776,7 +1776,7 @@ function sfrTxtPipeline(
     source_path::Vector{String},
     x_axis::Int64,
     y_axis::Vector{Int64};
-    output_path::String = "sfr_txt/",
+    output_path::String = "sfr_txt",
     sim_cosmo::Int64 = 0,
     title::Vector{String} = String[],
     names::Vector{String} = String[],
@@ -1823,7 +1823,7 @@ function sfrTxtPipeline(
                     scale, 
                     min_filter,
                 ),
-                output_path * names[i] * format,
+                joinpath(output_path, names[i] * format),
             )
 
     end
@@ -1850,8 +1850,8 @@ and then generate a GIF and a video animating the images.
   set in the GADGET variable OutputDir.
 - `anim_name::String`: Name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
-- `output_path::String = "temperature_histogram/"`: Path to the output directory. The images 
-  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+- `output_path::String = "temperature_histogram"`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -1869,7 +1869,7 @@ function temperatureHistogramPipeline(
     source_path::String,
     anim_name::String,
     frame_rate::Int64;
-    output_path::String = "temperature_histogram/",
+    output_path::String = "temperature_histogram",
     sim_cosmo::Int64 = 0,
     step::Int64 = 1,
     temp_unit::Unitful.FreeUnits = Unitful.K,
@@ -1886,7 +1886,7 @@ function temperatureHistogramPipeline(
     clock = time_data["clock_time"]
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
+    img_path = mkpath(joinpath(output_path, "images"))
 
     # Generate and store the plots.
     short_snaps = @view snap_files[1:step:end] 
@@ -1905,16 +1905,16 @@ function temperatureHistogramPipeline(
                 clock[1 + step * (i - 1)] * time_unit, 
                 bins = 30
             ),
-            output_path * "images/" * base_name * "_" * number * format,
+            joinpath(img_path, base_name * "_" * number * format),
         )
         
     end
 
     # Make the GIF.
-    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+    # gif(animation, joinpath(output_path, anim_name * ".gif"), fps = frame_rate)
 
     # Make the video.
-    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -1938,8 +1938,8 @@ and then generate a GIF and a video animating the images.
   set in the GADGET variable OutputDir.
 - `anim_name::String`: Name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
-- `output_path::String = "rho_vs_temp/"`: Path to the output directory. The images 
-  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+- `output_path::String = "rho_vs_temp"`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -1960,7 +1960,7 @@ function rhoTempPipeline(
     source_path::String,
     anim_name::String,
     frame_rate::Int64;
-    output_path::String = "rho_vs_temp/",
+    output_path::String = "rho_vs_temp",
     sim_cosmo::Int64 = 0,
     step::Int64 = 1,
     temp_unit::Unitful.FreeUnits = Unitful.K,
@@ -1978,7 +1978,7 @@ function rhoTempPipeline(
     clock = time_data["clock_time"]
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
+    img_path = mkpath(joinpath(output_path, "images"))
 
     # Generate and store the plots.
     short_snaps = @view snap_files[1:step:end] 
@@ -1998,16 +1998,16 @@ function rhoTempPipeline(
                 density_data::Dict{String, Any},
                 clock[1 + step * (i - 1)] * time_unit,
             ),
-            output_path * "images/" * base_name * "_" * number * format,
+            joinpath(img_path, base_name * "_" * number * format),
         )
         
     end
 
     # Make the GIF.
-    # gif(animation, output_path * anim_name * ".gif", fps = frame_rate)
+    # gif(animation, joinpath(output_path, anim_name * ".gif"), fps = frame_rate)
 
     # Make the video.
-    # makeVideo(output_path * "images/", format, output_path, anim_name, frame_rate)
+    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -2029,8 +2029,8 @@ at least five data points for the fitting.
   variable SnapshotFileBase.
 - `source_path::String`: Paths to the directories containing the snapshot files, 
   set in the GADGET variable OutputDir.
-- `output_path::String = "Kennicutt_Schmidt/"`: Path to the output directory. The images 
-  will be stored in `output_path`images/ and will be named `base_name`_XXX`format` where XXX 
+- `output_path::String = "Kennicutt_Schmidt"`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -2068,7 +2068,7 @@ at least five data points for the fitting.
 function KennicuttSchmidtPipeline(
     base_name::String,
     source_path::String;
-    output_path::String = "Kennicutt_Schmidt/",
+    output_path::String = "Kennicutt_Schmidt",
     sim_cosmo::Int64 = 0,
     step::Int64 = 1,
     temp_filter::Unitful.Quantity = 3e4Unitful.K,
@@ -2094,7 +2094,7 @@ function KennicuttSchmidtPipeline(
     clock = time_data["clock_time"]
 
     # Create a directory to store the figures, if it doesn't exist.
-    mkpath(output_path * "images/")
+    img_path = mkpath(joinpath(output_path, "images"))
 
     # Generate and store the plots.
     short_snaps = @view snap_files[1:step:end] 
@@ -2137,7 +2137,7 @@ function KennicuttSchmidtPipeline(
                 # If there was enough data to make a fit.
                 savefig(
                     figure,
-                    output_path * "images/" * base_name * "_" * number * format,
+                    joinpath(img_path, base_name * "_" * number * format),
                 )
             end
 

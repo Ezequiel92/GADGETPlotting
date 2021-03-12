@@ -18,10 +18,10 @@ Julia script for creating plots, GIFs and videos from the data produce by GAGET2
 
 There are four tiers of functions:
 
-- Auxiliary functions (`src/auxiliary.jl`): These are only for internal use. They do soma data processing.
-- Data acquisition functions (`src/data_acquisition.jl`): These are only for internal use. They take the raw data, apply some transformation (e.g. units) and return it as a familiar data structure.
-- Plotting functions (`src/plotting.jl`): These are exported. They take data in the format returned by the data acquisition functions and return plot objects.
-- Pipeline functions (`src/pipelines.jl`): These are exported. They take the location of the snapshot files and some configuration parameters, and produce a series of plots/GIFs/videos as a result. By default, some of these functions may produce a large number of images (but it can be configured to do less), and they may take a long time to run, especially if the function uses the `pgfplotsx` backend of [Plots.jl](https://github.com/JuliaPlots/Plots.jl).
+- Auxiliary functions (`src/auxiliary.jl`): These are only for internal use. All but `makeVideo` are pure functions that do soma data processing.
+- Data acquisition functions (`src/data_acquisition.jl`): These are only for internal use. They take the location of the raw data, apply some transformation (e.g. units) and return it inside a familiar data structure.
+- Plotting functions (`src/plotting.jl`): These are exported. These are pure functions that the take data in the format outputted by the data acquisition functions and return plot objects. They do all the data processing necessary to produce the plot, but the unit conversions. They will plot with the units selected when the data acquisition functions were called.
+- Pipeline functions (`src/pipelines.jl`): These are exported. These function run a whole pipeline, from raw data to final plot. They take the location of the snapshot files and some configuration parameters, and produce a series of plots/GIFs/videos as a result. By default, some of these functions may produce a large number of images (but it can be configured to do less), and they may take a long time to run, especially if the function uses the `pgfplotsx` backend of [Plots.jl](https://github.com/JuliaPlots/Plots.jl).
 
 ## PGFPlotsX backend
 
