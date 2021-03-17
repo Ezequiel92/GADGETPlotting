@@ -49,6 +49,34 @@ gasStarEvolutionPipeline(
 
 pgfplotsx()
 
+CMDFPipeline(
+    SNAP_NAME,
+    BASE_SRC_PATH,
+    "CMDF_animation",
+    FPS,
+    output_path = joinpath(BASE_OUT_PATH, "CMDF"),
+    sim_cosmo = SIM_COSMO,
+)
+
+CMDFPipeline(
+    [SNAP_NAME, SNAP_NAME],
+    [BASE_SRC_PATH, BASE_SRC_PATH],
+    "CMDF_animation",
+    FPS,
+    ["sim1" "sim2"],
+    output_path = joinpath(BASE_OUT_PATH, "compare_CMDF"),
+    sim_cosmo = SIM_COSMO,
+)
+
+birthHistogramPipeline(
+    SNAP_NAME,
+    BASE_SRC_PATH,
+    "birth_histogram_animation",
+    FPS,
+    output_path = joinpath(BASE_OUT_PATH, "birth_histogram"),
+    sim_cosmo = SIM_COSMO,
+)
+
 evolutionSummaryPipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
@@ -171,34 +199,6 @@ massProfilePipeline(
     factor = 6,
     box_factor = 0.125,
     box_size = BOX_SIZE,
-)
-
-CMDFPipeline(
-    SNAP_NAME,
-    BASE_SRC_PATH,
-    "CMDF_animation",
-    FPS,
-    output_path = joinpath(BASE_OUT_PATH, "CMDF"),
-    sim_cosmo = SIM_COSMO,
-)
-
-CMDFPipeline(
-    [SNAP_NAME, SNAP_NAME],
-    [BASE_SRC_PATH, BASE_SRC_PATH],
-    "CMDF_animation",
-    FPS,
-    ["sim1" "sim2"],
-    output_path = joinpath(BASE_OUT_PATH, "compare_CMDF"),
-    sim_cosmo = SIM_COSMO,
-)
-
-birthHistogramPipeline(
-    SNAP_NAME,
-    BASE_SRC_PATH,
-    "birth_histogram_animation",
-    FPS,
-    output_path = joinpath(BASE_OUT_PATH, "birth_histogram"),
-    sim_cosmo = SIM_COSMO,
 )
 
 sfrTxtPipeline(

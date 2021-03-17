@@ -25,7 +25,7 @@ There are four tiers of functions:
 
 ## PGFPlotsX backend
 
-Some plotting and pipeline functions make use of the PGFPlotsX backend, and as such, the command `pgfplotsx()` should be always called at least once per session before these functions are (as it is done in `example/example_*.jl`). With time, and as some issues with GR are resolved, the functions will be hopefully migrated to the GR backend, making this caveat obsolete.
+Some plotting and pipeline functions make use of the PGFPlotsX backend, and as such, the command `pgfplotsx()` should be always called at least once per session before these functions are (as it is done in the scripts within `example/`). With time, and as some issues with GR are resolved, the functions will be hopefully migrated to the GR backend, making this caveat obsolete.
 
 ## Documentation
 

@@ -87,6 +87,7 @@ function makeVideo(
         image_stack,
         framerate = frame_rate,
         AVCodecContextProperties = properties,
+        silent = true,
     )
 
     return nothing

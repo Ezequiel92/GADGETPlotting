@@ -20,11 +20,14 @@ Give the paths to the GADGET output files, grouping them by snapshot in a Tuple.
 - A dictionary with two entries. 
   - Key "numbers" => A tuple of Strings with the numbers 
   that characterize each snapshot.
-  - Key "snap_files" => A tuple of Strings with the paths to the snapshot files,
-  named as follows: (`source_path`/`base_name`_001 ... `source_path`/`base_name`_NNN) 
+  - Key "snap_files" => A Vector of Strings with the paths to the snapshot files,
+  named as follows: [`source_path`/`base_name`_001 ... `source_path`/`base_name`_NNN]
   where NNN is the total number of snapshots.
 """
-function getSnapshotPaths(base_name::String, source_path::String)::Dict{String, Vector{String}}
+function getSnapshotPaths(
+    base_name::String, 
+    source_path::String
+)::Dict{String, Vector{String}}
 
     # Get the full list of paths to every GADGET file in `source_path`.
     file_list = glob(base_name * "_*", source_path)
@@ -783,14 +786,14 @@ function tempData(
 end
 
 """
-    ageData(snapshot::String, now::Float64; <keyword arguments>)::Dict{String,Any}
+    ageData(snapshot::String, time::Float64; <keyword arguments>)::Dict{String,Any}
 
 Get the ages of the stars at a specific time step.
 
 # Arguments
 - `snapshot::String`: Path to a given snapshot.
-- `now::Unitful.Quantity`: Clock time of `snapshot`, with units. All available time units in 
-  Unitful.jl and UnitfulAstro.jl can be used.
+- `time::Unitful.Quantity`: Clock time of `snapshot`, with units. All available time units 
+  in Unitful.jl and UnitfulAstro.jl can be used.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
@@ -802,7 +805,7 @@ Get the ages of the stars at a specific time step.
 """
 function ageData(
     snapshot::String,
-    now::Unitful.Quantity;
+    time::Unitful.Quantity;
     sim_cosmo::Int64 = 0,
 )::Dict{String, Any}
 
@@ -843,12 +846,12 @@ function ageData(
     birth_time = read_snap(snapshot, "AGE", 4)
 
     # Unit conversion.
-    time_unit = unit(now)
+    time_unit = unit(time)
     birth_time = @. ustrip(Float64, time_unit, birth_time * t_conv)
     
     # Ages for the stars.
-    clock_now = ustrip(now)
-    ages = clock_now .- birth_time
+    clock_time = ustrip(time)
+    ages = clock_time .- birth_time
 
     return Dict("ages" => ages, "unit" => time_unit)
 end

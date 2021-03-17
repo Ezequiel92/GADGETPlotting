@@ -24,7 +24,7 @@ savefig(joinpath(BASE_OUT_PATH, "test_starMapPlot_XY.png"))
 starMapPlot(pos, axes = true)
 savefig(joinpath(BASE_OUT_PATH, "test_starMapPlot_All.png"))
 
-gasStarEvolutionPlot(time_series, pos, SNAP_N)
+gasStarEvolutionPlot(SNAP_N, time_series, pos)
 savefig(joinpath(BASE_OUT_PATH, "test_gasStarEvolutionPlot.png"))
 
 pgfplotsx()
