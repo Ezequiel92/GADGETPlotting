@@ -19,6 +19,8 @@ The result is a single figure in a 3x3 layout with its axes in the unit given by
 """
 function scatterGridPlot(position_data::Dict{String, Any})::Plots.Plot
 
+    gr()
+
     # Get gas, dark matter and stars coordinates.
     gas_pos = position_data["gas"]
     gas_x = @view gas_pos[1, :]
@@ -220,6 +222,8 @@ function densityMapPlot(
     axes_color::Symbol = :white,
     color::Symbol = :inferno,
 )::Plots.Plot
+
+    gr()
 
     # Resolution in pixels for the binning of the grid.
     resolution = 1000
@@ -483,6 +487,8 @@ function starMapPlot(
     color::Symbol = :inferno,
 )::Plots.Plot
 
+    gr()
+
     # Get the position data.
     pos = position_data["stars"]
     if position_data["periodic"]
@@ -671,6 +677,8 @@ function gasStarEvolutionPlot(
     time_series::Dict{String, Any},
     position_data::Dict{String, Any}, 
 )::Plots.Plot
+
+    gr()
 
     # Formatting for the axis's labels
     time_unit = time_series["units"]["time"]
@@ -1482,7 +1490,7 @@ can be any magnitude used in the timeSeriesData function, namely:
   the corresponding axis will be scaled by 10^10. The default is 0, i.e. no scaling.
 - `y_factor::Int64 = 0`: Numerical exponent to scale the `y_quantity`, e.g. if y_factor = 10 
   the corresponding axis will be scaled by 10^10. The default is 0, i.e. no scaling.
-- `scale::NTuple{2, Symbol} = (:identity, :identity)`: Scaling to be used for the x 
+- `scale::Vector{Symbol} = [:identity, :identity],`: Scaling to be used for the x 
   and y axes. The two options are:
   :identity => no scaling.
   :log10 => logarithmic scaling.
@@ -1503,7 +1511,7 @@ function compareSimulationsPlot(
     title::String = "",
     x_factor::Int64 = 0,
     y_factor::Int64 = 0,
-    scale::NTuple{2, Symbol} = (:identity, :identity),
+    scale::Vector{Symbol} = [:identity, :identity],
     smooth_data::Bool = false,
     bins::Int64 = 50,
     legend_pos::Symbol = :best,

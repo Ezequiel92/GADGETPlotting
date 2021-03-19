@@ -15,6 +15,8 @@ GADGETPlotting.makeVideo(
     FPS,
 )
 
+pgfplotsx()
+
 x_data = [1:1000...]
 y_data = rand(1000)
 x_smooth, y_smooth = GADGETPlotting.smoothWindow(x_data, y_data, 50)
@@ -29,8 +31,13 @@ r, ρ = GADGETPlotting.densityProfile(gas_mass["mass"], distances, box_size, 80)
 plot(r, ρ, lw = 2, xlabel = "r / $(pos["unit"])", ylabel = L"\rho", legend = false)
 savefig(joinpath(BASE_OUT_PATH, "test_densityProfile.png"))
 
-r, z =
-    GADGETPlotting.metallicityProfile(gas_mass["mass"], distances, gas_z["Z"], box_size, 80)
+r, z = GADGETPlotting.metallicityProfile(
+    gas_mass["mass"], 
+    distances, 
+    gas_z["Z"], 
+    box_size, 
+    80,
+)
 plot(r, z, lw = 2, xlabel = "r / $(pos["unit"])", ylabel = "Z / Zsun", legend = false)
 savefig(joinpath(BASE_OUT_PATH, "test_metallicityProfile.png"))
 
@@ -75,11 +82,11 @@ m_error = round(stderror(linear_model)[2], sigdigits = 1)
 scatter(KSL["RHO"], KSL["SFR"], label = "Data", xlabel = L"log(\rho)", ylabel = L"log(SFR)")
 pl = plot!(KSL["RHO"], predict(linear_model), label = "Fit")
 annotate!(
-    GADGETPlotting.relative(pl, 0.5, 0.95)..., 
+    GADGETPlotting.relative(pl, 0.5, 0.95)...,
     text(L"SFR = A\,\rho^m", "Courier", 8, :center),
 )
 annotate!(
-    GADGETPlotting.relative(pl, 0.5, 0.9)..., 
+    GADGETPlotting.relative(pl, 0.5, 0.9)...,
     text(L"m = %$m \pm %$m_error", "Courier", 8, :center),
 )
 annotate!(

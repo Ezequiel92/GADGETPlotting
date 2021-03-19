@@ -2,8 +2,6 @@
 # PIPELINE FUNCTIONS.
 ############################################################################################
 
-gr()
-
 scatterGridPipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
@@ -46,8 +44,6 @@ gasStarEvolutionPipeline(
     sim_cosmo = SIM_COSMO,
     box_size = BOX_SIZE,
 )
-
-pgfplotsx()
 
 CMDFPipeline(
     SNAP_NAME,

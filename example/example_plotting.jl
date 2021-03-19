@@ -2,72 +2,102 @@
 # PLOTTING FUNCTIONS.
 ############################################################################################
 
-scatterGridPlot(pos)
-savefig(joinpath(BASE_OUT_PATH, "test_scatterGridPlot.png"))
+figure = scatterGridPlot(pos)
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_scatterGridPlot.png"))
 
-densityMapPlot(pos, gas_mass, density, hsml, plane = "XY")
-savefig(joinpath(BASE_OUT_PATH, "test_densityMapPlot_XY.png"))
+figure = densityMapPlot(pos, gas_mass, density, hsml, plane = "XY")
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_densityMapPlot_XY.png"))
 
-densityMapPlot(pos, gas_mass, density, hsml, axes = true)
-savefig(joinpath(BASE_OUT_PATH, "test_densityMapPlot_All.png"))
+figure = densityMapPlot(pos, gas_mass, density, hsml, axes = true)
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_densityMapPlot_All.png"))
 
 color = [:batlow, :bone, :CMRmap, :grayC, :inferno, :seaborn_rocket_gradient, :YlOrRd_9]
 
 for c in color
-    densityMapPlot(pos, gas_mass, density, hsml, color = c, axes = true)
-    savefig(joinpath(BASE_OUT_PATH, "test_densityMapPlot_" * string(c) * ".png"))
+    figure = densityMapPlot(pos, gas_mass, density, hsml, color = c, axes = true)
+    Base.invokelatest(
+        savefig, 
+        figure, 
+        joinpath(BASE_OUT_PATH, "test_densityMapPlot_" * string(c) * ".png"),
+    )
 end
 
-starMapPlot(pos, plane = "XY", axes = true)
-savefig(joinpath(BASE_OUT_PATH, "test_starMapPlot_XY.png"))
+figure = starMapPlot(pos, plane = "XY", axes = true)
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_starMapPlot_XY.png"))
 
-starMapPlot(pos, axes = true)
-savefig(joinpath(BASE_OUT_PATH, "test_starMapPlot_All.png"))
+figure = starMapPlot(pos, axes = true)
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_starMapPlot_All.png"))
 
-gasStarEvolutionPlot(SNAP_N, time_series, pos)
-savefig(joinpath(BASE_OUT_PATH, "test_gasStarEvolutionPlot.png"))
+figure = gasStarEvolutionPlot(SNAP_N, time_series, pos)
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_gasStarEvolutionPlot.png"))
 
-pgfplotsx()
+figure = CMDFPlot(star_mass, star_z, 1UnitfulAstro.Myr)
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_CMDFPlot.png"))
 
-CMDFPlot(star_mass, star_z, 1UnitfulAstro.Myr)
-savefig(joinpath(BASE_OUT_PATH, "test_CMDFPlot.png"))
+figure = CMDFPlot(
+    [star_mass, star_mass], 
+    [star_z, star_z], 
+    1UnitfulAstro.Myr, 
+    ["sim1" "sim2"],
+)
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_compare_CMDFPlot.png"))
 
-CMDFPlot([star_mass, star_mass], [star_z, star_z], 1UnitfulAstro.Myr, ["sim1" "sim2"])
-savefig(joinpath(BASE_OUT_PATH, "test_compare_CMDFPlot.png"))
+figure = birthHistogramPlot(birth_pos, bins = 50)
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_birthHistogramPlot.png"))
 
-birthHistogramPlot(birth_pos, bins = 50)
-savefig(joinpath(BASE_OUT_PATH, "test_birthHistogramPlot.png"))
+figure = timeSeriesPlot(time_series, mass_factor = 0, number_factor = 4)
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_timeSeriesPlot.png"))
 
-timeSeriesPlot(time_series, mass_factor = 0, number_factor = 4)
-savefig(joinpath(BASE_OUT_PATH, "test_timeSeriesPlot.png"))
+figure = scaleFactorSeriesPlot(time_series, mass_factor = 0, number_factor = 4)
+Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_scaleFactorSeriesPlot.png"),
+)
 
-scaleFactorSeriesPlot(time_series, mass_factor = 0, number_factor = 4)
-savefig(joinpath(BASE_OUT_PATH, "test_scaleFactorSeriesPlot.png"))
+figure = redshiftSeriesPlot(time_series, mass_factor = 0, number_factor = 4)
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_redshiftSeriesPlot.png"))
 
-redshiftSeriesPlot(time_series, mass_factor = 0, number_factor = 4)
-savefig(joinpath(BASE_OUT_PATH, "test_redshiftSeriesPlot.png"))
-
-compareSimulationsPlot(
+figure = compareSimulationsPlot(
     [time_series, time_series],
     "star_mass",
     "sfr",
     ["sim1" "sim2"];
     title = "SFMS relation",
     x_factor = 10,
-    scale = (:identity, :log10),
+    scale = [:identity, :log10],
 )
-savefig(joinpath(BASE_OUT_PATH, "test_compareSimulationsPlot.png"))
+Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_compareSimulationsPlot.png"),
+)
 
-densityHistogramPlot(density, 1UnitfulAstro.Myr, factor = 10)
-savefig(joinpath(BASE_OUT_PATH, "test_densityHistogramPlot.png"))
+figure = densityHistogramPlot(density, 1UnitfulAstro.Myr, factor = 10)
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_densityHistogramPlot.png"))
 
-densityProfilePlot(pos, star_mass, 1UnitfulAstro.Myr, scale = :log10, bins = 50)
-savefig(joinpath(BASE_OUT_PATH, "test_star_densityProfilePlot.png"))
+figure = densityProfilePlot(pos, star_mass, 1UnitfulAstro.Myr, scale = :log10, bins = 50)
+Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_star_densityProfilePlot.png"),
+)
 
-densityProfilePlot(pos, gas_mass, 1UnitfulAstro.Myr, scale = :log10, bins = 50, factor = 6)
-savefig(joinpath(BASE_OUT_PATH, "test_gas_densityProfilePlot.png"))
+figure = densityProfilePlot(
+    pos, 
+    gas_mass, 
+    1UnitfulAstro.Myr, 
+    scale = :log10, 
+    bins = 50, 
+    factor = 6,
+)
+Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_gas_densityProfilePlot.png"),
+)
 
-densityProfilePlot(
+figure = densityProfilePlot(
     [pos, pos],
     [gas_mass, gas_mass],
     1UnitfulAstro.Myr,
@@ -76,9 +106,13 @@ densityProfilePlot(
     scale = :log10,
     factor = 6,
 )
-savefig(joinpath(BASE_OUT_PATH, "test_compare_gas_densityProfilePlot.png"))
+Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_compare_gas_densityProfilePlot.png"),
+)
 
-densityProfilePlot(
+figure = densityProfilePlot(
     [pos, pos],
     [star_mass, star_mass],
     1UnitfulAstro.Myr,
@@ -86,15 +120,41 @@ densityProfilePlot(
     bins = 50,
     scale = :log10,
 )
-savefig(joinpath(BASE_OUT_PATH, "test_compare_star_densityProfilePlot.png"))
+Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_compare_star_densityProfilePlot.png"),
+)
 
-metallicityProfilePlot(pos, gas_mass, gas_z, 1UnitfulAstro.Myr, scale = :log10, bins = 50)
-savefig(joinpath(BASE_OUT_PATH, "test_gas_metallicityProfilePlot.png"))
+figure = metallicityProfilePlot(
+    pos, 
+    gas_mass, 
+    gas_z, 
+    1UnitfulAstro.Myr, 
+    scale = :log10, 
+    bins = 50,
+)
+Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_gas_metallicityProfilePlot.png"),
+)
 
-metallicityProfilePlot(pos, star_mass, star_z, 1UnitfulAstro.Myr, scale = :log10, bins = 50)
-savefig(joinpath(BASE_OUT_PATH, "test_star_metallicityProfilePlot.png"))
+figure = metallicityProfilePlot(
+    pos, 
+    star_mass, 
+    star_z, 
+    1UnitfulAstro.Myr, 
+    scale = :log10, 
+    bins = 50,
+)
+Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_star_metallicityProfilePlot.png"),
+)
 
-metallicityProfilePlot(
+figure = metallicityProfilePlot(
     [pos, pos],
     [gas_mass, gas_mass],
     [gas_z, gas_z],
@@ -103,9 +163,13 @@ metallicityProfilePlot(
     scale = :log10,
     bins = 50,
 )
-savefig(joinpath(BASE_OUT_PATH, "test_compare_gas_metallicityProfilePlot.png"))
+Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_compare_gas_metallicityProfilePlot.png"),
+)
 
-metallicityProfilePlot(
+figure = metallicityProfilePlot(
     [pos, pos],
     [star_mass, star_mass],
     [star_z, star_z],
@@ -114,15 +178,34 @@ metallicityProfilePlot(
     scale = :log10,
     bins = 50,
 )
-savefig(joinpath(BASE_OUT_PATH, "test_compare_star_metallicityProfilePlot.png"))
+figure = Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_compare_star_metallicityProfilePlot.png"),
+)
 
-massProfilePlot(pos, star_mass, 1UnitfulAstro.Myr, scale = :log10, bins = 50)
-savefig(joinpath(BASE_OUT_PATH, "test_star_massProfilePlot.png"))
+figure = massProfilePlot(pos, star_mass, 1UnitfulAstro.Myr, scale = :log10, bins = 50)
+Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_star_massProfilePlot.png"),
+)
 
-massProfilePlot(pos, gas_mass, 1UnitfulAstro.Myr, scale = :log10, bins = 50, factor = 10)
-savefig(joinpath(BASE_OUT_PATH, "test_gas_massProfilePlot.png"))
+figure = massProfilePlot(
+    pos, 
+    gas_mass, 
+    1UnitfulAstro.Myr, 
+    scale = :log10, 
+    bins = 50, 
+    factor = 10,
+)
+Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_gas_massProfilePlot.png"),
+)
 
-massProfilePlot(
+figure = massProfilePlot(
     [pos, pos],
     [gas_mass, gas_mass],
     1UnitfulAstro.Myr,
@@ -131,9 +214,13 @@ massProfilePlot(
     bins = 50,
     factor = 10,
 )
-savefig(joinpath(BASE_OUT_PATH, "test_compare_gas_massProfilePlot.png"))
+Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_compare_gas_massProfilePlot.png"),
+)
 
-massProfilePlot(
+figure = massProfilePlot(
     [pos, pos],
     [star_mass, star_mass],
     1UnitfulAstro.Myr,
@@ -141,9 +228,13 @@ massProfilePlot(
     scale = :log10,
     bins = 50,
 )
-savefig(joinpath(BASE_OUT_PATH, "test_compare_star_massProfilePlot.png"))
+Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_compare_star_massProfilePlot.png"),
+)
 
-sfrTxtPlot(
+figure = sfrTxtPlot(
     sfrtxt_data,
     1,
     [4, 6],
@@ -151,15 +242,19 @@ sfrTxtPlot(
     bins = 50,
     scale = (:identity, :log10),
 )
-savefig(joinpath(BASE_OUT_PATH, "test_sfrTxtPlot.png"))
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_sfrTxtPlot.png"))
 
-temperatureHistogramPlot(temp_data, 1UnitfulAstro.Myr, bins = 30)
-savefig(joinpath(BASE_OUT_PATH, "test_temperatureHistogramPlot.png"))
+figure = temperatureHistogramPlot(temp_data, 1UnitfulAstro.Myr, bins = 30)
+Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_temperatureHistogramPlot.png"),
+)
 
-rhoTempPlot(temp_data, density, 1UnitfulAstro.Myr)
-savefig(joinpath(BASE_OUT_PATH, "test_rhoTempPlot.png"))
+figure = rhoTempPlot(temp_data, density, 1UnitfulAstro.Myr)
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_rhoTempPlot.png"))
 
-KennicuttSchmidtPlot(
+figure = KennicuttSchmidtPlot(
     gas_mass,
     temp_data,
     star_mass,
@@ -172,4 +267,4 @@ KennicuttSchmidtPlot(
     bins = 80,
     error_formating = "conf_interval",
 )
-savefig(joinpath(BASE_OUT_PATH, "test_KennicuttSchmidtPlot.png"))
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_KennicuttSchmidtPlot.png"))

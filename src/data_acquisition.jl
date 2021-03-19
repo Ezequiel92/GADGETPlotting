@@ -988,7 +988,8 @@ Get the column data from the file sfr.txt.
 Transform from internal units to the ones given by `mass_unit`, `time_unit` and `sfr_unit`.
 
 # Warning 
-THIS FUNCTION NEEDS A FILE (sfr.txt) WHICH IS NOT PART OF ANY PUBLIC VERSION OF GADGET.
+This function takes a modified version of sfr.txt which is produced by a private version of 
+GADGET3. GADGET4 produces a sfr.txt, but it is not compatible with this function.
 
 # Arguments
 - `source_path::String`: Path to the directory containing the sfr.txt file.

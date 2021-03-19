@@ -73,8 +73,11 @@ function scatterGridPipeline(
 
         positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
 
-        savefig(
-            scatterGridPlot(positions),
+        figure = scatterGridPlot(positions)
+
+        Base.invokelatest(
+            savefig, 
+            figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
 
@@ -173,11 +176,14 @@ function densityMapPipeline(
         density = densityData(snapshot; sim_cosmo, density_unit)
         hsml = hsmlData(snapshot; sim_cosmo, length_unit)
 
-        savefig(
-            densityMapPlot(pos, mass, density, hsml; plane, axes),
+        figure = densityMapPlot(pos, mass, density, hsml; plane, axes)
+
+        Base.invokelatest(
+            savefig, 
+            figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
-        
+
     end
 
     # Make the GIF.
@@ -278,8 +284,11 @@ function starMapPipeline(
 
         pos = positionData(snapshot; sim_cosmo, box_size, length_unit)
 
-        savefig(
-            starMapPlot(pos; plane, box_factor, axes),
+        figure = starMapPlot(pos; plane, box_factor, axes)
+
+        Base.invokelatest(
+            savefig, 
+            figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
 
@@ -382,8 +391,11 @@ function gasStarEvolutionPipeline(
 
         positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
 
-        savefig(
-            gasStarEvolutionPlot(1 + step * (i - 1), time_series, positions),
+        figure = gasStarEvolutionPlot(1 + step * (i - 1), time_series, positions)
+
+        Base.invokelatest(
+            savefig, 
+            figure, 
             joinpath(temp_path, base_name * "_" * number * format),
         )
 
@@ -492,16 +504,20 @@ function CMDFPipeline(
             mass_data = massData(snapshot, "stars"; sim_cosmo)
             z_data = zData(snapshot, "stars"; sim_cosmo)
 
-            savefig(
-                CMDFPlot(
-                    mass_data, 
-                    z_data,
-                    time * time_unit; 
-                    bins = 50, 
-                    x_norm
-                ),
+            figure = CMDFPlot(
+                mass_data, 
+                z_data,
+                time * time_unit; 
+                bins = 50, 
+                x_norm,
+            )
+
+            Base.invokelatest(
+                savefig, 
+                figure, 
                 joinpath(img_path, base_name * "_" * number * format),
             )
+
         end
 
         next!(prog_bar)
@@ -610,15 +626,18 @@ function CMDFPipeline(
             masses = massData.(snapshots, "stars"; sim_cosmo)
             metallicities = zData.(snapshots, "stars"; sim_cosmo) 
 
-            savefig(
-                CMDFPlot(
-                    masses, 
-                    metallicities,
-                    time * time_unit,
-                    labels;
-                    bins = 50, 
-                    x_norm
-                ),
+            figure = CMDFPlot(
+                masses, 
+                metallicities,
+                time * time_unit,
+                labels;
+                bins = 50, 
+                x_norm,
+            )
+
+            Base.invokelatest(
+                savefig, 
+                figure, 
                 joinpath(img_path, "frame_" * string(step * (i - 1)) * format),
             )
 
@@ -723,8 +742,11 @@ function birthHistogramPipeline(
                 time_unit = time_data["units"]["time"],
             )
 
-            savefig(
-                birthHistogramPlot(nursery, bins = 50),
+            figure = birthHistogramPlot(nursery, bins = 50)
+
+            Base.invokelatest(
+                savefig, 
+                figure, 
                 joinpath(img_path, base_name * "_" * number * format),
             )
         end
@@ -817,21 +839,27 @@ function evolutionSummaryPipeline(
                 )
 
     # Parameters vs. time. 
-    savefig(
-        timeSeriesPlot(time_series; mass_factor, number_factor),
+    figure_t = timeSeriesPlot(time_series; mass_factor, number_factor)
+    Base.invokelatest(
+        savefig, 
+        figure_t, 
         joinpath(output_path, fig_name * "_vs_time" * format),
     )
 
     if sim_cosmo == 1
 
         # Parameters vs. scale factor. 
-        savefig(
-            scaleFactorSeriesPlot(time_series;mass_factor, number_factor),
+        figure_a = scaleFactorSeriesPlot(time_series;mass_factor, number_factor)
+        Base.invokelatest(
+            savefig, 
+            figure_a, 
             joinpath(output_path, fig_name * "_vs_scale_factor" * format),
         )
         # Parameters vs. redshift. 
-        savefig(
-            redshiftSeriesPlot(time_series; mass_factor, number_factor),
+        figure_z = redshiftSeriesPlot(time_series; mass_factor, number_factor)
+        Base.invokelatest(
+            savefig, 
+            figure_z, 
             joinpath(output_path, fig_name * "_vs_redshift" * format),
         )
 
@@ -895,7 +923,7 @@ function, namely:
   the corresponding axis will be scaled by 10^10. The default is 0, i.e. no scaling.
 - `y_factor::Int64 = 0`: Numerical exponent to scale the `y_quantity`, e.g. if y_factor = 10 
   the corresponding axis will be scaled by 10^10. The default is 0, i.e. no scaling.
-- `scale::NTuple{2, Symbol} = (:identity, :identity)`: Scaling to be used for the x 
+- `scale::Vector{Symbol} = [:identity, :identity]`: Scaling to be used for the x 
   and y axes. The two options are:
   :identity => no scaling.
   :log10 => logarithmic scaling.
@@ -928,7 +956,7 @@ function compareSimulationsPipeline(
     title::String = "",
     x_factor::Int64 = 0,
     y_factor::Int64 = 0,
-    scale::NTuple{2, Symbol} = (:identity, :identity),
+    scale::Vector{Symbol} = [:identity, :identity],
     smooth_data::Bool = false, 
     bins::Int64 = 50,
     legend_pos::Symbol = :bottomright,
@@ -950,20 +978,23 @@ function compareSimulationsPipeline(
     mkpath(output_path)
 
     # `y_quantity` vs. `x_quantity` plot.  
-    savefig(
-        compareSimulationsPlot(
-            time_series,
-            x_quantity,
-            y_quantity,
-            labels;
-            title,
-            x_factor,
-            y_factor,
-            scale,
-            smooth_data,
-            bins,
-            legend_pos,
-        ), 
+    figure = compareSimulationsPlot(
+        time_series,
+        x_quantity,
+        y_quantity,
+        labels;
+        title,
+        x_factor,
+        y_factor,
+        scale,
+        smooth_data,
+        bins,
+        legend_pos,
+    )
+    
+    Base.invokelatest(
+        savefig, 
+        figure, 
         joinpath(output_path, fig_name * "_" * y_quantity * "_vs_" * x_quantity * format),
     )
 
@@ -1048,12 +1079,11 @@ function densityHistogramPipeline(
 
         density = densityData(snapshot; sim_cosmo, density_unit)
 
-        savefig(
-            densityHistogramPlot(
-                density,
-                time * time_unit;
-                factor,
-            ), 
+        figure = densityHistogramPlot(density, time * time_unit; factor)
+
+        Base.invokelatest(
+            savefig, 
+            figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
 
@@ -1177,16 +1207,19 @@ function densityProfilePipeline(
         positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
         mass = massData(snapshot, type; sim_cosmo, mass_unit)
 
-        savefig(
-            densityProfilePlot(
-                positions,
-                mass,
-                time * time_unit;
-                scale,
-                bins,
-                factor,
-                box_factor,
-            ),
+        figure = densityProfilePlot(
+            positions,
+            mass,
+            time * time_unit;
+            scale,
+            bins,
+            factor,
+            box_factor,
+        )
+
+        Base.invokelatest(
+            savefig, 
+            figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
 
@@ -1319,17 +1352,20 @@ function densityProfilePipeline(
         positions = positionData.(snapshots; sim_cosmo, box_size, length_unit)
         masses = massData.(snapshots, type; sim_cosmo, mass_unit)
 
-        savefig(
-            densityProfilePlot(
-                positions,
-                masses,
-                time * time_unit,
-                labels;
-                scale,
-                bins,
-                factor,
-                box_factor,
-            ),
+        figure = densityProfilePlot(
+            positions,
+            masses,
+            time * time_unit,
+            labels;
+            scale,
+            bins,
+            factor,
+            box_factor,
+        )
+
+        Base.invokelatest(
+            savefig, 
+            figure, 
             joinpath(img_path, "frame_"  * string(step * (i - 1)) * format),
         )
 
@@ -1444,16 +1480,19 @@ function metallicityProfilePipeline(
         mass = massData(snapshot, type; sim_cosmo)
         metallicities = zData(snapshot, type; sim_cosmo)
 
-        savefig(
-            metallicityProfilePlot(
-                positions,
-                mass,
-                metallicities,
-                time * time_unit;
-                scale,
-                bins,
-                box_factor,
-            ),
+        figure = metallicityProfilePlot(
+            positions,
+            mass,
+            metallicities,
+            time * time_unit;
+            scale,
+            bins,
+            box_factor,
+        )
+
+        Base.invokelatest(
+            savefig, 
+            figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
 
@@ -1581,17 +1620,20 @@ function metallicityProfilePipeline(
         masses = massData.(snapshots, type; sim_cosmo)
         metallicities = zData.(snapshots, type; sim_cosmo)
 
-        savefig(
-            metallicityProfilePlot(
-                positions,
-                masses,
-                metallicities,
-                time * time_unit,
-                labels;
-                scale,
-                bins,
-                box_factor,
-            ),
+        figure = metallicityProfilePlot(
+            positions,
+            masses,
+            metallicities,
+            time * time_unit,
+            labels;
+            scale,
+            bins,
+            box_factor,
+        )
+
+        Base.invokelatest(
+            savefig, 
+            figure, 
             joinpath(img_path, "frame_" * string(step * (i - 1)) * format),
         )
 
@@ -1715,16 +1757,19 @@ function massProfilePipeline(
         positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
         mass = massData(snapshot, type; sim_cosmo, mass_unit)
 
-        savefig(
-            massProfilePlot(
-                positions,
-                mass,
-                time * time_unit;
-                scale,
-                bins,
-                factor,
-                box_factor,
-            ),
+        figure = massProfilePlot(
+            positions,
+            mass,
+            time * time_unit;
+            scale,
+            bins,
+            factor,
+            box_factor,
+        )
+
+        Base.invokelatest(
+            savefig, 
+            figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
 
@@ -1857,17 +1902,20 @@ function massProfilePipeline(
         positions = positionData.(snapshots; sim_cosmo, box_size, length_unit)
         masses = massData.(snapshots, type; sim_cosmo)
 
-        savefig(
-            massProfilePlot(
-                positions,
-                masses,
-                time * time_unit,
-                labels;
-                scale,
-                bins,
-                factor,
-                box_factor,
-            ),
+        figure = massProfilePlot(
+            positions,
+            masses,
+            time * time_unit,
+            labels;
+            scale,
+            bins,
+            factor,
+            box_factor,
+        )
+
+        Base.invokelatest(
+            savefig, 
+            figure, 
             joinpath(img_path, "frame_" * string(step * (i - 1)) * format),
         )
 
@@ -1981,18 +2029,21 @@ function sfrTxtPipeline(
             sfr_unit
         )
 
-        savefig(
-                sfrTxtPlot(
-                    sfr_data, 
-                    x_axis, 
-                    y_axis;
-                    title = title[i], 
-                    bins, 
-                    scale, 
-                    min_filter,
-                ),
-                joinpath(output_path, names[i] * format),
-            )
+        figure = sfrTxtPlot(
+            sfr_data, 
+            x_axis, 
+            y_axis;
+            title = title[i], 
+            bins, 
+            scale, 
+            min_filter,
+        )
+
+        Base.invokelatest(
+            savefig, 
+            figure, 
+            joinpath(output_path, names[i] * format),
+        )
 
     end
 
@@ -2071,12 +2122,11 @@ function temperatureHistogramPipeline(
 
         temp_data = tempData(snapshot; sim_cosmo, temp_unit)
 
-        savefig(
-            temperatureHistogramPlot(
-                temp_data, 
-                time * time_unit, 
-                bins = 30
-            ),
+        figure = temperatureHistogramPlot(temp_data, time * time_unit, bins = 30)
+
+        Base.invokelatest(
+            savefig, 
+            figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
 
@@ -2175,12 +2225,11 @@ function rhoTempPipeline(
         temp_data = tempData(snapshot; sim_cosmo, temp_unit)
         density_data = densityData(snapshot; sim_cosmo, density_unit)
 
-        savefig(
-            rhoTempPlot(
-                temp_data,
-                density_data::Dict{String, Any},
-                time * time_unit,
-            ),
+        figure = rhoTempPlot(temp_data, density_data, time * time_unit)
+
+        Base.invokelatest(
+            savefig, 
+            figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
 
@@ -2323,8 +2372,9 @@ function KennicuttSchmidtPipeline(
 
             if figure !== nothing
                 # If there was enough data to make a fit.
-                savefig(
-                    figure,
+                Base.invokelatest(
+                    savefig, 
+                    figure, 
                     joinpath(img_path, base_name * "_" * number * format),
                 )
             end

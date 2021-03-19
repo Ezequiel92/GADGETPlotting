@@ -1,3 +1,12 @@
+############################################################################################
+# Example script for GADGETPlotting.jl. 
+#
+# - When run as is, it shouldn't throw any errors.
+# - This script is not intended to be a comprehensive test of the functionality, 
+#   but just to be a check that nothing is seriously broken, and to give an example
+#   on how to import GADGETPlotting.jl and how to use every function.
+############################################################################################
+
 push!(LOAD_PATH, "./src/")
 using GADGETPlotting, Unitful, UnitfulAstro, Plots, LaTeXStrings, GLM
 
@@ -36,7 +45,8 @@ include("example_auxiliary.jl")
 println("Everything worked just fine!!")
 
 ############################################################################################
-# Delete all testing files produced.
+# WARNING: The next line of code will delete all testing files produced by the 
+# `example_*.jl` scripts. If you don't want that, you can comment or delete it.
 ############################################################################################
 
-# rm(BASE_OUT_PATH, recursive = true)
+rm(BASE_OUT_PATH, recursive = true);

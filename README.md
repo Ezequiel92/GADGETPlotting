@@ -6,12 +6,12 @@
 
 [![GitHub](https://img.shields.io/github/license/Ezequiel92/GADGETPlotting?style=flat-square)](https://github.com/Ezequiel92/GADGETPlotting/blob/main/LICENSE) [![Maintenance](https://img.shields.io/maintenance/yes/2021?style=flat-square)](mailto:lozano.ez@gmail.com)
 
-Julia script for creating plots, GIFs and videos from the data produce by GAGET2/3/4 simulations.
+Julia module for creating plots, GIFs and videos from the data produce by GAGET2/3/4 simulations.
 
 - It only works with the traditional output format (binary data) which is the default in GADGET2/3 (`SnapFormat = 1`) and a compatibility option in GADGET4 (`SnapFormat = 1`).
 - It is a script inside a module, not a package. Only five global constants and no data structures are defined.
 - A small testing data set is provided in `example/test_data/`.
-- The scripts in `example/` shows how to import the main module, gives examples for every function, and provides a sanity check, as it should run as is without errors.
+- The scripts in `example/` shows how to import the main module, give examples for every function, and provide a sanity check, as `example/run_examples.jl` should run as is without throwing any errors.
 - The dependencies are given by the `Manifest.toml` and `Project.toml` files.
 
 ## Functions
@@ -19,17 +19,17 @@ Julia script for creating plots, GIFs and videos from the data produce by GAGET2
 There are four tiers of functions:
 
 - Auxiliary functions (`src/auxiliary.jl`): These are only for internal use. All but `makeVideo` are pure functions that do soma data processing.
-- Data acquisition functions (`src/data_acquisition.jl`): These are only for internal use. They take the location of the raw data, apply some transformation (e.g. units) and return it inside a familiar data structure.
-- Plotting functions (`src/plotting.jl`): These are exported. These are pure functions that the take data in the format outputted by the data acquisition functions and return plot objects. They do all the data processing necessary to produce the plots, except the unit conversions. They will plot using the units selected when the data acquisition functions were called.
+- Data acquisition functions (`src/data_acquisition.jl`): These are only for internal use. They take the location of the raw data, apply some transformation (e.g. units) and return it as a familiar data structure.
+- Plotting functions (`src/plotting.jl`): These are exported, but I do not recommend to use them as is. If you insist in using them, read the section `Plotting backends warning` bellow. These are pure functions that take data in the format outputted by the data acquisition functions and return plot objects. They do all the data processing necessary to produce the plots, except the unit conversions. They will plot using the units selected when the data acquisition functions were called.
 - Pipeline functions (`src/pipelines.jl`): These are exported. These functions run a whole pipeline, from raw data to final plot. They take the location of the snapshot files with some configuration parameters, and as a result produce a series of plots/GIFs/videos. By default, some of these functions may generate a large number of images (but it can be configured to do less), and they may take a long time to run, especially if the function uses the `pgfplotsx` backend of [Plots.jl](https://github.com/JuliaPlots/Plots.jl).
 
-## PGFPlotsX backend
+## Plotting backends warning
 
-Some plotting and pipeline functions make use of the PGFPlotsX backend, and as such, the command `pgfplotsx()` should be always called at least once per session before these functions are (as it is done in the scripts within `example/`). With time, and as some issues with GR are resolved, the functions will be hopefully migrated to the GR backend, making this caveat obsolete.
+The plotting functions make use of different backends which are activated within, so to save the figures you have to use `Base.invokelatest(savefig, figure, location)` instead of `savefig(figure, location)` (as it is done in `example/example_plotting.jl`). The pipeline functions do this internally, so you can call them directly with no extra caveats. 
 
 ## Documentation
 
-Each function is documented within the script, where a docstring explains the functionality, the arguments and the returns.
+Each function is documented within its corresponding source file, where a docstring explains the functionality, the arguments and the returns.
 
 Refer to `example/` for how to use the functions. Note that it expects the simple file structure of this repo, namely:
 
