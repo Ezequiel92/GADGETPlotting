@@ -612,3 +612,117 @@ function format_error(mean::Float64, error::Float64)::NTuple{2, Float64}
 
     return round_mean, round_error
 end
+
+"""
+    pass_all(snap_file::String, type::String)::Vector{Int64}
+
+Default filter function for read_blocks_over_all_files().
+
+It does not filter out any particles, allowing the data acquisition functions to gather 
+all data. 
+
+# Arguments 
+- `snap_file::String`: Snapshot file path.
+- `type::String`: Particle type.
+  "gas" -> Gas particle. 
+  "dark_matter" -> Dark matter particle.
+  "stars" -> Star particle.
+
+# Returns
+- A Vector with the indices of the allowed particles.
+"""
+function pass_all(snap_file::String, type::String)::Vector{Int64}
+
+    # Select type of particle.
+    if type == "gas"
+        type_num = 1
+    elseif type == "dark_matter"
+        type_num = 2
+    elseif type == "stars"
+        type_num = 5
+    else
+        error("Particle type '$type' not supported. 
+        The supported types are 'gas', 'dark_matter' and 'stars'")
+    end
+
+    header = read_header(snap_file)
+
+    return collect(1:header.npart[type_num])
+end
+
+"""
+    energy_integrand(header::GadgetIO.SnapshotHeader, a::Float64)::Float64
+
+Give the integrand of the scale factor to physical time function: 
+
+    t₀ = ∫ 1 / H * √ϵ, 
+
+where H = H₀ * a and ϵ = Ωλ + (1 - Ωλ - Ω₀) / a² + Ω₀ / a³, evaluated in `a`. 
+
+# Arguments 
+- `header::GadgetIO.SnapshotHeader`: Header of the relevant snapshot file.
+- `a::Float64`: Dimensionless scale factor.
+
+# Returns
+- The integrand evaluated in `a` in Gyr.
+"""
+function energy_integrand(header::GadgetIO.SnapshotHeader, a::Float64)::Float64
+
+    # Ω_K (curvature)
+    omega_K = 1 - header.omega_0 - header.omega_l
+    # Energy function.
+    E = header.omega_0 / (a * a * a) + omega_K / (a * a) + header.omega_l
+    # Hubble constant in 1 / Gyr.
+    H = header.h0 * HUBBLE_CONST * a
+
+    # Integrand of the time integral in Gyr. 
+    return 1 / (H * sqrt(E))
+end
+
+"""
+    num_integrate(
+        func::Function, 
+        inf_lim::Float64, 
+        sup_lim::Float64, 
+        steps::Int64 = 200,
+    )::Float64
+
+Give the numerical integral of `func` between `inf_val` and `sup_val`. 
+
+# Arguments 
+- `func::Function`: 1D function to be integrated.
+- `inf_lim::Float64`: Inferior limit of the integral.
+- `sup_lim::Float64`: Superior limit if the integral.
+- `steps::Int64`: Number of subdivisions to be used for the discretization of 
+  the `sup_lim` - `inf_lim` region.
+
+# Returns
+- The value of the integral.
+
+# Examples
+```julia-repl
+julia> num_integrate(sin, 0, 3π)
+1.9996298761360816
+
+julia> num_integrate(x -> x^3 + 6 * x^2 + 9 * x + 2, 0, 4.69)
+438.9004836958452
+
+julia> num_integrate(x -> exp(x^x), 0, 1.0)
+2.1975912134624904
+```
+"""
+function num_integrate(
+    func::Function, 
+    inf_lim::Real, 
+    sup_lim::Real, 
+    steps::Int64 = 200,
+)::Float64
+    
+    # Width of a single subinterval.
+    width = (sup_lim - inf_lim) / steps
+    # Integrand evaluated at the rightmost value of each subinterval.
+    integrand = func.([inf_lim + width * i for i in 1:steps])
+
+    # Final result of the numerical integration.
+    return sum(width .* integrand)
+end

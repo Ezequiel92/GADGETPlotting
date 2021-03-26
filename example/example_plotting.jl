@@ -242,7 +242,26 @@ figure = sfrTxtPlot(
     bins = 50,
     scale = (:identity, :log10),
 )
-Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_sfrTxtPlot.png"))
+Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_compare_columns_sfrTxtPlot.png"),
+)
+
+figure = sfrTxtPlot(
+    [sfrtxt_data, sfrtxt_data],
+    1,
+    6,
+    ["sim_1" "sim_2"],
+    title = "Column 6 vs 1",
+    bins = 50,
+    scale = (:identity, :log10),
+)
+Base.invokelatest(
+    savefig, 
+    figure, 
+    joinpath(BASE_OUT_PATH, "test_compare_sims_sfrTxtPlot.png"),
+)
 
 figure = temperatureHistogramPlot(temp_data, 1UnitfulAstro.Myr, bins = 30)
 Base.invokelatest(

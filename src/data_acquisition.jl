@@ -8,7 +8,7 @@
         source_path::String,
     )::Dict{String, Vector{String}}
 
-Give the paths to the GADGET output files, grouping them by snapshot in a Tuple.
+Get the paths to the GADGET output files, grouping them by snapshot.
 
 # Arguments
 - `base_name::String`: Base name of the snapshot files, 
@@ -18,11 +18,8 @@ Give the paths to the GADGET output files, grouping them by snapshot in a Tuple.
 
 # Returns
 - A dictionary with two entries. 
-  - Key "numbers" => A tuple of Strings with the numbers 
-  that characterize each snapshot.
-  - Key "snap_files" => A Vector of Strings with the paths to the snapshot files,
-  named as follows: [`source_path`/`base_name`_001 ... `source_path`/`base_name`_NNN]
-  where NNN is the total number of snapshots.
+  - Key "numbers" => A Vector with the numbers that characterize each snapshot.
+  - Key "snap_files" => A Vector with the paths to the snapshot files.
 """
 function getSnapshotPaths(
     base_name::String, 
@@ -30,7 +27,10 @@ function getSnapshotPaths(
 )::Dict{String, Vector{String}}
 
     # Get the full list of paths to every GADGET file in `source_path`.
-    file_list = glob(base_name * "_*", source_path)
+    file_list = vcat(
+        glob("**/" * base_name * "_*", source_path), 
+        glob(base_name * "_*", source_path)
+    )
 
     # Data availability check.
     !isempty(file_list) || error("I couldn't find any snapshots in $source_path.")
@@ -83,36 +83,38 @@ The parameters are:
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
-  all available mass units in Unitful.jl and UnitfulAstro.jl can be used, 
-  e.g. UnitfulAstro.Msun, which is the default.
+  all available mass units in Unitful.jl and UnitfulAstro.jl can be used.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
-  all available time units in Unitful.jl and UnitfulAstro.jl can be used, 
-  e.g. UnitfulAstro.Myr, which is the default.
+  all available time units in Unitful.jl and UnitfulAstro.jl can be used.
 - `sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr`: Unit of mass/time to 
   be used in the output, all available time and mass units in Unitful.jl and UnitfulAstro.jl 
-  can be used, e.g. UnitfulAstro.Msun / UnitfulAstro.yr, which is the default.
+  can be used.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
   in the output, all available length units in Unitful.jl and UnitfulAstro.jl 
-  can be used, e.g. UnitfulAstro.kpc, which is the default.
+  can be used.
 
 # Returns
 - A dictionary.
-  - Key "{property}" => One dimensional array with the numeric values 
-  of the {property} in the key (one value per snapshot) for the whole simulation. 
+  - Key "{property}" => A Vector with the numeric values 
+    of the {property} in the key (one value per snapshot) for the whole simulation. 
   - Key "units" => A dictionary with the units used, for easy piping with other functions.
   - Key "labels" => A dictionary with the labels to be used when plotting the quantities.
 """
 function timeSeriesData(
     snap_files::Vector{String};
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
     sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
 )::Dict{String, Any}
 
-    # Number of sanpshots.
+    # Number of snapshots.
     n_files = length(snap_files)
 
     # Output data structure.
@@ -165,25 +167,25 @@ function timeSeriesData(
 
     for (i, snapshot) in enumerate(snap_files)
 
-        # Data availability check.
-        (
-            block_present(snapshot, "MASS") ||
-            error("There is no block 'MASS' in snapshot located at $snapshot")
-        )
-        (
-            block_present(snapshot, "SFR") ||
-            error("There is no block 'SFR' in snapshot located at $snapshot")
-        )
-
-        header = read_header(snapshot)
-
-        # Struct for unit conversion.
         if sim_cosmo == 1
+
+            # Data availability check.
+            (
+                block_present(GadgetIO.select_file(snapshot, 0), "MASS") ||
+                error("There is no block 'MASS' in snapshot located at $snapshot")
+            )
+            (
+                block_present(GadgetIO.select_file(snapshot, 0), "SFR") ||
+                error("There is no block 'SFR' in snapshot located at $snapshot")
+            )
+    
+            header = read_header(GadgetIO.select_file(snapshot, 0))
+            # Struct for unit conversion.
             GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
 
             a = header.time     # Scale factor.
             z = (1 / a) - 1     # Redshift.
-
+    
             # Ω_K (curvature)
             omega_K = 1 - header.omega_0 - header.omega_l
             # Energy function.
@@ -192,12 +194,32 @@ function timeSeriesData(
             H = header.h0 * HUBBLE_CONST * sqrt(E)
             # Integrand of the time integral in Gyr. 
             t_int = 1 / (H * a)
+            # Conversion factor from internal units of time to physical units of time.
+            t_conv = t_int * UnitfulAstro.Gyr
+    
         else
+    
+            # Data availability check.
+            (
+                block_present(snapshot, "MASS") ||
+                error("There is no block 'MASS' in snapshot located at $snapshot")
+            )
+            (
+                block_present(snapshot, "SFR") ||
+                error("There is no block 'SFR' in snapshot located at $snapshot")
+            )
+    
+            header = read_header(snapshot)
+            # Struct for unit conversion.
             # For Newtonian simulations uses the default scale factor: a = 1.
             GU = GadgetPhysicalUnits(hpar = header.h0)
 
             a = 1.0      # Scale factor.
             z = 0.0     # Redshift.
+
+            # Conversion factor from internal units of time to physical units of time.
+            t_conv = header.time * GU.t_Myr
+    
         end
 
         # Number of particles of each type.
@@ -212,7 +234,13 @@ function timeSeriesData(
                 masses = fill(header.massarr[1], (gas_number))
                 gas_mass = masses[1] * gas_number
             else
-                masses = read_snap(snapshot, "MASS", 0)
+                masses = read_blocks_over_all_files(
+                    snapshot, 
+                    ["MASS"];
+                    filter_function = x -> filter_function(x, "gas"), 
+                    parttype = 0, 
+                    verbose = false
+                )["MASS"]
                 gas_mass = sum(masses)
             end
             gas_mass = ustrip(Float64, mass_unit, gas_mass * GU.m_msun)
@@ -220,10 +248,11 @@ function timeSeriesData(
             # Global gas density.
             densities = densityData(
                 snapshot; 
-                sim_cosmo, 
+                sim_cosmo,
+                filter_function, 
                 density_unit = mass_unit / length_unit^3
             )
-            volume = sum(masses ./ densities["gas_density"])
+            volume = sum(masses ./ densities["density"])
             gas_density = gas_mass / volume
         else
             # In the case that there are no gas particles.
@@ -237,7 +266,13 @@ function timeSeriesData(
                 # If all dark matter particles have the same mass.
                 dm_mass = header.massarr[2] * dm_number
             else
-                dm_mass = sum(read_snap(snapshot, "MASS", 1))
+                dm_mass = sum(read_blocks_over_all_files(
+                    snapshot, 
+                    ["MASS"];
+                    filter_function = x -> filter_function(x, "dark_matter"), 
+                    parttype = 1, 
+                    verbose = false
+                )["MASS"])
             end
             dm_mass = ustrip(Float64, mass_unit, dm_mass * GU.m_msun)
         else
@@ -251,7 +286,13 @@ function timeSeriesData(
                 # If all star particles have the same mass.
                 star_mass = header.massarr[5] * star_number
             else
-                star_mass = sum(read_snap(snapshot, "MASS", 4))
+                star_mass = sum(read_blocks_over_all_files(
+                    snapshot, 
+                    ["MASS"];
+                    filter_function = x -> filter_function(x, "stars"), 
+                    parttype = 4, 
+                    verbose = false
+                )["MASS"])
             end
             star_mass = ustrip(Float64, mass_unit, star_mass * GU.m_msun)
         else
@@ -262,7 +303,7 @@ function timeSeriesData(
         # Total baryonic mass in `mass_unit`.
         baryonic_mass = gas_mass + star_mass
         # Total mass of the system in `mass_unit`.
-        total_mass = baryonic_mass + star_mass
+        total_mass = baryonic_mass + dm_mass
 
         # Physical SFR and time in `sfr_unit` and `time_unit` respectively.
         if i == 1
@@ -273,7 +314,7 @@ function timeSeriesData(
             # In every other step, clock time and SFR are calculated. 
             if sim_cosmo == 1
                 # Integrand of the time integral in `time_unit`.
-                t_int = ustrip(Float64, time_unit, t_int * UnitfulAstro.Gyr)
+                t_int = ustrip(Float64, time_unit, t_conv)
                 Δa = a - time_series["scale_factor"][i - 1]
                 Δt = Δa * t_int
                 Δstar_mass = star_mass - time_series["star_mass"][i - 1]
@@ -281,7 +322,7 @@ function timeSeriesData(
                 t = time_series["clock_time"][i - 1] + Δt
                 sfr = ustrip(Float64, sfr_unit, (Δstar_mass / Δt) * (mass_unit / time_unit))
             else
-                t = ustrip(Float64, time_unit, header.time * GU.t_Myr)
+                t = ustrip(Float64, time_unit, t_conv)
 
                 Δt = t - time_series["clock_time"][i - 1]
                 Δstar_mass = star_mass - time_series["star_mass"][i - 1]
@@ -292,18 +333,26 @@ function timeSeriesData(
 
         # SFR given by the classic prescription of GADGET in `sfr_unit`.
         if header.nall[1] != 0
-            # Conversion factor from internal units of time to physical units of time.
-            if sim_cosmo == 1
-                t_conv = t_int * UnitfulAstro.Gyr
+
+            sfr_prob = sum(read_blocks_over_all_files(
+                snapshot, 
+                ["SFR"];
+                filter_function = x -> filter_function(x, "gas"), 
+                parttype = 0, 
+                verbose = false
+            )["SFR"])
+
+            if sim_cosmo == 0
+                sfr_prob = ustrip(Float64, sfr_unit, sfr_prob * (GU.m_msun / t_conv))
             else
-                t_conv = GU.t_Myr
+                sfr_prob = ustrip(Float64, sfr_unit, sfr_prob * (GU.m_msun / GU.t_Myr))
             end
 
-            sfr_prob = sum(read_snap(snapshot, "SFR", 0))
-            sfr_prob = ustrip(Float64, sfr_unit, sfr_prob * (GU.m_msun / t_conv))
         else
+
             # In the case that there are no gas particles.
             sfr_prob = 0.0
+
         end
 
         # Time-like parameters.
@@ -352,49 +401,64 @@ Get the coordinates of the particles at a specific time step.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
-- `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
-  if vacuum boundary conditions were used. It has to have units, e.g. 1000UnitfulAstro.kpc, 
-  which is the default. Its units don't have to be the same as `length_unit`.
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
+- `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region if 
+  vacuum boundary conditions were used. It has to have unitsbut they don't have to be 
+  the same as `length_unit`.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
   in the output, all available length units in Unitful.jl and UnitfulAstro.jl 
-  can be used, e.g. UnitfulAstro.kpc, which is the default.
+  can be used.
 
 # Returns
 - A dictionary with six entries.
-  - Keys "gas", "dark_matter", "stars" => 2 dimensional arrays which contains 
-  the positions of the particles of the type given by the key. Each row is a 
-  particle and each column correspond to coordinates x, y and z respectively.
+  - Keys "gas", "dark_matter", "stars" => 2 dimensional arrays with the positions of 
+    the particles of the type given by the key. Each row is a 
+    particle and each column correspond to coordinates x, y and z respectively.
   - Key "box_size" => The range of values for the plotting of the positions, 
-  i.e. a range of ± `box_size` if vacuum boundary conditions were used, 
-  or (0, `header.boxsize`) if periodic boundary conditions were used.
-  Notice how the side length of the region is 2 * `box_size` for vacuum boundary 
-  conditions and `header.boxsize` for periodic boundary conditions.
+    i.e. a range of ± `box_size` if vacuum boundary conditions were used, 
+    or (0, `header.boxsize`) if periodic boundary conditions were used.
+    Notice how the side length of the region is 2 * `box_size` for vacuum boundary 
+    conditions and `header.boxsize` for periodic boundary conditions.
   - Key "periodic" => A Boolean indicating the type of boundary condition.
-  false -> vacuum boundary condition.
-  true -> periodic boundary condition.
+    false -> vacuum boundary condition.
+    true -> periodic boundary condition.
   - Key "unit" => The unit of length used, i.e. is a pass-through of `length_unit`. 
 """
 function positionData(
     snapshot::String;
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
 )::Dict{String, Any}
 
-    # Data availability check.
-    (
-        block_present(snapshot, "POS") ||
-        error("There is no block 'POS' in snapshot located at $snapshot")
-    )
-
-    header = read_header(snapshot)
-
-    # Struct for unit conversion.
     if sim_cosmo == 1
+
+        header = read_header(GadgetIO.select_file(snapshot, 0))
+        # Struct for unit conversion.
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
+
+        # Data availability check.
+        (
+            block_present(GadgetIO.select_file(snapshot, 0), "POS") ||
+            error("There is no block 'POS' in snapshot located at $snapshot")
+        )
+
     else
+
+        header = read_header(snapshot)
+        # Struct for unit conversion.
         # For Newtonian simulation uses the default scale factor: a = 1.
         GU = GadgetPhysicalUnits(hpar = header.h0)
+
+        # Data availability check.
+        (
+            block_present(snapshot, "POS") ||
+            error("There is no block 'POS' in snapshot located at $snapshot")
+        )
+
     end
 
     # Get the correct region size in `length_unit`, 
@@ -408,30 +472,63 @@ function positionData(
     end
 
     if header.nall[1] != 0
-        gas_pos = read_snap(snapshot, "POS", 0)
+        
+        gas_pos = read_blocks_over_all_files(
+            snapshot, 
+            ["POS"];
+            filter_function = x -> filter_function(x, "gas"), 
+            parttype = 0, 
+            verbose = false
+        )["POS"]
+
         # Transformation from internal units to `length_unit`.
         gas_pos = @. ustrip(Float64, length_unit, gas_pos * GU.x_kpc)
+
     else
+
         # In the case that there are no gas particles.
         gas_pos = Array{Float64}(undef, 3, 0)
+
     end
 
     if header.nall[2] != 0
-        dm_pos = read_snap(snapshot, "POS", 1)
+        
+        dm_pos = read_blocks_over_all_files(
+            snapshot, 
+            ["POS"];
+            filter_function = x -> filter_function(x, "dark_matter"), 
+            parttype = 1, 
+            verbose = false
+        )["POS"]
+
         # Transformation from internal units to `length_unit`.
         dm_pos = @. ustrip(Float64, length_unit, dm_pos * GU.x_kpc)
+
     else
+
         # In the case that there are no dark matter particles.
         dm_pos = Array{Float64}(undef, 3, 0)
+
     end
 
     if header.nall[5] != 0
-        star_pos = read_snap(snapshot, "POS", 4)
+        
+        star_pos = read_blocks_over_all_files(
+            snapshot, 
+            ["POS"];
+            filter_function = x -> filter_function(x, "stars"), 
+            parttype = 4, 
+            verbose = false
+        )["POS"]
+
         # Transformation from internal units to `length_unit`.
         star_pos = @. ustrip(Float64, length_unit, star_pos * GU.x_kpc)
+
     else
+
         # In the case that there are no star particles.
         star_pos = Array{Float64}(undef, 3, 0)
+
     end
 
     return Dict(
@@ -450,52 +547,77 @@ end
 Get the densities of the gas particles at a specific time step.
 
 # Arguments
-- `snapshot::String`: Path to a given snapshot.
+- `snapshot::String`: Path to the snapshot file.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
-- `density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3`: Unit of density 
-  to be used in the output, all available density units in Unitful.jl and UnitfulAstro.jl can 
-  be used, e.g. UnitfulAstro.Msun / UnitfulAstro.kpc^3, which is the default.
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
+- `density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3`: Unit of 
+  density to be used in the output, all available density units in Unitful.jl and 
+  UnitfulAstro.jl can be used.
 
 # Returns
 - A dictionary with two entries.
-  - Key "gas_density" => One dimensional array, which contains the densities
-    of the gas particles. 
+  - Key "density" => Array with the densities of the gas particles. 
   - Key "unit" => The unit of density used, i.e. is a pass-through of `density_unit`. 
 """
 function densityData(
     snapshot::String;
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3,
 )::Dict{String, Any}
 
-    # Data availability check.
-    (
-        block_present(snapshot, "RHO") ||
-        error("There is no block 'RHO' in snapshot located at $snapshot")
-    )
-
-    header = read_header(snapshot)
-
-    # Struct for unit conversion.
     if sim_cosmo == 1
+
+        header = read_header(GadgetIO.select_file(snapshot, 0))
+        # Struct for unit conversion.
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
+
+        # Data availability check.
+        (
+            block_present(GadgetIO.select_file(snapshot, 0), "RHO") ||
+            error("There is no block 'RHO' in snapshot located at $snapshot")
+        )
+
     else
+
+        header = read_header(snapshot)
+        # Struct for unit conversion.
         # For Newtonian simulation uses the default scale factor: a = 1.
         GU = GadgetPhysicalUnits(hpar = header.h0)
+
+        # Data availability check.
+        (
+            block_present(snapshot, "RHO") ||
+            error("There is no block 'RHO' in snapshot located at $snapshot")
+        )
+
     end
 
     if header.nall[1] != 0
-        ρ = read_snap(snapshot, "RHO", 0)
+
+        ρ = read_blocks_over_all_files(
+            snapshot, 
+            ["RHO"];
+            filter_function = x -> filter_function(x, "gas"), 
+            parttype = 0, 
+            verbose = false
+        )["RHO"]
+
         # Transformation from internal units to `density_unit`.
         ρ = @. ustrip(Float64, density_unit, ρ * GU.rho_cgs)
+
     else
+
         # In the case that there are no gas particles.
         ρ = Float64[]
+
     end
 
-    return Dict("gas_density" => ρ, "unit" => density_unit)
+    return Dict("density" => ρ, "unit" => density_unit)
 end
 
 """
@@ -508,48 +630,73 @@ Get the smoothing lengths of the gas particles at a specific time step.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
   in the output, all available length units in Unitful.jl and UnitfulAstro.jl 
-  can be used, e.g. UnitfulAstro.kpc, which is the default.
+  can be used.
 
 # Returns
 - A dictionary with two entries.
-    - Key "gas_hsml" => A one dimensional array, which contains the smoothing lengths
-    of the particles of gas. 
-    - Key "unit" => The unit used, i.e. is a pass-through of `length_unit`. 
+  - Key "hsml" => A Vector with the smoothing lengths of the gas particles. 
+  - Key "unit" => The unit of length used, i.e. is a pass-through of `length_unit`. 
 """
 function hsmlData(
     snapshot::String;
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
 )::Dict{String, Any}
 
-    # Data availability check.
-    (
-        block_present(snapshot, "HSML") ||
-        error("There is no block 'HSML' in snapshot located at $snapshot")
-    )
-
-    header = read_header(snapshot)
-
-    # Struct for unit conversion.
     if sim_cosmo == 1
+
+        header = read_header(GadgetIO.select_file(snapshot, 0))
+        # Struct for unit conversion.
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
+
+        # Data availability check.
+        (
+            block_present(GadgetIO.select_file(snapshot, 0), "HSML") ||
+            error("There is no block 'HSML' in snapshot located at $snapshot")
+        )
+
     else
+
+        header = read_header(snapshot)
+        # Struct for unit conversion.
         # For Newtonian simulation uses the default scale factor: a = 1.
         GU = GadgetPhysicalUnits(hpar = header.h0)
+
+        # Data availability check.
+        (
+            block_present(snapshot, "HSML") ||
+            error("There is no block 'HSML' in snapshot located at $snapshot")
+        )
+
     end
 
     if header.nall[1] != 0
-        hsml = read_snap(snapshot, "HSML", 0)
+
+        hsml = read_blocks_over_all_files(
+            snapshot, 
+            ["HSML"];
+            filter_function = x -> filter_function(x, "gas"), 
+            parttype = 0, 
+            verbose = false
+        )["HSML"]
+
         # Transformation from internal units to `length_unit`.
         hsml = @. ustrip(Float64, length_unit, hsml * GU.x_kpc)
+
     else
+
         # In the case that there are no gas particles.
         hsml = Float64[]
+
     end
 
-    return Dict("gas_hsml" => hsml, "unit" => length_unit)
+    return Dict("hsml" => hsml, "unit" => length_unit)
 end
 
 """
@@ -566,13 +713,15 @@ Get the mass of the particles at a specific time step.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
-  all available mass units in Unitful.jl and UnitfulAstro.jl can be used, 
-  e.g. UnitfulAstro.Msun, which is the default.
+  all available mass units in Unitful.jl and UnitfulAstro.jl can be used.
 
 # Returns
 - A dictionary with three entries.
-  - Key "mass" => A one dimensional array which contains the masses of the particles. 
+  - Key "mass" => A Vector with the masses of the particles. 
   - Key "unit" => The unit of mass used, i.e. is a pass-through of `mass_unit`. 
   - Key "type" => A String with the particle type.
 """
@@ -580,23 +729,35 @@ function massData(
     snapshot::String,
     type::String;
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
 )::Dict{String, Any}
 
-    # Data availability check.
-    (
-        block_present(snapshot, "MASS") ||
-        error("There is no block 'MASS' in snapshot located at $snapshot")
-    )
-
-    header = read_header(snapshot)
-
-    # Struct for unit conversion.
     if sim_cosmo == 1
+
+        header = read_header(GadgetIO.select_file(snapshot, 0))
+        # Struct for unit conversion.
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
+
+        # Data availability check.
+        (
+            block_present(GadgetIO.select_file(snapshot, 0), "MASS") ||
+            error("There is no block 'MASS' in snapshot located at $snapshot")
+        )
+
     else
+
+        header = read_header(snapshot)
+        # Struct for unit conversion.
         # For Newtonian simulation uses the default scale factor: a = 1.
         GU = GadgetPhysicalUnits(hpar = header.h0)
+
+        # Data availability check.
+        (
+            block_present(snapshot, "MASS") ||
+            error("There is no block 'MASS' in snapshot located at $snapshot")
+        )
+
     end
 
     # Select type of particle.
@@ -612,12 +773,23 @@ function massData(
     end
 
     if header.nall[type_num + 1] != 0
-        m = read_snap(snapshot, "MASS", type_num)
+
+        m = read_blocks_over_all_files(
+            snapshot, 
+            ["MASS"];
+            filter_function = x -> filter_function(x, type), 
+            parttype = type_num, 
+            verbose = false
+        )["MASS"]
+
         # Transformation from internal units to `mass_unit`.
         m = @. ustrip(Float64, mass_unit, m * GU.m_msun)
+
     else
+
         # In the case that there are no particles.
         m = [Inf]
+
     end
 
     return Dict("mass" => m, "unit" => mass_unit, "type" => type)
@@ -636,13 +808,15 @@ Get the metallicity (as mass content of metals) of the particles at a specific t
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
-  all available mass units in Unitful.jl and UnitfulAstro.jl can be used, 
-  e.g. UnitfulAstro.Msun, which is the default.
+  all available mass units in Unitful.jl and UnitfulAstro.jl can be used.
 
 # Returns
 - A dictionary with two entries.
-  - Key "Z" => A one dimensional array which contains the metallicities of the particles.  
+  - Key "Z" => A Vector with the metallicities of the particles.  
   - Key "unit" => The unit of mass used, i.e. is a pass-through of `mass_unit`. 
   - Key "type" => A String with the particle type. 
 """
@@ -650,23 +824,35 @@ function zData(
     snapshot::String,
     type::String;
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
 )::Dict{String, Any}
 
-    # Data availability check.
-    (
-        block_present(snapshot, "Z") ||
-        error("There is no block 'Z' in snapshot located at $snapshot")
-    )
-
-    header = read_header(snapshot)
-
-    # Struct for unit conversion.
     if sim_cosmo == 1
+
+        header = read_header(GadgetIO.select_file(snapshot, 0))
+        # Struct for unit conversion.
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
+
+        # Data availability check.
+        (
+            block_present(GadgetIO.select_file(snapshot, 0), "Z") ||
+            error("There is no block 'Z' in snapshot located at $snapshot")
+        )
+
     else
+
+        header = read_header(snapshot)
+        # Struct for unit conversion.
         # For Newtonian simulation uses the default scale factor: a = 1.
         GU = GadgetPhysicalUnits(hpar = header.h0)
+
+        # Data availability check.
+        (
+            block_present(snapshot, "Z") ||
+            error("There is no block 'Z' in snapshot located at $snapshot")
+        )
+
     end
 
     # Select type of particle.
@@ -680,21 +866,31 @@ function zData(
     end
 
     if header.nall[type_num + 1] != 0
-        z = read_snap(snapshot, "Z", type_num)
+
+        z = read_blocks_over_all_files(
+            snapshot, 
+            ["Z"];
+            filter_function = x -> filter_function(x, type), 
+            parttype = type_num, 
+            verbose = false
+        )["Z"]
 
         # Initialize output array.
         Z = similar(Array{Float64}, axes(z, 2))
-        for i in eachindex(Z)
+        @inbounds for i in eachindex(Z)
             # Add up all elements but the ones at position 1 and 7, i.e. H and He.
             z_tot = sum(z[[2, 3, 4, 5, 6, 8, 9, 10, 11, 12], i])
             # Transformation from internal units to `mass_unit`.
             z_tot = ustrip(Float64, mass_unit, z_tot * GU.m_msun)
 
-            @inbounds Z[i] = z_tot
+            Z[i] = z_tot
         end
+
     else
+
         # In the case that there are no particles.
         Z = [Inf]
+
     end
 
     return Dict("Z" => Z, "unit" => mass_unit, "type" => type)
@@ -710,43 +906,65 @@ Get the temperature of the gas particles at a specific time step.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `temp_unit::Unitful.FreeUnits = Unitful.K`: Unit of temperature to be used in the output, 
-  all available temperature units in Unitful.jl and UnitfulAstro.jl can be used, 
-  e.g. Unitful.K, which is the default.
+  all available temperature units in Unitful.jl and UnitfulAstro.jl can be used.
 
 # Returns
 - A dictionary with two entries.
-  - Key "T" => A one dimensional array which contains the temperatures of the particles.  
+  - Key "temperature" => A Vector with the temperatures of the particles.  
   - Key "unit" => The unit of temperature used, i.e. is a pass-through of `temp_unit`. 
 """
 function tempData(
     snapshot::String;
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     temp_unit::Unitful.FreeUnits = Unitful.K,
 )::Dict{String, Any}
 
-    # Data availability check.
-    (
-        block_present(snapshot, "U") ||
-        error("There is no block 'U' in snapshot located at $snapshot")
-    )
-    (
-        block_present(snapshot, "NE") ||
-        error("There is no block 'NE' in snapshot located at $snapshot")
-    )
-    (
-        block_present(snapshot, "Z") ||
-        error("There is no block 'Z' in snapshot located at $snapshot")
-    )
-
-    header = read_header(snapshot)
-
-    # Struct for unit conversion.
     if sim_cosmo == 1
+
+        header = read_header(GadgetIO.select_file(snapshot, 0))
+        # Struct for unit conversion.
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
+
+        # Data availability check.
+        (
+            block_present(GadgetIO.select_file(snapshot, 0), "U") ||
+            error("There is no block 'U' in snapshot located at $snapshot")
+        )
+        (
+            block_present(GadgetIO.select_file(snapshot, 0), "NE") ||
+            error("There is no block 'NE' in snapshot located at $snapshot")
+        )
+        (
+            block_present(GadgetIO.select_file(snapshot, 0), "Z") ||
+            error("There is no block 'Z' in snapshot located at $snapshot")
+        )
+
     else
+
+        header = read_header(snapshot)
+        # Struct for unit conversion.
         # For Newtonian simulation uses the default scale factor: a = 1.
         GU = GadgetPhysicalUnits(hpar = header.h0)
+
+        # Data availability check.
+        (
+            block_present(snapshot, "U") ||
+            error("There is no block 'U' in snapshot located at $snapshot")
+        )
+        (
+            block_present(snapshot, "NE") ||
+            error("There is no block 'NE' in snapshot located at $snapshot")
+        )
+        (
+            block_present(snapshot, "Z") ||
+            error("There is no block 'Z' in snapshot located at $snapshot")
+        )
+
     end
 
     if header.nall[1] != 0
@@ -757,15 +975,33 @@ function tempData(
         mass_unit = mass_data["unit"]
 
         # Metallicity.
-        z = read_snap(snapshot, "Z", 0)
+        z = read_blocks_over_all_files(
+            snapshot, 
+            ["Z"];
+            filter_function = x -> filter_function(x, "gas"), 
+            parttype = 0, 
+            verbose = false
+        )["Z"]
         Z = @. ustrip(Float64, mass_unit, z * GU.m_msun)
 
-        # Internal enery per unit mass.
-        u = read_snap(snapshot, "U", 0)
+        # Internal energy per unit mass.
+        u = read_blocks_over_all_files(
+            snapshot, 
+            ["U"];
+            filter_function = x -> filter_function(x, "gas"), 
+            parttype = 0, 
+            verbose = false
+        )["U"]
         U = @. uconvert(Unitful.J / mass_unit, u * (GU.E_cgs / GU.m_msun))
 
         # ne := number_of_electrons / number_of_Hydrogen_atoms.
-        ne = read_snap(snapshot, "NE", 0)
+        ne = read_blocks_over_all_files(
+            snapshot, 
+            ["NE"];
+            filter_function = x -> filter_function(x, "gas"), 
+            parttype = 0, 
+            verbose = false
+        )["NE"]
 
         # xH := mass_fraction_of_Hydrogen.
         xH = Z[7, :] ./ mass 
@@ -778,15 +1014,17 @@ function tempData(
         T = @. ustrip(Float64, temp_unit, 2/3 * U * μ * Unitful.mp / Unitful.k)
         
     else
+
         # In the case that there are no particles.
         T = [Inf]
+
     end
 
-    return Dict("T" => T, "unit" => temp_unit)
+    return Dict("temperature" => T, "unit" => temp_unit)
 end
 
 """
-    ageData(snapshot::String, time::Float64; <keyword arguments>)::Dict{String,Any}
+    ageData(snapshot::String, time::Unitful.Quantity; <keyword arguments>)::Dict{String,Any}
 
 Get the ages of the stars at a specific time step.
 
@@ -797,6 +1035,9 @@ Get the ages of the stars at a specific time step.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 
 # Returns
 - A dictionary with two entries.
@@ -807,47 +1048,62 @@ function ageData(
     snapshot::String,
     time::Unitful.Quantity;
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
 )::Dict{String, Any}
 
-    # Data availability check.
-    (
-        block_present(snapshot, "AGE") ||
-        error("There is no block 'AGE' in snapshot located at $snapshot")
-    )
-
-    header = read_header(snapshot)
-
-    # Struct for unit conversion.
     if sim_cosmo == 1
+
+        # Data availability check.
+        (
+            block_present(GadgetIO.select_file(snapshot, 0), "AGE") ||
+            error("There is no block 'AGE' in snapshot located at $snapshot")
+        )
+
+        header = read_header(GadgetIO.select_file(snapshot, 0))
+        # Struct for unit conversion.
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
 
-        a = header.time     # Scale factor.
-        z = (1 / a) - 1     # Redshift.
+        # Time of birth for the stars. 
+        birth_a = read_blocks_over_all_files(
+            snapshot, 
+            ["AGE"];
+            filter_function = x -> filter_function(x, "stars"), 
+            parttype = 4, 
+            verbose = false
+        )["AGE"]
+        
+        birth_time = num_integrate.(x -> energy_integrand(header, x), 0, birth_a, 200)
+        # Unit conversion.
+        time_unit = unit(time)
+        birth_time = @. ustrip(Float64, time_unit, birth_time * UnitfulAstro.Gyr)
 
-        # Ω_K (curvature)
-        omega_K = 1 - header.omega_0 - header.omega_l
-        # Energy function.
-        E = header.omega_0 / (a * a * a) + omega_K / (a * a) + header.omega_l
-        # Hubble constant in 1 / Gyr.
-        H = header.h0 * HUBBLE_CONST * sqrt(E)
-        # Integrand of the time integral in Gyr. 
-        t_int = 1 / (H * a)
-        # Conversion factor from internal units of time to physical units of time.
-        t_conv = t_int * UnitfulAstro.Gyr
     else
+
+        # Data availability check.
+        (
+            block_present(snapshot, "AGE") ||
+            error("There is no block 'AGE' in snapshot located at $snapshot")
+        )
+
+        header = read_header(snapshot)
+        # Struct for unit conversion.
         # For Newtonian simulation uses the default scale factor: a = 1.
-        GU = GadgetPhysicalUnits(hpar = header.h0)
+        GU = GadgetPhysicalUnits(hpar = header.h0)     
 
-        # Conversion factor from internal units of time to physical units of time.
-        t_conv = GU.t_Myr
+        # Time of birth for the stars. 
+        birth_time = read_blocks_over_all_files(
+            snapshot, 
+            ["AGE"];
+            filter_function = x -> filter_function(x, "stars"), 
+            parttype = 4, 
+            verbose = false
+        )["AGE"]
+
+        # Unit conversion.
+        time_unit = unit(time)
+        birth_time = @. ustrip(Float64, time_unit, birth_time * GU.t_Myr)
+
     end
-
-    # Time of birth for the stars. 
-    birth_time = read_snap(snapshot, "AGE", 4)
-
-    # Unit conversion.
-    time_unit = unit(time)
-    birth_time = @. ustrip(Float64, time_unit, birth_time * t_conv)
     
     # Ages for the stars.
     clock_time = ustrip(time)
@@ -863,7 +1119,7 @@ end
         time_stamps::Vector{Float64},
         stamps_unit::Unitful.FreeUnits; 
         <keyword arguments>
-    )::Array{Float64, 2}
+    )::Dict{String, Any}
 
 Get the birth location of the stars in a given snapshot.
 
@@ -876,10 +1132,16 @@ Get the birth location of the stars in a given snapshot.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
+- `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
+  in the output, all available length units in Unitful.jl and UnitfulAstro.jl 
+  can be used.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time of `time_stamps`.
 
 # Returns
--  2 dimensional arrays which contains the positions of the stars. Each row is a star
+-  A 2 dimensional arrays with the positions of the stars. Each row is a star
   and each column corresponds to coordinates x, y and z respectively.
 """
 function birthPlace(
@@ -888,6 +1150,7 @@ function birthPlace(
     time_stamps::Vector{Float64},
     stamps_unit::Unitful.FreeUnits;
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
 )::Dict{String, Any}
@@ -905,72 +1168,121 @@ function birthPlace(
 
     snapshot = snap_files[snap_index]
 
-    # Data availability check.
-    (
-        block_present(snapshot, "ID") ||
-        error("There is no block 'ID' in snapshot located at $snapshot")
-    )
-    (
-        block_present(snapshot, "AGE") ||
-        error("There is no block 'AGE' in snapshot located at $snapshot")
-    )
-
-    header = read_header(snapshot)
-
-    # Struct for unit conversion.
     if sim_cosmo == 1
+
+        # Data availability check.
+        (
+            block_present(GadgetIO.select_file(snapshot, 0), "ID") ||
+            error("There is no block 'ID' in snapshot located at $snapshot")
+        )
+        (
+            block_present(GadgetIO.select_file(snapshot, 0), "AGE") ||
+            error("There is no block 'AGE' in snapshot located at $snapshot")
+        )
+
+        header = read_header(GadgetIO.select_file(snapshot, 0))
+        # Struct for unit conversion.
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
 
-        a = header.time     # Scale factor.
-        z = (1 / a) - 1     # Redshift.
+        # Time of birth for the stars. 
+        birth_a = read_blocks_over_all_files(
+            snapshot, 
+            ["AGE"];
+            filter_function = x -> filter_function(x, "stars"), 
+            parttype = 4, 
+            verbose = false
+        )["AGE"]
 
-        # Ω_K (curvature)
-        omega_K = 1 - header.omega_0 - header.omega_l
-        # Energy function.
-        E = header.omega_0 / (a * a * a) + omega_K / (a * a) + header.omega_l
-        # Hubble constant in 1 / Gyr.
-        H = header.h0 * HUBBLE_CONST * sqrt(E)
-        # Integrand of the time integral in Gyr. 
-        t_int = 1 / (H * a)
-        # Conversion factor from internal units of time to physical units of time.
-        t_conv = t_int * UnitfulAstro.Gyr
+        birth_time = num_integrate.(x -> energy_integrand(header, x), 0, birth_a, 200)
+        # Unit conversion.
+        birth_time = @. ustrip(Float64, time_unit, birth_time * UnitfulAstro.Gyr)
+
     else
-        # For Newtonian simulation uses the default scale factor: a = 1.
-        GU = GadgetPhysicalUnits(hpar = header.h0)
 
-        # Conversion factor from internal units of time to physical units of time.
-        t_conv = GU.t_Myr
+        # Data availability check.
+        (
+            block_present(snapshot, "ID") ||
+            error("There is no block 'ID' in snapshot located at $snapshot")
+        )
+        (
+            block_present(snapshot, "AGE") ||
+            error("There is no block 'AGE' in snapshot located at $snapshot")
+        )
+
+        header = read_header(snapshot)
+        # Struct for unit conversion.
+        # For Newtonian simulation uses the default scale factor: a = 1.
+        GU = GadgetPhysicalUnits(hpar = header.h0)     
+
+        # Time of birth for the stars. 
+        birth_times = read_blocks_over_all_files(
+            snapshot, 
+            ["AGE"];
+            filter_function = x -> filter_function(x, "stars"), 
+            parttype = 4, 
+            verbose = false
+        )["AGE"]
+
+        # Unit conversion.
+        birth_times = @. ustrip(Float64, time_unit, birth_times * GU.t_Myr)
+
     end
 
-    # Time of birth for the stars.
-    ages = read_snap(snapshot, "AGE", 4)
-    birth_times = @. ustrip(Float64, time_unit, ages * t_conv)
     time_stamps = @. ustrip(Float64, time_unit, time_stamps * stamps_unit)
-    # Stars IDs.
-    ids = read_snap(snapshot, "ID", 4)
 
-    birth_place = Vector{Float64}[]
-    for (id, birth_time) in zip(ids, birth_times)
+    # Stars IDs.
+    ids = read_blocks_over_all_files(
+        snapshot, 
+        ["ID"];
+        filter_function = x -> filter_function(x, "stars"), 
+        parttype = 4, 
+        verbose = false
+    )["ID"]
+
+    birth_place = similar(Vector{Vector{Float64}}, axes(ids, 1))
+    for (i, (id, birth_time)) in enumerate(zip(ids, birth_times))
 
         # Index of the snapshot where the target star was born.
         snap_idx = findfirst(x -> x >= birth_time, time_stamps)
 
-        # IDs of the stars in the snapshot where the target star was born.
-        nursery_ids = read_snap(snap_files[snap_idx], "ID", 4)
+        birth_idx = 0
+        while true
+            # IDs of the stars in the snapshot where the target star was born.
+            nursery_ids = read_blocks_over_all_files(
+                snap_files[snap_idx], 
+                ["ID"];
+                filter_function = x -> filter_function(x, "stars"), 
+                parttype = 4, 
+                verbose = false
+            )["ID"]
 
-        # Index of the target star, in the snapshot where it was born.
-        birth_idx = findfirst(x -> x == id, nursery_ids)
-        while birth_idx === nothing
-            snap_idx += 1
-            nursery_ids = read_snap(snap_files[snap_idx], "ID", 4)
+            # Index of the target star, in the snapshot where it was born.
             birth_idx = findfirst(x -> x == id, nursery_ids)
+
+            # If the star is found end the loop.
+            birth_idx === nothing || break
+
+            snap_idx += 1
+
+            # If the last snapshot is reach without having found the star, throw an error.
+            (
+                snap_idx <= length(snap_files) ||
+                error("I could not find the birth place of at least one star.")
+            )
         end
 
         # Position of the target star, in the snapshot where it was born.
-        raw_pos = read_snap(snap_files[snap_idx], "POS", 4)[:, birth_idx]
+        raw_pos = read_blocks_over_all_files(
+            snap_files[snap_idx], 
+            ["POS"];
+            filter_function = x -> filter_function(x, "stars"), 
+            parttype = 4, 
+            verbose = false
+        )["POS"][:, birth_idx]
         nursery_pos = @. ustrip(Float64, length_unit, raw_pos * GU.x_kpc)
 
-        push!(birth_place, nursery_pos)
+        birth_place[i] = nursery_pos
+
     end
 
     return Dict("birth_place" => hcat(birth_place...), "unit" => length_unit)
@@ -979,47 +1291,44 @@ end
 """
     sfrTxtData(
         source_path::String,
-        base_name::String; 
+        snapshot::String; 
         <keyword arguments>
-    )::Dict{Int64, Vector{Float64}}
+    )::Dict{Union{Int64, String}, Any}
 
-Get the column data from the file sfr.txt.
+Get the column data from the sfr.txt file.
 
 Transform from internal units to the ones given by `mass_unit`, `time_unit` and `sfr_unit`.
 
 # Warning 
-This function takes a modified version of sfr.txt which is produced by a private version of 
+This function takes a modified version of sfr.txt generated by a private version of 
 GADGET3. GADGET4 produces a sfr.txt, but it is not compatible with this function.
 
 # Arguments
 - `source_path::String`: Path to the directory containing the sfr.txt file.
-- `base_name::String`: Base name of the snapshot files, 
-  set in the GADGET variable SnapshotFileBase.
+- `snapshot::String`: Path to a particular snapshot file, to use its header.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
-  all available mass units in Unitful.jl and UnitfulAstro.jl can be used, 
-  e.g. UnitfulAstro.Msun, which is the default.
+  all available mass units in Unitful.jl and UnitfulAstro.jl can be used.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
-  all available time units in Unitful.jl and UnitfulAstro.jl can be used, 
-  e.g. UnitfulAstro.Myr, which is the default.
+  all available time units in Unitful.jl and UnitfulAstro.jl can be used.
 - `sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr`: Unit of mass/time to 
   be used in the output, all available time and mass units in Unitful.jl and UnitfulAstro.jl 
-  can be used, e.g. UnitfulAstro.Msun/UnitfulAstro.yr, which is the default.
+  can be used.
 
 # Returns
 - A dictionary with six entries.
   - Key "1" => The first column (time).  
   - Key "2" => The second column (total mass - probability).  
   - Key "3" => The third column (SFR - original GADGET).  
-  - Key "4" => The fourth column (SFR- probability).  
+  - Key "4" => The fourth column (SFR - probability).  
   - Key "5" => The fifth column (real total mass).  
   - Key "6" => The sixth column (real SFR).  
 """
 function sfrTxtData(
     source_path::String,
-    base_name::String;
+    snapshot::String;
     sim_cosmo::Int64 = 0,
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
@@ -1027,52 +1336,76 @@ function sfrTxtData(
 )::Dict{Union{Int64, String}, Any}
 
     # Get header of one snapshot for unit conversion.
-    header = read_header(joinpath(source_path, base_name * "_000"))
+    header = read_header(joinpath(source_path, snapshot))
+    # Get the data from the sfr.txt file.
+    sfr_txt = readdlm(joinpath(source_path, "sfr.txt"), Float64)
 
     # Struct for unit conversion.
     if sim_cosmo == 1
-        GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
-        GU = @set GU.t_Myr = GU.t_Myr / sqrt(a)
-        GU = @set GU.t_s = GU.t_s / sqrt(a)
 
         # Scale factor.
-        a = header.time
+        a = sfr_txt[:, 1]
+        GU = [GadgetPhysicalUnits(; a_scale, hpar = header.h0) for a_scale in a]
+
         # Ω_K (curvature)
         omega_K = 1 - header.omega_0 - header.omega_l
         # Energy function.
-        E = header.omega_0 / (a * a * a) + omega_K / (a * a) + header.omega_l
+        E = @. header.omega_0 / (a * a * a) + omega_K / (a * a) + header.omega_l
         # Hubble constant in 1 / Gyr.
-        H = header.h0 * HUBBLE_CONST * sqrt(E)
+        H = @. header.h0 * HUBBLE_CONST * sqrt(E)
         # Integrand of the time integral in Gyr.
-        t_int = 1 / (H * a)
+        t_int = @. 1 / (H * a)
         # Conversion factor from internal units of time to physical units of time.
-        t_conv = t_int * UnitfulAstro.Gyr
+        t_conv = @. t_int * UnitfulAstro.Gyr
+
+        # Column extraction and unit conversion.
+        column_1 = similar(Vector{Float64}, axes(a, 1))
+        column_1[1] = 0.0
+        @inbounds for i in 2:length(column_1)
+            Δa = a[i] - a[i - 1]
+            Δt = Δa * ustrip(Float64, time_unit, t_conv[i])
+            column_1[i] = column_1[i - 1] + Δt
+        end
+        column_2 = @. ustrip(Float64, mass_unit, sfr_txt[:, 2] * getfield.(GU, :m_msun))
+        column_3 = @. ustrip(
+            Float64, 
+            sfr_unit, 
+            sfr_txt[:, 3] * (UnitfulAstro.Msun / UnitfulAstro.yr)
+        )
+        column_4 = @. ustrip(
+            Float64, 
+            sfr_unit, 
+            sfr_txt[:, 4] * (UnitfulAstro.Msun / UnitfulAstro.yr)
+        )
+        column_5 = @. ustrip(Float64, mass_unit, sfr_txt[:, 5] * getfield.(GU, :m_msun))
+        column_6 = @. ustrip(
+            Float64, 
+            sfr_unit, 
+            sfr_txt[:, 6] * (getfield.(GU, :m_msun) / getfield.(GU, :t_Myr))
+        )
+
     else
+
         # For Newtonian simulation uses the default scale factor: a = 1.
         GU = GadgetPhysicalUnits(hpar = header.h0)
 
-        # Conversion factor from internal units of time to physical units of time.
-        t_conv = GU.t_Myr
+        # Column extraction and unit conversion.
+        column_1 = @. ustrip(Float64, time_unit, sfr_txt[:, 1] * GU.t_Myr)
+        column_2 = @. ustrip(Float64, mass_unit, sfr_txt[:, 2] * GU.m_msun)
+        column_3 = @. ustrip(
+            Float64, 
+            sfr_unit, 
+            sfr_txt[:, 3] * (UnitfulAstro.Msun / UnitfulAstro.yr)
+        )
+        column_4 = @. ustrip(
+            Float64, 
+            sfr_unit, 
+            sfr_txt[:, 4] * (UnitfulAstro.Msun / UnitfulAstro.yr)
+        )
+        column_5 = @. ustrip(Float64, mass_unit, sfr_txt[:, 5] * GU.m_msun)
+        column_6 = @. ustrip(Float64, sfr_unit, sfr_txt[:, 6] * (GU.m_msun / GU.t_Myr))
+
     end
-
-    # Get data from the file.
-    sfr_txt = readdlm(joinpath(source_path, "sfr.txt"), Float64)
-
-    # Column extraction and unit conversion.
-    column_1 = @. ustrip(Float64, time_unit, sfr_txt[:, 1] * t_conv)
-    column_2 = @. ustrip(Float64, mass_unit, sfr_txt[:, 2] * GU.m_msun)
-    column_3 = @. ustrip(
-                    Float64, 
-                    sfr_unit, 
-                    sfr_txt[:, 3] * (UnitfulAstro.Msun / UnitfulAstro.yr)
-                )
-    column_4 = @. ustrip(
-                    Float64, 
-                    sfr_unit, 
-                    sfr_txt[:, 4] * (UnitfulAstro.Msun / UnitfulAstro.yr)
-                )
-    column_5 = @. ustrip(Float64, mass_unit, sfr_txt[:, 5] * GU.m_msun)
-    column_6 = @. ustrip(Float64, sfr_unit, sfr_txt[:, 6] * (GU.m_msun / GU.t_Myr))
 
     return Dict(
         1 => column_1,

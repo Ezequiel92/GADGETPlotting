@@ -8,7 +8,7 @@
 ############################################################################################
 
 push!(LOAD_PATH, "./src/")
-using GADGETPlotting, Unitful, UnitfulAstro, Plots, LaTeXStrings, GLM
+using GADGETPlotting, GadgetIO, Unitful, UnitfulAstro, Plots, LaTeXStrings, GLM
 
 "Base path to the directories where the output images and animations will be saved."
 const BASE_OUT_PATH = joinpath(@__DIR__, "example_results")

@@ -19,17 +19,17 @@ Julia module for creating plots, GIFs and videos from the data produce by GAGET2
 There are four tiers of functions:
 
 - Auxiliary functions (`src/auxiliary.jl`): These are only for internal use. All but `makeVideo` are pure functions that do soma data processing.
-- Data acquisition functions (`src/data_acquisition.jl`): These are only for internal use. They take the location of the raw data, apply some transformation (e.g. units) and return it as a familiar data structure.
+- Data acquisition functions (`src/data_acquisition.jl`): These are only for internal use. They take the location of the data files, apply some transformation (e.g. unit conversions) and return it as a familiar data structure.
 - Plotting functions (`src/plotting.jl`): These are exported, but I do not recommend to use them as is. If you insist in using them, read the section `Plotting backends warning` bellow. These are pure functions that take data in the format outputted by the data acquisition functions and return plot objects. They do all the data processing necessary to produce the plots, except the unit conversions. They will plot using the units selected when the data acquisition functions were called.
 - Pipeline functions (`src/pipelines.jl`): These are exported. These functions run a whole pipeline, from raw data to final plot. They take the location of the snapshot files with some configuration parameters, and as a result produce a series of plots/GIFs/videos. By default, some of these functions may generate a large number of images (but it can be configured to do less), and they may take a long time to run, especially if the function uses the `pgfplotsx` backend of [Plots.jl](https://github.com/JuliaPlots/Plots.jl).
 
 ## Plotting backends warning
 
-The plotting functions make use of different backends which are activated within, so to save the figures you have to use `Base.invokelatest(savefig, figure, location)` instead of `savefig(figure, location)` (as it is done in `example/example_plotting.jl`). The pipeline functions do this internally, so you can call them directly with no extra caveats. 
+The plotting functions make use of different backends which are activated within each function. So, to save the figures, you have to use `Base.invokelatest(savefig, figure, location)` instead of `savefig(figure, location)` (as it is done in `example/example_plotting.jl`). The pipeline functions do this internally, so you can call them directly with no extra caveats. 
 
 ## Documentation
 
-Each function is documented within its corresponding source file, where a docstring explains the functionality, the arguments and the returns.
+Each function is documented within the corresponding source file, where a docstring explains the functionality, the arguments and the returns.
 
 Refer to `example/` for how to use the functions. Note that it expects the simple file structure of this repo, namely:
 

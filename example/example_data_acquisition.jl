@@ -70,6 +70,10 @@ birth_pos = GADGETPlotting.birthPlace(
 display(birth_pos)
 println()
 
-sfrtxt_data = GADGETPlotting.sfrTxtData(BASE_SRC_PATH, SNAP_NAME, sim_cosmo = SIM_COSMO)
+sfrtxt_data = GADGETPlotting.sfrTxtData(
+    BASE_SRC_PATH, 
+    joinpath(BASE_SRC_PATH, SNAP_NAME * "_000"), 
+    sim_cosmo = SIM_COSMO
+)
 display(sfrtxt_data)
 println()

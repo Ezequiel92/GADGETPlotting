@@ -99,3 +99,14 @@ println(GADGETPlotting.format_error(69.42069, 0.038796))
 println(GADGETPlotting.format_error(69.42069, 0.018796))
 println(GADGETPlotting.format_error(69.42069, 0.0))
 println(GADGETPlotting.format_error(69.42069, 73.4))
+
+display(GADGETPlotting.pass_all(joinpath(BASE_SRC_PATH, SNAP_NAME * "_000"), "gas"))
+
+header = read_header(joinpath(BASE_SRC_PATH, SNAP_NAME * "_000"))
+println(GADGETPlotting.energy_integrand(header, 0.1))
+println(GADGETPlotting.energy_integrand(header, 0.5))
+println(GADGETPlotting.energy_integrand(header, 0.8))
+
+println(GADGETPlotting.num_integrate(sin, 0, 3π))
+println(GADGETPlotting.num_integrate(x -> x^3 + 6 * x^2 + 9 * x + 2, 0, 4.69))
+println(GADGETPlotting.num_integrate(x -> exp(x^x), 0, 1))

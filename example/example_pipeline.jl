@@ -198,13 +198,27 @@ massProfilePipeline(
 )
 
 sfrTxtPipeline(
-    [SNAP_NAME, SNAP_NAME],
+    [SNAP_NAME * "_000", SNAP_NAME * "_000"],
     [BASE_SRC_PATH, BASE_SRC_PATH],
     1,
     [4, 6],
-    output_path = joinpath(BASE_OUT_PATH, "sfr_txt"),
+    output_path = joinpath(BASE_OUT_PATH, "sfr_txt_column_compare"),
     sim_cosmo = SIM_COSMO,
     title = ["sim_1", "sim_2"],
+    bins = 50,
+    scale = (:identity, :log10),
+)
+
+sfrTxtPipeline(
+    [SNAP_NAME * "_000", SNAP_NAME * "_000"],
+    [BASE_SRC_PATH, BASE_SRC_PATH],
+    1,
+    [4, 6],
+    output_path = joinpath(BASE_OUT_PATH, "sfr_txt_sim_compare"),
+    sim_cosmo = SIM_COSMO,
+    comparison_type = 1,
+    title = ["Column 4 vs. 1", "Column 6 vs. 1"],
+    labels = ["sim_1" "sim_2"],
     bins = 50,
     scale = (:identity, :log10),
 )

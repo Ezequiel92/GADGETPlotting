@@ -27,6 +27,9 @@ and then generate a GIF and video animating the images.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
 - `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
@@ -44,6 +47,7 @@ function scatterGridPipeline(
     frame_rate::Int64; 
     output_path::String = "scatter_grid",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     step::Int64 = 1,
     box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
@@ -71,7 +75,13 @@ function scatterGridPipeline(
     # Generate and store the plots.                     
     animation = @animate for (number, snapshot) in zip(snap_numbers, snap_files)
 
-        positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
+        positions = positionData(
+            snapshot; 
+            sim_cosmo, 
+            filter_function, 
+            box_size, 
+            length_unit,
+        )
 
         figure = scatterGridPlot(positions)
 
@@ -124,6 +134,9 @@ and then generate a GIF and a video animating the images.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
 - `plane::String = "All"`: Indicates which plane will be plotted. 
@@ -148,6 +161,7 @@ function densityMapPipeline(
     frame_rate::Int64;
     output_path::String = "density_map",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     step::Int64 = 1,
     plane::String = "All",
     axes::Bool = false,
@@ -168,13 +182,13 @@ function densityMapPipeline(
     # Generate and store the plots.                      
     animation = @animate for (number, snapshot) in zip(snap_numbers, snap_files)
 
-        pos = positionData(snapshot; sim_cosmo, box_size, length_unit)
-        mass = massData(snapshot, "gas"; sim_cosmo)
+        pos = positionData(snapshot; sim_cosmo, filter_function, box_size, length_unit)
+        mass = massData(snapshot, "gas"; sim_cosmo, filter_function)
 
         density_unit = mass["unit"] / length_unit^3
 
-        density = densityData(snapshot; sim_cosmo, density_unit)
-        hsml = hsmlData(snapshot; sim_cosmo, length_unit)
+        density = densityData(snapshot; sim_cosmo, filter_function, density_unit)
+        hsml = hsmlData(snapshot; sim_cosmo, filter_function, length_unit)
 
         figure = densityMapPlot(pos, mass, density, hsml; plane, axes)
 
@@ -225,6 +239,9 @@ and then generate a GIF and a video animating the images.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
 - `plane::String = "All"`: Indicates which plane will be plotted. 
@@ -252,6 +269,7 @@ function starMapPipeline(
     frame_rate::Int64;
     output_path::String = "star_map",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     step::Int64 = 1,
     plane::String = "All",
     box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
@@ -282,7 +300,7 @@ function starMapPipeline(
     # Generate and store the plots.                     
     animation = @animate for (number, snapshot) in zip(snap_numbers, snap_files)
 
-        pos = positionData(snapshot; sim_cosmo, box_size, length_unit)
+        pos = positionData(snapshot; sim_cosmo, filter_function, box_size, length_unit)
 
         figure = starMapPlot(pos; plane, box_factor, axes)
 
@@ -336,6 +354,9 @@ generate a GIF and a video animating the whole evolution for all snapshots.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
 - `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
@@ -358,6 +379,7 @@ function gasStarEvolutionPipeline(
     frame_rate::Int64;
     output_path::String = "gas_star_evolution",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     step::Int64 = 1,
     box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
@@ -368,7 +390,13 @@ function gasStarEvolutionPipeline(
 
     # Get the simulation data.
     sim = getSnapshotPaths(base_name, source_path)
-    time_series = timeSeriesData(sim["snap_files"]; sim_cosmo, time_unit, sfr_unit) 
+    time_series = timeSeriesData(
+        sim["snap_files"]; 
+        sim_cosmo, 
+        filter_function, 
+        time_unit, 
+        sfr_unit,
+    ) 
 
     snap_files = @view sim["snap_files"][1:step:end]
     snap_numbers = @view sim["numbers"][1:step:end]
@@ -389,7 +417,13 @@ function gasStarEvolutionPipeline(
     data_iter = enumerate(zip(snap_numbers, snap_files))                 
     animation = @animate for (i, (number, snapshot)) in data_iter
 
-        positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
+        positions = positionData(
+            snapshot; 
+            sim_cosmo, 
+            filter_function, 
+            box_size, 
+            length_unit,
+        )
 
         figure = gasStarEvolutionPlot(1 + step * (i - 1), time_series, positions)
 
@@ -452,6 +486,9 @@ present, and then generate a GIF and a video animating the images.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
 - `x_norm::Bool = false`: If the x axis will be normalized to its maximum value. 
@@ -467,6 +504,7 @@ function CMDFPipeline(
     frame_rate::Int64;
     output_path::String = "CMDF",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     step::Int64 = 1,
     x_norm::Bool = false,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
@@ -475,7 +513,7 @@ function CMDFPipeline(
 
     # Get the simulation data.
     sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, time_unit)
+    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
 
     snap_files = @view sim["snap_files"][1:step:end] 
     snap_numbers = @view sim["numbers"][1:step:end] 
@@ -501,8 +539,8 @@ function CMDFPipeline(
         header = read_header(snapshot)
         
         if header.nall[5] != 0
-            mass_data = massData(snapshot, "stars"; sim_cosmo)
-            z_data = zData(snapshot, "stars"; sim_cosmo)
+            mass_data = massData(snapshot, "stars"; sim_cosmo, filter_function)
+            z_data = zData(snapshot, "stars"; sim_cosmo, filter_function)
 
             figure = CMDFPlot(
                 mass_data, 
@@ -565,6 +603,9 @@ if there are stars present, and then generate a GIF and a video animating the im
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
 - `x_norm::Bool = false`: If the x axis will be normalized to its maximum value. 
@@ -581,6 +622,7 @@ function CMDFPipeline(
     labels::Array{String, 2};
     output_path::String = "CMDF",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     step::Int64 = 1,
     x_norm::Bool = false,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
@@ -591,7 +633,7 @@ function CMDFPipeline(
     sim_data = [getSnapshotPaths(base_name[i], path)["snap_files"]
                 for (i, path) in enumerate(source_path)]
     # Time stamps (they should be the same for every dataset).
-    time_data = timeSeriesData(sim_data[1]; sim_cosmo, time_unit)
+    time_data = timeSeriesData(sim_data[1]; sim_cosmo, filter_function, time_unit)
     times = @view time_data["clock_time"][1:step:end]
 
     # Length of the shortest simulation.
@@ -623,8 +665,8 @@ function CMDFPipeline(
 
         if all(num_stars .!= 0)
     
-            masses = massData.(snapshots, "stars"; sim_cosmo)
-            metallicities = zData.(snapshots, "stars"; sim_cosmo) 
+            masses = massData.(snapshots, "stars"; sim_cosmo, filter_function)
+            metallicities = zData.(snapshots, "stars"; sim_cosmo, filter_function) 
 
             figure = CMDFPlot(
                 masses, 
@@ -686,6 +728,9 @@ stars present, and then generate a GIF and a video animating the images.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
@@ -700,6 +745,7 @@ function birthHistogramPipeline(
     frame_rate::Int64;
     output_path::String = "birth_histogram",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     step::Int64 = 1,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
     format::String = ".png",
@@ -707,7 +753,7 @@ function birthHistogramPipeline(
 
     # Get the simulation data.
     sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo)
+    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function)
 
     snap_files = @view sim["snap_files"][1:step:end] 
     snap_numbers = @view sim["numbers"][1:step:end] 
@@ -738,6 +784,7 @@ function birthHistogramPipeline(
                 time_data["clock_time"],
                 time_data["units"]["time"];
                 sim_cosmo, 
+                filter_function,
                 length_unit, 
                 time_unit = time_data["units"]["time"],
             )
@@ -797,6 +844,9 @@ Args:
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `mass_factor::Int64 = 0`: Numerical exponent to scale the mass, e.g. if mass_factor = 10 
   the corresponding axis will be scaled by 10^10.
 - `number_factor::Int64 = 0`: Numerical exponent to scale the number of particles, 
@@ -817,6 +867,7 @@ function evolutionSummaryPipeline(
     fig_name::String;
     output_path::String = "evolution_summary",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     mass_factor::Int64 = 0,
     number_factor::Int64 = 0,
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
@@ -833,6 +884,7 @@ function evolutionSummaryPipeline(
     time_series = timeSeriesData(
                     snap_files["snap_files"]; 
                     sim_cosmo, 
+                    filter_function,
                     mass_unit, 
                     time_unit, 
                     sfr_unit,
@@ -855,6 +907,7 @@ function evolutionSummaryPipeline(
             figure_a, 
             joinpath(output_path, fig_name * "_vs_scale_factor" * format),
         )
+
         # Parameters vs. redshift. 
         figure_z = redshiftSeriesPlot(time_series; mass_factor, number_factor)
         Base.invokelatest(
@@ -917,6 +970,9 @@ function, namely:
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `title::String = ""`: Title for the figure. If an empty string is given, no title is 
   printed.
 - `x_factor::Int64 = 0`: Numerical exponent to scale the `x_quantity`, e.g. if x_factor = 10 
@@ -953,6 +1009,7 @@ function compareSimulationsPipeline(
     y_quantity::String;
     output_path::String = "compare_simulations",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     title::String = "",
     x_factor::Int64 = 0,
     y_factor::Int64 = 0,
@@ -968,7 +1025,8 @@ function compareSimulationsPipeline(
 
     time_series = [timeSeriesData(
                         getSnapshotPaths(name, path)["snap_files"]; 
-                        sim_cosmo, 
+                        sim_cosmo,
+                        filter_function, 
                         mass_unit, 
                         time_unit, 
                         sfr_unit,
@@ -1026,6 +1084,9 @@ and then generate a GIF and a video animating the images.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
 - `factor::Int64 = 0`: Numerical exponent to scale the density, e.g. if factor = 10 
@@ -1045,6 +1106,7 @@ function densityHistogramPipeline(
     frame_rate::Int64;
     output_path::String = "density_histogram",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     step::Int64 = 1,
     factor::Int64 = 0,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
@@ -1054,7 +1116,7 @@ function densityHistogramPipeline(
 
     # Get the simulation data.
     sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, time_unit)
+    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
 
     snap_files = @view sim["snap_files"][1:step:end]
     snap_numbers = @view sim["numbers"][1:step:end]
@@ -1077,7 +1139,7 @@ function densityHistogramPipeline(
     # animation = @animate 
     for (time, number, snapshot) in data_iter
 
-        density = densityData(snapshot; sim_cosmo, density_unit)
+        density = densityData(snapshot; sim_cosmo, filter_function, density_unit)
 
         figure = densityHistogramPlot(density, time * time_unit; factor)
 
@@ -1135,6 +1197,9 @@ and then generate a GIF and a video animating the images.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `scale::Symbol = :identity`: Scaling to be used for the y axis.
   The two options are:
   :identity => no scaling.
@@ -1167,6 +1232,7 @@ function densityProfilePipeline(
     type::String;
     output_path::String = "density_profile",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     scale::Symbol = :identity,
     step::Int64 = 1,
     bins::Int64 = 100,
@@ -1181,7 +1247,7 @@ function densityProfilePipeline(
 
     # Get the simulation data.
     sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, time_unit)
+    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
 
     snap_files = @view sim["snap_files"][1:step:end] 
     snap_numbers = @view sim["numbers"][1:step:end] 
@@ -1204,8 +1270,14 @@ function densityProfilePipeline(
     # animation = @animate          
     for (time, number, snapshot) in data_iter
 
-        positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
-        mass = massData(snapshot, type; sim_cosmo, mass_unit)
+        positions = positionData(
+            snapshot; 
+            sim_cosmo, 
+            filter_function, 
+            box_size, 
+            length_unit,
+        )
+        mass = massData(snapshot, type; sim_cosmo, filter_function, mass_unit)
 
         figure = densityProfilePlot(
             positions,
@@ -1273,6 +1345,9 @@ per snapshot, and then generate a GIF and a video animating the images.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `scale::Symbol = :identity`: Scaling to be used for the y axis.
   The two options are:
   :identity => no scaling.
@@ -1306,6 +1381,7 @@ function densityProfilePipeline(
     labels::Array{String, 2};
     output_path::String = "density_profile",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     scale::Symbol = :identity,
     step::Int64 = 1,
     bins::Int64 = 100,
@@ -1321,8 +1397,9 @@ function densityProfilePipeline(
     # Get the simulation data.
     sim_data = [getSnapshotPaths(base_name[i], path)["snap_files"] 
                 for (i, path) in enumerate(source_path)]
+
     # Time stamps (they should be the same for every dataset).
-    time_data = timeSeriesData(sim_data[1]; sim_cosmo, time_unit)
+    time_data = timeSeriesData(sim_data[1]; sim_cosmo, filter_function, time_unit)
     times = @view time_data["clock_time"][1:step:end]
 
     # Length of the shortest simulation.
@@ -1349,8 +1426,14 @@ function densityProfilePipeline(
     # animation = @animate 
     for (i, (time, snapshots)) in data_iter
 
-        positions = positionData.(snapshots; sim_cosmo, box_size, length_unit)
-        masses = massData.(snapshots, type; sim_cosmo, mass_unit)
+        positions = positionData.(
+            snapshots; 
+            sim_cosmo, 
+            filter_function, 
+            box_size, 
+            length_unit,
+        )
+        masses = massData.(snapshots, type; sim_cosmo, filter_function, mass_unit)
 
         figure = densityProfilePlot(
             positions,
@@ -1417,6 +1500,9 @@ and then generate a GIF and a video animating the images.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
 - `bins::Int64 = 100`: Number of subdivisions of the region to be used for the profile.
@@ -1441,6 +1527,7 @@ function metallicityProfilePipeline(
     type::String;
     output_path::String = "metallicity_profile",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     scale::Symbol = :identity,
     step::Int64 = 1,
     bins::Int64 = 100,
@@ -1453,7 +1540,7 @@ function metallicityProfilePipeline(
 
     # Get the simulation data.
     sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, time_unit)
+    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
 
     snap_files = @view sim["snap_files"][1:step:end] 
     snap_numbers = @view sim["numbers"][1:step:end] 
@@ -1476,9 +1563,15 @@ function metallicityProfilePipeline(
     # animation = @animate          
     for (time, number, snapshot) in data_iter
 
-        positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
-        mass = massData(snapshot, type; sim_cosmo)
-        metallicities = zData(snapshot, type; sim_cosmo)
+        positions = positionData(
+            snapshot; 
+            sim_cosmo, 
+            filter_function, 
+            box_size, 
+            length_unit,
+        )
+        mass = massData(snapshot, type; sim_cosmo, filter_function)
+        metallicities = zData(snapshot, type; sim_cosmo, filter_function)
 
         figure = metallicityProfilePlot(
             positions,
@@ -1546,6 +1639,9 @@ image per snapshot, and then generate a GIF and a video animating the images.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `scale::Symbol = :identity`: Scaling to be used for the y axis.
   The two options are:
   :identity => no scaling.
@@ -1575,6 +1671,7 @@ function metallicityProfilePipeline(
     labels::Array{String, 2};
     output_path::String = "metallicity_profile",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     scale::Symbol = :identity,
     step::Int64 = 1,
     bins::Int64 = 100,
@@ -1588,8 +1685,9 @@ function metallicityProfilePipeline(
     # Get the simulation data.
     sim_data = [getSnapshotPaths(base_name[i], path)["snap_files"] 
                 for (i, path) in enumerate(source_path)]
+
     # Time stamps (they should be the same for every dataset).
-    time_data = timeSeriesData(sim_data[1]; sim_cosmo, time_unit)
+    time_data = timeSeriesData(sim_data[1]; sim_cosmo, filter_function, time_unit)
     times = @view time_data["clock_time"][1:step:end]
 
     # Length of the shortest simulation.
@@ -1616,9 +1714,15 @@ function metallicityProfilePipeline(
     # animation = @animate 
     for (i, (time, snapshots)) in data_iter
 
-        positions = positionData.(snapshots; sim_cosmo, box_size, length_unit)
-        masses = massData.(snapshots, type; sim_cosmo)
-        metallicities = zData.(snapshots, type; sim_cosmo)
+        positions = positionData.(
+            snapshots; 
+            sim_cosmo, 
+            filter_function, 
+            box_size, 
+            length_unit,
+        )
+        masses = massData.(snapshots, type; sim_cosmo, filter_function)
+        metallicities = zData.(snapshots, type; sim_cosmo, filter_function)
 
         figure = metallicityProfilePlot(
             positions,
@@ -1689,6 +1793,9 @@ and then generate a GIF and a video animating the images.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
 - `bins::Int64 = 100`: Number of subdivisions of the region to be used for the profile.
@@ -1717,6 +1824,7 @@ function massProfilePipeline(
     type::String;
     output_path::String = "mass_profile",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     scale::Symbol = :identity,
     step::Int64 = 1,
     bins::Int64 = 100,
@@ -1731,7 +1839,7 @@ function massProfilePipeline(
 
     # Get the simulation data.
     sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, time_unit)
+    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
 
     snap_files = @view sim["snap_files"][1:step:end] 
     snap_numbers = @view sim["numbers"][1:step:end] 
@@ -1754,8 +1862,14 @@ function massProfilePipeline(
     # animation = @animate          
     for (time, number, snapshot) in data_iter
 
-        positions = positionData(snapshot; sim_cosmo, box_size, length_unit)
-        mass = massData(snapshot, type; sim_cosmo, mass_unit)
+        positions = positionData(
+            snapshot; 
+            sim_cosmo, 
+            filter_function, 
+            box_size, 
+            length_unit,
+        )
+        mass = massData(snapshot, type; sim_cosmo, filter_function, mass_unit)
 
         figure = massProfilePlot(
             positions,
@@ -1823,6 +1937,9 @@ per snapshot, and then generate a GIF and a video animating the images.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `scale::Symbol = :identity`: Scaling to be used for the y axis.
   The two options are:
   :identity => no scaling.
@@ -1856,6 +1973,7 @@ function massProfilePipeline(
     labels::Array{String, 2};
     output_path::String = "mass_profile",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     scale::Symbol = :identity,
     step::Int64 = 1,
     bins::Int64 = 100,
@@ -1871,8 +1989,9 @@ function massProfilePipeline(
     # Get the simulation data.
     sim_data = [getSnapshotPaths(base_name[i], path)["snap_files"] 
                 for (i, path) in enumerate(source_path)]
+
     # Time stamps (they should be the same for every dataset).
-    time_data = timeSeriesData(sim_data[1]; sim_cosmo, time_unit)
+    time_data = timeSeriesData(sim_data[1]; sim_cosmo, filter_function, time_unit)
     times = @view time_data["clock_time"][1:step:end]
 
     # Length of the shortest simulation.
@@ -1899,8 +2018,14 @@ function massProfilePipeline(
     # animation = @animate 
     for (i, (time, snapshots)) in data_iter
 
-        positions = positionData.(snapshots; sim_cosmo, box_size, length_unit)
-        masses = massData.(snapshots, type; sim_cosmo)
+        positions = positionData.(
+            snapshots; 
+            sim_cosmo, 
+            filter_function, 
+            box_size, 
+            length_unit,
+        )
+        masses = massData.(snapshots, type; sim_cosmo, filter_function)
 
         figure = massProfilePlot(
             positions,
@@ -1939,21 +2064,22 @@ end
 
 """
     sfrTxtPipeline(
-        base_names::Vector{String},
-        source_paths::Vector{String},
+        snapshots::Vector{String},
+        source_path::Vector{String},
         x_axis::Int64,
         y_axis::Vector{Int64}; 
         <keyword arguments>
     )::Nothing
 
-Save the results of the sfrTxtPlot function as one image per simulation.
+Save the results of the sfrTxtPlot function as one image per simulation or one image 
+per column depending on `comparison_type`.
 
 # Warning 
-THIS FUNCTION NEEDS A FILE (sfr.txt) WHICH IS PRODUCED BY A PRIVATE VERSION OF GADGET3.
+This function takes a modified version of sfr.txt which is produced by a private version of 
+GADGET3. GADGET4 produces a sfr.txt, but it is not compatible with this function.
 
 # Arguments
-- `base_name::Vector{String}`: Base names of the snapshot files, set in the GADGET 
-  variable SnapshotFileBase.
+- `snapshots::Vector{String}`: Path to the snapshot files, to get its headers.
 - `source_path::Vector{String}`: Paths to the directories containing the sfr.txt files, 
   set in the GADGET variable OutputDir.
 - `x_axis::Int64`: Column number for the x axis.
@@ -1962,10 +2088,16 @@ THIS FUNCTION NEEDS A FILE (sfr.txt) WHICH IS PRODUCED BY A PRIVATE VERSION OF G
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `comparison_type::Int64 = 0`: Selects which parameters (columns or simulations)
+  will be compared:
+  0 -> Different columns are compared, for a single simulation (one plot per simulation).
+  1 -> Different simulations are compared, using the same column (one plot per column).
 - `title::Vector{String} = String[]`: Titles for the figures. If an empty string is given,
   no title is printed.
 - `names::Vector{String} = String[]`: Names for the files. If an empty string is given, the 
   images will be assigned a number given by the order of `source_path`.
+- `labels::Union{Nothing, Array{String, 2}} = nothing`: Labels for the different 
+  simulations. Only relevant if `comparison_type = 1`.
 - `bins::Int64 = 0`: Number of subdivisions for the smoothing of the data. 
   The default is 0, i.e. no smoothing. It will apply equally to every figure produced.
 - `scale::NTuple{2, Symbol} = (:identity, :identity)`: Scaling to be used for the x and y 
@@ -1973,6 +2105,10 @@ THIS FUNCTION NEEDS A FILE (sfr.txt) WHICH IS PRODUCED BY A PRIVATE VERSION OF G
   The options are:
   :identity => no scaling.
   :log10 => logarithmic scaling.
+- `x_factor::Int64 = 0`: Numerical exponent to scale the `x_quantity`, e.g. if x_factor = 10 
+  the corresponding axis will be scaled by 10^10. The default is 0, i.e. no scaling.
+- `y_factor::Int64 = 0`: Numerical exponent to scale the `y_quantity`, e.g. if y_factor = 10 
+  the corresponding axis will be scaled by 10^10. The default is 0, i.e. no scaling.
 - `min_filter::NTuple{2, Float64} = (-Inf, -Inf)`: Value filter for the x and y axes. 
   It will apply equally to every figure produced. If a value of the x data is lower 
   than min_filter[1], then it is deleted. Equivalently with the y axis and min_filter[2]. 
@@ -1988,16 +2124,20 @@ THIS FUNCTION NEEDS A FILE (sfr.txt) WHICH IS PRODUCED BY A PRIVATE VERSION OF G
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
 function sfrTxtPipeline(
-    base_name::Vector{String},
+    snapshots::Vector{String},
     source_path::Vector{String},
     x_axis::Int64,
     y_axis::Vector{Int64};
     output_path::String = "sfr_txt",
     sim_cosmo::Int64 = 0,
+    comparison_type::Int64 = 0,
     title::Vector{String} = String[],
     names::Vector{String} = String[],
+    labels::Union{Nothing, Array{String, 2}} = nothing,
     bins::Int64 = 0,
     scale::NTuple{2, Symbol} = (:identity, :identity),
+    x_factor::Int64 = 0,
+    y_factor::Int64 = 0,
     min_filter::NTuple{2, Float64} = (-Inf, -Inf),
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
@@ -2007,7 +2147,7 @@ function sfrTxtPipeline(
 
     # By default every figure has no title.
     if isempty(title)
-        title = ["" for _ in source_path]
+        title = ["" for _ in eachindex(source_path)]
     end
 
     # By default every figure has a number as its name.
@@ -2018,33 +2158,56 @@ function sfrTxtPipeline(
     # Create a directory to save the plots, if it doesn't exist.
     mkpath(output_path)
 
-    @inbounds for i in eachindex(source_path, base_name)
+    sfr_data = [
+        sfrTxtData(source, snap; sim_cosmo, mass_unit, time_unit, sfr_unit) 
+        for (source, snap) in zip(source_path, snapshots)
+    ]
 
-        sfr_data = sfrTxtData(
-            source_path[i], 
-            base_name[i]; 
-            sim_cosmo, 
-            mass_unit, 
-            time_unit, 
-            sfr_unit
-        )
+    if comparison_type == 0
+        @inbounds for (i, source) in enumerate(source_path)
 
-        figure = sfrTxtPlot(
-            sfr_data, 
-            x_axis, 
-            y_axis;
-            title = title[i], 
-            bins, 
-            scale, 
-            min_filter,
-        )
+            figure = sfrTxtPlot(
+                sfr_data[i], 
+                x_axis, 
+                y_axis;
+                title = title[i], 
+                bins, 
+                scale,
+                x_factor, 
+                y_factor, 
+                min_filter,
+            )
 
-        Base.invokelatest(
-            savefig, 
-            figure, 
-            joinpath(output_path, names[i] * format),
-        )
+            Base.invokelatest(
+                savefig, 
+                figure, 
+                joinpath(output_path, names[i] * format),
+            )
 
+        end
+    else 
+        @inbounds for (i, column) in enumerate(y_axis)
+
+            figure = sfrTxtPlot(
+                sfr_data, 
+                x_axis, 
+                column,
+                labels;
+                title = title[i], 
+                bins, 
+                scale,
+                x_factor, 
+                y_factor, 
+                min_filter,
+            )
+
+            Base.invokelatest(
+                savefig, 
+                figure, 
+                joinpath(output_path, names[i] * format),
+            )
+
+        end
     end
 
     return nothing
@@ -2075,6 +2238,9 @@ and then generate a GIF and a video animating the images.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
 - `temp_unit::Unitful.FreeUnits = Unitful.K`: Unit of temperature to be used in the 
@@ -2089,6 +2255,7 @@ function temperatureHistogramPipeline(
     frame_rate::Int64;
     output_path::String = "temperature_histogram",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     step::Int64 = 1,
     temp_unit::Unitful.FreeUnits = Unitful.K,
     format::String = ".png",
@@ -2096,7 +2263,7 @@ function temperatureHistogramPipeline(
 
     # Get the simulation data.
     sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo)
+    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function)
     time_unit = time_data["units"]["time"]
 
     snap_files = @view sim["snap_files"][1:step:end] 
@@ -2120,7 +2287,7 @@ function temperatureHistogramPipeline(
     # animation = @animate          
     for (time, number, snapshot) in data_iter
 
-        temp_data = tempData(snapshot; sim_cosmo, temp_unit)
+        temp_data = tempData(snapshot; sim_cosmo, filter_function, temp_unit)
 
         figure = temperatureHistogramPlot(temp_data, time * time_unit, bins = 30)
 
@@ -2173,6 +2340,9 @@ and then generate a GIF and a video animating the images.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
 - `temp_unit::Unitful.FreeUnits = Unitful.K`: Unit of temperature to be used in the 
@@ -2190,6 +2360,7 @@ function rhoTempPipeline(
     frame_rate::Int64;
     output_path::String = "rho_vs_temp",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     step::Int64 = 1,
     temp_unit::Unitful.FreeUnits = Unitful.K,
     density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3,
@@ -2198,7 +2369,7 @@ function rhoTempPipeline(
 
     # Get the simulation data.
     sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo)
+    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function)
     time_unit = time_data["units"]["time"]
 
     snap_files = @view sim["snap_files"][1:step:end] 
@@ -2222,8 +2393,8 @@ function rhoTempPipeline(
     # animation = @animate          
     for (time, number, snapshot) in data_iter
 
-        temp_data = tempData(snapshot; sim_cosmo, temp_unit)
-        density_data = densityData(snapshot; sim_cosmo, density_unit)
+        temp_data = tempData(snapshot; sim_cosmo, filter_function, temp_unit)
+        density_data = densityData(snapshot; sim_cosmo, filter_function, density_unit)
 
         figure = rhoTempPlot(temp_data, density_data, time * time_unit)
 
@@ -2274,6 +2445,9 @@ at least five data points for the linear fitting.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
 - `temp_filter::Unitful.Quantity = 3e4Unitful.K`: Maximum temperature allowed for the 
@@ -2305,6 +2479,7 @@ function KennicuttSchmidtPipeline(
     source_path::String;
     output_path::String = "Kennicutt_Schmidt",
     sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
     step::Int64 = 1,
     temp_filter::Unitful.Quantity = 3e4Unitful.K,
     age_filter::Unitful.Quantity = 20UnitfulAstro.Myr,
@@ -2320,7 +2495,7 @@ function KennicuttSchmidtPipeline(
 
     # Get the simulation data.
     sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, time_unit)
+    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
 
     snap_files = @view sim["snap_files"][1:step:end] 
     snap_numbers = @view sim["numbers"][1:step:end] 
@@ -2346,15 +2521,27 @@ function KennicuttSchmidtPipeline(
         if header.nall[5] != 0
 
             # Gas masses.
-            gas_mass_data = massData(snapshot, "gas"; sim_cosmo, mass_unit)
+            gas_mass_data = massData(snapshot, "gas"; sim_cosmo, filter_function, mass_unit)
             # Gas temperatures.
-            temperature_data = tempData(snapshot; sim_cosmo, temp_unit)
+            temperature_data = tempData(snapshot; sim_cosmo, filter_function, temp_unit)
             # Stars masses.
-            star_mass_data = massData(snapshot, "stars"; sim_cosmo, mass_unit)
+            star_mass_data = massData(
+                snapshot, 
+                "stars"; 
+                sim_cosmo, 
+                filter_function, 
+                mass_unit,
+            )
             # Stars ages.
-            age_data = ageData(snapshot, time * time_unit; sim_cosmo)
+            age_data = ageData(snapshot, time * time_unit; sim_cosmo, filter_function)
             # Positions.
-            pos_data = positionData(snapshot; sim_cosmo, box_size, length_unit)
+            pos_data = positionData(
+                snapshot; 
+                sim_cosmo, 
+                filter_function, 
+                box_size, 
+                length_unit,
+            )
 
             figure = KennicuttSchmidtPlot(
                 gas_mass_data,
