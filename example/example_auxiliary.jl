@@ -65,7 +65,7 @@ dist_stars = sqrt.(pos_stars[1, :] .^ 2 + pos_stars[2, :] .^ 2)
 KSL = GADGETPlotting.KennicuttSchmidtLaw(
     gas_mass["mass"],
     dist_gas,
-    temp_data["T"],
+    temp_data["temperature"],
     star_mass["mass"],
     dist_stars,
     age_data["ages"],
