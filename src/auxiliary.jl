@@ -81,7 +81,8 @@ function makeVideo(
     )
 
     # Creates the video with the specified frame rate and filename.
-    properties = [:priv_data => ("crf" => "0", "preset" => "ultrafast")]
+    # properties = [:priv_data => ("crf" => "0", "preset" => "ultrafast")]
+	properties = [:priv_data => ("crf" => "23", "preset" => "medium")]
     encodevideo(
         joinpath(output_path, output_filename * ".mp4"),
         image_stack,
