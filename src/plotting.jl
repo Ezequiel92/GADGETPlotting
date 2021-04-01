@@ -1691,6 +1691,11 @@ function compareSimulationsPlot(
         ylabel *= L"\ / \, 10^{%$y_factor}"
     end
 
+    for (i, data) in enumerate(y_data)
+        dat = filter(x -> !isnan(x), data)
+        println("star_mass", i, " : ", last(dat))
+    end
+
     return plot(
         hcat(x_data...),
         hcat(y_data...);
@@ -3289,7 +3294,7 @@ the measured values superimposed for comparison.
 - `temp_filter::Unitful.Quantity`: Maximum temperature allowed for the gas particles.
 - `age_filter::Unitful.Quantity`: Maximum star age allowed for the calculation of the SFR. 
   It should aproximately equal to the time step of the snapshots.
-- `max_r::Float64`: Maximum distance up to which the parameters will be calculated.
+- `max_r::Unitful.Quantity`: Maximum distance up to which the parameters will be calculated.
 - `time::Unitful.Quantity`: Time with units for the time stamp of the plot. 
 - `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. 
   It has to be at least 5.

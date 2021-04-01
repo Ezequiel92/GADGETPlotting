@@ -2454,9 +2454,8 @@ at least five data points for the linear fitting.
   gas particles.
 - `age_filter::Unitful.Quantity = 100UnitfulAstro.Myr`: Maximum star age allowed for the 
   calculation of the SFR.
-- `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
-  if vacuum boundary conditions were used. Its unit doesn't have to be the same 
-  as `length_unit`.
+- `max_r::Unitful.Quantity = 1000UnitfulAstro.kpc`: Maximum distance up to which the 
+  parameters will be calculated, with units.
 - `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. 
   It has to be at least 5.
 - `error_formating::String = "std_error"`: What type of error for the fitting results to 
@@ -2483,7 +2482,7 @@ function KennicuttSchmidtPipeline(
     step::Int64 = 1,
     temp_filter::Unitful.Quantity = 3e4Unitful.K,
     age_filter::Unitful.Quantity = 20UnitfulAstro.Myr,
-    box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
+    max_r::Unitful.Quantity = 1000UnitfulAstro.kpc,
     bins::Int64 = 50,
     error_formating::String = "std_error",
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
@@ -2538,8 +2537,7 @@ function KennicuttSchmidtPipeline(
             pos_data = positionData(
                 snapshot; 
                 sim_cosmo, 
-                filter_function, 
-                box_size, 
+                filter_function,  
                 length_unit,
             )
 
@@ -2551,7 +2549,7 @@ function KennicuttSchmidtPipeline(
                 pos_data,
                 temp_filter,
                 age_filter,
-                box_size,
+                max_r,
                 time * time_unit;
                 bins,
                 error_formating,

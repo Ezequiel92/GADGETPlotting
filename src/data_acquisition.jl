@@ -405,7 +405,7 @@ Get the coordinates of the particles at a specific time step.
   foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region if 
-  vacuum boundary conditions were used. It has to have unitsbut they don't have to be 
+  vacuum boundary conditions were used. It has to have units but they don't have to be 
   the same as `length_unit`.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
   in the output, all available length units in Unitful.jl and UnitfulAstro.jl 
