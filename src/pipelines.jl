@@ -2572,3 +2572,150 @@ function KennicuttSchmidtPipeline(
 
     return nothing
 end
+
+# """
+#     KennicuttSchmidtPipeline2(
+#         base_name::String,
+#         source_path::String; 
+#         <keyword arguments>
+#     )::Nothing
+
+# Save the results of the KennicuttSchmidtPlot function as one image per snapshot.
+
+# It will produce output only for the snapshots that have enough young stars to produce 
+# at least five data points for the linear fitting.
+
+# # Arguments
+# - `base_name::String`: Base names of the snapshot files, set in the GADGET 
+#   variable SnapshotFileBase.
+# - `source_path::String`: Paths to the directories containing the snapshot files, 
+#   set in the GADGET variable OutputDir.
+# - `output_path::String = "Kennicutt_Schmidt"`: Path to the output directory. The images will 
+#   be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
+#   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
+# - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
+#   0 -> Newtonian simulation (static universe).
+#   1 -> Cosmological simulation (expanding universe).
+# - `filter_function::Function = pass_all`: A function with the signature: 
+#   foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+#   for an example. By default no particles are filtered.
+# - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
+#   i.e. all snapshots will be plotted.
+# - `age_filter::Unitful.Quantity = 100UnitfulAstro.Myr`: Maximum star age allowed for the 
+#   calculation of the SFR.
+# - `max_r::Unitful.Quantity = 1000UnitfulAstro.kpc`: Maximum distance up to which the 
+#   parameters will be calculated, with units.
+# - `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. 
+#   It has to be at least 5.
+# - `error_formating::String = "std_error"`: What type of error for the fitting results to 
+#   print. The options are:
+#   "std_error": `mean ± standard_error`.
+#   "conf_interval": `mean ± max(upper_95% - mean, mean - lower_95%)`.
+# - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
+#   all available time units in Unitful and UnitfulAstro can be used.
+# - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
+#   all available mass units in Unitful and UnitfulAstro can be used.
+# - `temp_unit::Unitful.FreeUnits = Unitful.K`: Unit of temperature to be used in the 
+#   output, all available temperature units in Unitful and UnitfulAstro can be used.
+# - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
+#   output, all available length units in Unitful and UnitfulAstro can be used.
+# - `format::String = ".png"`: File format of the output figure. All formats supported by the
+#   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+# """
+# function KennicuttSchmidtPipeline2(
+#     base_name::String,
+#     source_path::String;
+#     output_path::String = "Kennicutt_Schmidt",
+#     sim_cosmo::Int64 = 0,
+#     filter_function::Function = pass_all,
+#     step::Int64 = 1,
+#     age_filter::Unitful.Quantity = 20UnitfulAstro.Myr,
+#     max_r::Unitful.Quantity = 1000UnitfulAstro.kpc,
+#     bins::Int64 = 50,
+#     error_formating::String = "std_error",
+#     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
+#     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
+#     temp_unit::Unitful.FreeUnits = Unitful.K,
+#     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
+#     format::String = ".png",
+# )::Nothing
+
+#     # Get the simulation data.
+#     sim = getSnapshotPaths(base_name, source_path)
+#     time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
+
+#     snap_files = @view sim["snap_files"][1:step:end] 
+#     snap_numbers = @view sim["numbers"][1:step:end] 
+#     times = @view time_data["clock_time"][1:step:end]
+
+#     # Create a directory to save the plots, if it doesn't exist.
+#     img_path = mkpath(joinpath(output_path, "images"))
+
+#      # Progress bar.
+#      prog_bar = Progress(
+#         length(snap_files), 
+#         dt = 0.5, 
+#         desc = "Generating the Kennicutt-Schmidt plots... ",
+#         color = :blue,
+#         barglyphs = BarGlyphs("|#  |"),
+#     )
+
+#     # Generate and store the plots.
+#     data_iter = zip(times, snap_numbers, snap_files)        
+#     for (time, number, snapshot) in data_iter
+
+#         header = read_header(snapshot)
+#         if header.nall[5] != 0
+
+#             # Gas masses.
+#             gas_mass_data = massData(snapshot, "gas"; sim_cosmo, filter_function, mass_unit)
+            
+#             # Stars masses.
+#             star_mass_data = massData(
+#                 snapshot, 
+#                 "stars"; 
+#                 sim_cosmo, 
+#                 filter_function, 
+#                 mass_unit,
+#             )
+
+#             # Stars ages.
+#             age_data = ageData(snapshot, time * time_unit; sim_cosmo, filter_function)
+
+#             # Positions.
+#             pos_data = positionData(
+#                 snapshot; 
+#                 sim_cosmo, 
+#                 filter_function,  
+#                 length_unit,
+#             )
+
+#             figure = KennicuttSchmidtPlot2(
+#                 gas_mass_data,
+#                 star_mass_data,
+#                 age_data,
+#                 pos_data,
+#                 age_filter,
+#                 max_r,
+#                 time * time_unit;
+#                 bins,
+#                 error_formating,
+#             )
+
+#             if figure !== nothing
+#                 # If there was enough data to make a fit.
+#                 Base.invokelatest(
+#                     savefig, 
+#                     figure, 
+#                     joinpath(img_path, base_name * "_" * number * format),
+#                 )
+#             end
+
+#         end
+
+#         next!(prog_bar)
+
+#     end
+
+#     return nothing
+# end

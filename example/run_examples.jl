@@ -49,4 +49,4 @@ println("Everything worked just fine!!")
 # `example_*.jl` scripts. If you don't want that, you can comment or delete it.
 ############################################################################################
 
-rm(BASE_OUT_PATH, recursive = true);
+# rm(BASE_OUT_PATH, recursive = true);

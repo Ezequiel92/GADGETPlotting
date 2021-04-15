@@ -7,7 +7,8 @@
         p::Plots.Plot,
         rx::Float64,
         ry::Float64,
-        rz::Union{Float64, Nothing} = nothing,
+        rz::Union{Float64, Nothing} = nothing; 
+        <keyword arguments>
     )::Union{NTuple{2, Float64}, NTuple{3, Float64}}
     
 Give the absolute coordinates for a Plot, given the relative ones.
@@ -17,6 +18,8 @@ Give the absolute coordinates for a Plot, given the relative ones.
 - `rx::Float64`: relative x coordinate, rx ∈ [0, 1].
 - `ry::Float64`: relative y coordinate, ry ∈ [0, 1].
 - `rz::Union{Float64,Nothing} = nothing`: relative z coordinate, rz ∈ [0, 1].
+- `log::Union{NTuple{2, Bool}, NTuple{3, Bool}} = (false, false, false)` = If the x, y or
+  z axis will be in a logarithmic scale.
 
 # Returns
 - A Tuple with the absolute coordinates: (x, y) or (x, y, z).
@@ -25,21 +28,47 @@ function relative(
     p::Plots.Plot,
     rx::Float64,
     ry::Float64,
-    rz::Union{Float64, Nothing} = nothing,
+    rz::Union{Float64, Nothing} = nothing;
+    log::Union{NTuple{2, Bool}, NTuple{3, Bool}} = (false, false, false),
 )::Union{NTuple{2, Float64}, NTuple{3, Float64}}
 
-    # Plot axes limits.
-    xlims = Plots.xlims(p)
-    ylims = Plots.ylims(p)
+    if log[1]
+        xlims = log10.(Plots.xlims(p))
+        ax = 10^(xlims[1] + rx * (xlims[2] - xlims[1]))
+    else
+        xlims = Plots.xlims(p)
+        ax = xlims[1] + rx * (xlims[2] - xlims[1])
+    end
+
+    if log[2]
+        ylims = log10.(Plots.ylims(p))
+        ay = 10^(ylims[1] + ry * (ylims[2] - ylims[1]))
+    else
+        ylims = Plots.ylims(p)
+        ay = ylims[1] + ry * (ylims[2] - ylims[1])
+    end
 
     if rz === nothing
-        return xlims[1] + rx * (xlims[2] - xlims[1]), ylims[1] + ry * (ylims[2] - ylims[1])
-    else
-        zlims = Plots.zlims(p)
 
-        return xlims[1] + rx * (xlims[2] - xlims[1]),
-        ylims[1] + ry * (ylims[2] - ylims[1]),
-        zlims[1] + rz * (zlims[2] - zlims[1])
+        return ax, ay
+
+    else
+
+        (
+            length(log) == 3 || 
+            error("If you have 3D coordinates, log has to have three values.")
+        )
+
+        if log[3]
+            zlims = log10.(Plots.zlims(p))
+            az = 10^(zlims[1] + rz * (zlims[2] - zlims[1]))
+        else
+            zlims = Plots.zlims(p)
+            az = zlims[1] + rz * (zlims[2] - zlims[1])
+        end
+
+        return ax, ay, az
+
     end
 end
 
@@ -73,22 +102,20 @@ function makeVideo(
 )::Nothing
 
     # Loads the target images.
-    image_stack = [load(image) for image in glob("*" * source_format, source_path)]
+    imagestack = [load(image) for image in glob("*" * source_format, source_path)]
 
     (
-        !isempty(image_stack) ||
+        !isempty(imagestack) ||
         error("I couldn't find any '$source_format' images in '$source_path'.")
     )
 
     # Creates the video with the specified frame rate and filename.
-    # properties = [:priv_data => ("crf" => "0", "preset" => "ultrafast")]
-	properties = [:priv_data => ("crf" => "23", "preset" => "medium")]
-    encodevideo(
+    VideoIO.save(
         joinpath(output_path, output_filename * ".mp4"),
-        image_stack,
-        framerate = frame_rate,
-        AVCodecContextProperties = properties,
-        silent = true,
+        imagestack,
+        framerate = frame_rate;
+        encoder_options = (crf = 0, preset = "ultrafast"),
+        codec_name = "libx264rgb",
     )
 
     return nothing
@@ -487,7 +514,7 @@ function KennicuttSchmidtLaw(
 
     # Bin size check.
     if bins < 5
-        error("You have to use at least 10 bins.")
+        error("You have to use at least 5 bins.")
     end
 
     # Filter out hot gas particles.
@@ -541,6 +568,105 @@ function KennicuttSchmidtLaw(
 
     return Dict("RHO" => x_data, "SFR" => y_data, "LM" => linear_model)
 end
+
+# """
+#     KennicuttSchmidtLaw2(
+#         gas_mass_data::Vector{Float64},
+#         gas_distance_data::Vector{Float64},
+#         temperature_data::Vector{Float64},
+#         star_mass_data::Vector{Float64},
+#         star_distance_data::Vector{Float64},
+#         age_data::Vector{Float64},
+#         age_filter::Float64,
+#         max_r::Float64; 
+#         <keyword arguments>
+#     )::Union{Nothing, Dict{String, Any}}
+	
+# Compute mass area density and the SFR area density for the Kennicutt-Schmidt law. 
+
+# `temp_filter` and `temperature_data` must be in the same units, and `age_filter` and 
+# `age_data` must be in the same units too.
+
+# # Arguments
+# - `gas_mass_data::Vector{Float64}`: Masses of the gas particles.
+# - `gas_distance_data::Vector{Float64}`: 2D distances of the gas particles.
+# - `star_mass_data::Vector{Float64}`: Masses of the stars.
+# - `star_distance_data::Vector{Float64}`: 2D distances of the stars.
+# - `age_data::Vector{Float64}`: Ages of the stars.
+# - `age_filter::Unitful.Quantity`: Maximum star age allowed for the calculation of the SFR. 
+#   It should be approximately equal to the time step of the snapshots.
+# - `max_r::Float64`: Maximum distance up to which the parameters will be calculated.
+# - `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. 
+#   It has to be at least 5.
+
+# # Returns
+# - A dictionary with three entries.
+#   - Key "RHO" => Logarithm of the area mass densities.
+#   - Key "SFR" => Logarithm of the SFR area densities.
+#   - Key "LM" => Linear model given by GLM.jl.
+# """
+# function KennicuttSchmidtLaw2(
+#     gas_mass_data::Vector{Float64},
+#     gas_distance_data::Vector{Float64},
+#     star_mass_data::Vector{Float64},
+#     star_distance_data::Vector{Float64},
+#     age_data::Vector{Float64},
+#     age_filter::Float64,
+#     max_r::Float64;
+#     bins::Int64 = 50,
+# )::Union{Nothing, Dict{String, Any}}
+
+#     # Bin size check.
+#     if bins < 5
+#         error("You have to use at least 5 bins.")
+#     end
+
+#     # Filter out old stars.
+#     young_star_mass = deleteat!(copy(star_mass_data), age_data .> age_filter)
+#     young_star_distance = deleteat!(copy(star_distance_data), age_data .> age_filter)
+
+#     r_width = max_r / bins
+
+#     # Initialize output arrays.
+#     x_data = Vector{Float64}(undef, bins)
+#     y_data = Vector{Float64}(undef, bins)
+
+#     @inbounds for i in eachindex(x_data, y_data)
+
+#         # Gas.
+# 		idx_gas = findall(x ->  r_width * (i - 1) <= x < r_width * i, gas_distance_data)
+#         gas_mass = sum(gas_mass_data[idx_gas])
+# 		# Gas area density for window i.
+# 		x_data[i] = gas_mass / (π * r_width * r_width * (2 * i - 1))
+
+#         # Stars.
+#         idx_star = findall(x ->  r_width * (i - 1) <= x < r_width * i, young_star_distance)
+#         sfr = sum(young_star_mass[idx_star]) / age_filter 
+#         # SFR area density for window i.
+#         y_data[i] = sfr / (π * r_width * r_width * (2 * i - 1))		
+		
+# 	end
+
+#     # Filter out zeros.
+#     deleteat!(y_data, x_data .<= 0.0)
+#     filter!(x -> x > 0.0, x_data)
+#     deleteat!(x_data, y_data .<= 0.0)
+#     filter!(y -> y > 0.0, y_data)
+
+#     # Set logarithmic scaling.
+#     y_data = log10.(y_data)
+
+#     # If there are less than 5 data points return nothing
+#     if length(x_data) < 5
+#         return nothing
+#     end
+
+#     # Compute linear fit.
+#     X = [ones(length(x_data)) log10.(x_data)]
+#     linear_model = lm(X, y_data)
+
+#     return Dict("RHO" => x_data, "SFR" => y_data, "LM" => linear_model)
+# end
 
 """
     format_error(mean::Float64, error::Float64)::String

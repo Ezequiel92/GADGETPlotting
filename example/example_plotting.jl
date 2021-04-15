@@ -14,7 +14,7 @@ Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_densityMapPlot_
 color = [:batlow, :bone, :CMRmap, :grayC, :inferno, :seaborn_rocket_gradient, :YlOrRd_9]
 
 for c in color
-    figure = densityMapPlot(pos, gas_mass, density, hsml, color = c, axes = true)
+    local figure = densityMapPlot(pos, gas_mass, density, hsml, color = c, axes = true)
     Base.invokelatest(
         savefig, 
         figure, 
