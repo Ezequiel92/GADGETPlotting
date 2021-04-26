@@ -955,6 +955,9 @@ function, namely:
 - "gas_bar_frac" (Baryonic gas fraction)                  
 - "star_bar_frac" (Baryonic star fraction)
 
+The numeric values of a quantity can also be saved as a text files for the simulations. 
+One column per simulation, one row per sanpshot.
+
 # Arguments
 - `base_name::Vector{String}`: Base names of the snapshot files, set in the GADGET 
   variable SnapshotFileBase.
@@ -988,6 +991,11 @@ function, namely:
 - `bins::Int64 = 0`: Number of subdivisions for the smoothing of the data, only relevant if
   `smooth_data = true`. 
 - `legend_pos::Symbol = :bottomright`: Position of the legend, e.g. :topleft.
+- `text_quantity::String = ""`: Name of the quantity to be saved in a text file. 
+  Any magnitude used in the timeSeriesData function can be used. If left empty no 
+  text file will be produced.
+- `file_name::String = "results"`: Name of the `.dat` that will be generated if 
+  `text_quantity` is not an empty string.
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
   all available mass units in Unitful and UnitfulAstro can be used, 
   e.g. UnitfulAstro.Msun.
@@ -997,6 +1005,9 @@ function, namely:
 - `sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr`: Unit of mass/time to 
   be used in the output, all available time and mass units in Unitful and UnitfulAstro 
   can be used, e.g. UnitfulAstro.Msun/UnitfulAstro.yr.
+- `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
+  in the output, all available length units in Unitful.jl and UnitfulAstro.jl 
+  can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png".  
 """
@@ -1017,9 +1028,12 @@ function compareSimulationsPipeline(
     smooth_data::Bool = false, 
     bins::Int64 = 50,
     legend_pos::Symbol = :bottomright,
+    text_quantity::String = "",
+    file_name::String = "results",
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
     sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr,
+    length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
     format::String = ".png",
 )::Nothing
 
@@ -1030,10 +1044,48 @@ function compareSimulationsPipeline(
                         mass_unit, 
                         time_unit, 
                         sfr_unit,
+                        length_unit,
                     ) for (name, path) in zip(base_name, source_path)]
 
-    # Create a directory to store the figure, if it doesn't exist.
+    # Create a directory to store the figure if it doesn't exist.
     mkpath(output_path)
+
+    # Save data in file
+    if !isempty(text_quantity)
+
+        file_path = joinpath(output_path, file_name * ".dat")
+        # Names of the columns (one per simulation)
+        names = join([" \t " * basename(path)  for path in  source_path])
+        # Data to be printed out
+        columns = get.(time_series, text_quantity, 0.0) 
+        # Name of the snapshot files (first column)
+        snapshots = [
+            basename(snap) 
+            for snap in getSnapshotPaths(base_name[1], source_path[1])["snap_files"]
+        ]
+        
+        # Unit of the quantity
+        if text_quantity == "clock_time"
+            unit = string(time_unit)
+        elseif text_quantity in ["sfr", "sfr_prob"]
+            unit = string(sfr_unit)
+        elseif text_quantity in ["gas_mass", "dm_mass", "star_mass"]
+            unit = string(mass_unit)
+        elseif text_quantity == "gas_density"
+            unit = string(mass_unit / length_unit^3)
+        else
+            unit = "dimensionless"
+        end
+
+        open(file_path, "w") do file
+
+            write(file, time_series[1]["labels"][text_quantity] * " [" * unit * "]\n\n")
+            write(file, "snapshot" * names * "\n")
+            writedlm(file, zip(snapshots, columns...))
+
+        end
+
+    end
 
     # `y_quantity` vs. `x_quantity` plot.  
     figure = compareSimulationsPlot(
@@ -1049,7 +1101,7 @@ function compareSimulationsPipeline(
         bins,
         legend_pos,
     )
-    
+
     Base.invokelatest(
         savefig, 
         figure, 
