@@ -37,16 +37,16 @@ mkpath(BASE_OUT_PATH)
 # Examples.
 ############################################################################################
 
-# include("example_data_acquisition.jl")
-# include("example_plotting.jl")
-include("example_pipeline.jl")
-# include("example_auxiliary.jl")
+include("example_data_acquisition.jl")
+include("example_plotting.jl")
+# include("example_pipeline.jl")
+include("example_auxiliary.jl")
 
 println("Everything worked just fine!!")
 
 ############################################################################################
 # WARNING: The next line of code will delete all testing files produced by the 
-# `example_*.jl` scripts. If you don't want that, you can comment or delete it.
+# `example_*.jl` scripts. If you don't want that, you should comment or delete it.
 ############################################################################################
 
 # rm(BASE_OUT_PATH, recursive = true);

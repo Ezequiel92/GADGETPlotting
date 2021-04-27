@@ -185,17 +185,20 @@ function timeSeriesData(
 
             a = header.time     # Scale factor.
             z = (1 / a) - 1     # Redshift.
-    
-            # Ω_K (curvature)
-            omega_K = 1 - header.omega_0 - header.omega_l
-            # Energy function.
-            E = header.omega_0 / (a * a * a) + omega_K / (a * a) + header.omega_l
-            # Hubble constant in 1 / Gyr.
-            H = header.h0 * HUBBLE_CONST * sqrt(E)
-            # Integrand of the time integral in Gyr. 
-            t_int = 1 / (H * a)
-            # Conversion factor from internal units of time to physical units of time.
-            t_conv = t_int * UnitfulAstro.Gyr
+
+            # Clock time
+            if i == 1
+                t = 0.0
+            else
+                t = num_integrate(
+                    x -> energy_integrand(header, x), 
+                    time_series["scale_factor"][1], 
+                    a, 
+                    200
+                )
+
+                t = ustrip(Float64, time_unit, t * UnitfulAstro.Gyr)
+            end
     
         else
     
@@ -214,11 +217,15 @@ function timeSeriesData(
             # For Newtonian simulations uses the default scale factor: a = 1.
             GU = GadgetPhysicalUnits(hpar = header.h0)
 
-            a = 1.0      # Scale factor.
+            a = 1.0     # Scale factor.
             z = 0.0     # Redshift.
 
-            # Conversion factor from internal units of time to physical units of time.
-            t_conv = header.time * GU.t_Myr
+            # Clock time
+            if i == 1
+                t = 0.0
+            else
+                t = ustrip(Float64, time_unit, header.time * GU.t_Myr)
+            end
     
         end
 
@@ -305,30 +312,20 @@ function timeSeriesData(
         # Total mass of the system in `mass_unit`.
         total_mass = baryonic_mass + dm_mass
 
-        # Physical SFR and time in `sfr_unit` and `time_unit` respectively.
+        # Physical SFR in `sfr_unit`.
         if i == 1
-            # In the first step, clock time and SFR are set to 0.
-            t = 0.0
+
+            # In the first step, SFR is set to 0.
             sfr = 0.0
+
         else
-            # In every other step, clock time and SFR are calculated. 
-            if sim_cosmo == 1
-                # Integrand of the time integral in `time_unit`.
-                t_int = ustrip(Float64, time_unit, t_conv)
-                Δa = a - time_series["scale_factor"][i - 1]
-                Δt = Δa * t_int
-                Δstar_mass = star_mass - time_series["star_mass"][i - 1]
 
-                t = time_series["clock_time"][i - 1] + Δt
-                sfr = ustrip(Float64, sfr_unit, (Δstar_mass / Δt) * (mass_unit / time_unit))
-            else
-                t = ustrip(Float64, time_unit, t_conv)
+            # In every other step, SFR is calculated. 
+            Δt = t - time_series["clock_time"][i - 1]
+            Δstar_mass = star_mass - time_series["star_mass"][i - 1]
 
-                Δt = t - time_series["clock_time"][i - 1]
-                Δstar_mass = star_mass - time_series["star_mass"][i - 1]
+            sfr = ustrip(Float64, sfr_unit, (Δstar_mass / Δt) * (mass_unit / time_unit))
 
-                sfr = ustrip(Float64, sfr_unit, (Δstar_mass / Δt) * (mass_unit / time_unit))
-            end
         end
 
         # SFR given by the classic prescription of GADGET in `sfr_unit`.
@@ -342,11 +339,11 @@ function timeSeriesData(
                 verbose = false
             )["SFR"])
 
-            if sim_cosmo == 0
-                sfr_prob = ustrip(Float64, sfr_unit, sfr_prob * (GU.m_msun / t_conv))
-            else
-                sfr_prob = ustrip(Float64, sfr_unit, sfr_prob * (GU.m_msun / GU.t_Myr))
-            end
+            sfr_prob = ustrip(
+                Float64, 
+                sfr_unit, 
+                sfr_prob * (UnitfulAstro.Msun / UnitfulAstro.yr)
+            )
 
         else
 
@@ -1035,6 +1032,8 @@ Get the ages of the stars at a specific time step.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
+- `snap_0::String = ""`: Path to the fist snapshot. Only relevant for cosmological
+  simulations (`sim_cosmo = 1`).
 - `filter_function::Function = pass_all`: A function with the signature: 
   foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
@@ -1048,6 +1047,7 @@ function ageData(
     snapshot::String,
     time::Unitful.Quantity;
     sim_cosmo::Int64 = 0,
+    snap_0::String = "",
     filter_function::Function = pass_all,
 )::Dict{String, Any}
 
@@ -1071,8 +1071,15 @@ function ageData(
             parttype = 4, 
             verbose = false
         )["AGE"]
+
+        # Initial scale factor
+        if !isempty(snap_0)
+            a0 = read_header(GadgetIO.select_file(snap_0, 0)).time
+        else
+            a0 = 0.0
+        end
         
-        birth_time = num_integrate.(x -> energy_integrand(header, x), 0, birth_a, 200)
+        birth_time = num_integrate.(x -> energy_integrand(header, x), a0, birth_a, 200)
         # Unit conversion.
         time_unit = unit(time)
         birth_time = @. ustrip(Float64, time_unit, birth_time * UnitfulAstro.Gyr)
@@ -1193,7 +1200,11 @@ function birthPlace(
             verbose = false
         )["AGE"]
 
-        birth_time = num_integrate.(x -> energy_integrand(header, x), 0, birth_a, 200)
+        # Initial scale factor.
+        a0 = read_header(GadgetIO.select_file(snap_files[1], 0)).time
+
+        birth_time = num_integrate.(x -> energy_integrand(header, x), a0, birth_a, 200)
+
         # Unit conversion.
         birth_time = @. ustrip(Float64, time_unit, birth_time * UnitfulAstro.Gyr)
 
@@ -1342,41 +1353,13 @@ function sfrTxtData(
 
     # Struct for unit conversion.
     if sim_cosmo == 1
-
-        # Scale factor.
-        a = sfr_txt[:, 1]
+ 
         GU = [GadgetPhysicalUnits(; a_scale, hpar = header.h0) for a_scale in a]
 
-        # Ω_K (curvature)
-        omega_K = 1 - header.omega_0 - header.omega_l
-        # Energy function.
-        E = @. header.omega_0 / (a * a * a) + omega_K / (a * a) + header.omega_l
-        # Hubble constant in 1 / Gyr.
-        H = @. header.h0 * HUBBLE_CONST * sqrt(E)
-        # Integrand of the time integral in Gyr.
-        t_int = @. 1 / (H * a)
-        # Conversion factor from internal units of time to physical units of time.
-        t_conv = @. t_int * UnitfulAstro.Gyr
-
         # Column extraction and unit conversion.
-        column_1 = similar(Vector{Float64}, axes(a, 1))
-        column_1[1] = 0.0
-        @inbounds for i in 2:length(column_1)
-            Δa = a[i] - a[i - 1]
-            Δt = Δa * ustrip(Float64, time_unit, t_conv[i])
-            column_1[i] = column_1[i - 1] + Δt
-        end
+        a = sfr_txt[:, 1]
+        column_1 = num_integrate.(x -> energy_integrand(header, x), a[1], a, 200)
         column_2 = @. ustrip(Float64, mass_unit, sfr_txt[:, 2] * getfield.(GU, :m_msun))
-        column_3 = @. ustrip(
-            Float64, 
-            sfr_unit, 
-            sfr_txt[:, 3] * (UnitfulAstro.Msun / UnitfulAstro.yr)
-        )
-        column_4 = @. ustrip(
-            Float64, 
-            sfr_unit, 
-            sfr_txt[:, 4] * (UnitfulAstro.Msun / UnitfulAstro.yr)
-        )
         column_5 = @. ustrip(Float64, mass_unit, sfr_txt[:, 5] * getfield.(GU, :m_msun))
         column_6 = @. ustrip(
             Float64, 
@@ -1392,20 +1375,21 @@ function sfrTxtData(
         # Column extraction and unit conversion.
         column_1 = @. ustrip(Float64, time_unit, sfr_txt[:, 1] * GU.t_Myr)
         column_2 = @. ustrip(Float64, mass_unit, sfr_txt[:, 2] * GU.m_msun)
-        column_3 = @. ustrip(
-            Float64, 
-            sfr_unit, 
-            sfr_txt[:, 3] * (UnitfulAstro.Msun / UnitfulAstro.yr)
-        )
-        column_4 = @. ustrip(
-            Float64, 
-            sfr_unit, 
-            sfr_txt[:, 4] * (UnitfulAstro.Msun / UnitfulAstro.yr)
-        )
         column_5 = @. ustrip(Float64, mass_unit, sfr_txt[:, 5] * GU.m_msun)
         column_6 = @. ustrip(Float64, sfr_unit, sfr_txt[:, 6] * (GU.m_msun / GU.t_Myr))
 
     end
+
+    column_3 = @. ustrip(
+        Float64, 
+        sfr_unit, 
+        sfr_txt[:, 3] * (UnitfulAstro.Msun / UnitfulAstro.yr)
+    )
+    column_4 = @. ustrip(
+        Float64, 
+        sfr_unit, 
+        sfr_txt[:, 4] * (UnitfulAstro.Msun / UnitfulAstro.yr)
+    )
 
     return Dict(
         1 => column_1,

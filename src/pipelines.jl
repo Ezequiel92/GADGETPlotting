@@ -2565,7 +2565,9 @@ function KennicuttSchmidtPipeline(
     )
 
     # Generate and store the plots.
-    data_iter = zip(times, snap_numbers, snap_files)        
+    data_iter = zip(times, snap_numbers, snap_files)   
+    # Initial snapshot.
+    snap_0 = first(snap_files)     
     for (time, number, snapshot) in data_iter
 
         header = read_header(snapshot)
@@ -2584,7 +2586,13 @@ function KennicuttSchmidtPipeline(
                 mass_unit,
             )
             # Stars ages.
-            age_data = ageData(snapshot, time * time_unit; sim_cosmo, filter_function)
+            age_data = ageData(
+                snapshot, 
+                time * time_unit; 
+                sim_cosmo, 
+                snap_0, 
+                filter_function,
+            )
             # Positions.
             pos_data = positionData(
                 snapshot; 

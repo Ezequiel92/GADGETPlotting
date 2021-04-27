@@ -782,7 +782,7 @@ end
 
 Give the integrand of the scale factor to physical time function: 
 
-    t₀ = ∫ 1 / H * √ϵ, 
+    t₀ = ∫ 1 / (H * √ϵ), 
 
 where H = H₀ * a and ϵ = Ωλ + (1 - Ωλ - Ω₀) / a² + Ω₀ / a³, evaluated in `a`. 
 
