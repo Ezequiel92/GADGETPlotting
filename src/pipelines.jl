@@ -32,7 +32,7 @@ and then generate a GIF and video animating the images.
   for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
-- `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
+- `box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Size of the plotting region 
   if vacuum boundary conditions were used. Its unit doesn't have to be the same 
   as `length_unit`.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
@@ -49,7 +49,7 @@ function scatterGridPipeline(
     sim_cosmo::Int64 = 0,
     filter_function::Function = pass_all,
     step::Int64 = 1,
-    box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
+    box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
     format::String = ".png",
 )::Nothing
@@ -146,7 +146,7 @@ and then generate a GIF and a video animating the images.
   "All" -> The three planes in a single 1x3 figure.
 - `axes::Bool = false`: If true, the axes passing through (0.0, 0.0) are drawn. If false, 
   no axes are drawn.
-- `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
+- `box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Size of the plotting region 
   if vacuum boundary conditions were used. Its unit doesn't have to be the same 
   as `length_unit`.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
@@ -165,7 +165,7 @@ function densityMapPipeline(
     step::Int64 = 1,
     plane::String = "All",
     axes::Bool = false,
-    box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
+    box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
     format::String = ".png",
 )::Nothing
@@ -249,7 +249,7 @@ and then generate a GIF and a video animating the images.
   "XZ" -> XZ plane alone.
   "YZ" -> YZ plane alone.
   "All" -> The three planes in a single 1x3 figure.
-- `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
+- `box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Size of the plotting region 
   if vacuum boundary conditions were used. Its unit doesn't have to be the same 
   as `length_unit`.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
@@ -272,7 +272,7 @@ function starMapPipeline(
     filter_function::Function = pass_all,
     step::Int64 = 1,
     plane::String = "All",
-    box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
+    box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc,
     box_factor::Float64 = 1.0, 
     axes::Bool = false,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,  
@@ -359,7 +359,7 @@ generate a GIF and a video animating the whole evolution for all snapshots.
   for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
-- `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
+- `box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Size of the plotting region 
   if vacuum boundary conditions were used. Its unit doesn't have to be the same 
   as `length_unit`.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
@@ -381,7 +381,7 @@ function gasStarEvolutionPipeline(
     sim_cosmo::Int64 = 0,
     filter_function::Function = pass_all,
     step::Int64 = 1,
-    box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
+    box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
     sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr,
@@ -1264,7 +1264,7 @@ and then generate a GIF and a video animating the images.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `positions["box_size"]` if vacuum boundary conditions were used, and
   it will scale `positions["box_size"] / 2` if periodic boundary conditions were used.
-- `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
+- `box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Size of the plotting region 
   if vacuum boundary conditions were used. Its unit doesn't have to be the same 
   as `length_unit`.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
@@ -1290,7 +1290,7 @@ function densityProfilePipeline(
     bins::Int64 = 100,
     factor::Int64 = 0,
     box_factor::Float64 = 1.0,
-    box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
+    box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
@@ -1412,7 +1412,7 @@ per snapshot, and then generate a GIF and a video animating the images.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `positions["box_size"]` if vacuum boundary conditions were used, and
   it will scale `positions["box_size"] / 2` if periodic boundary conditions were used.
-- `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
+- `box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Size of the plotting region 
   if vacuum boundary conditions were used. Its unit doesn't have to be the same 
   as `length_unit`.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
@@ -1439,7 +1439,7 @@ function densityProfilePipeline(
     bins::Int64 = 100,
     factor::Int64 = 0,
     box_factor::Float64 = 1.0,
-    box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
+    box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
@@ -1561,7 +1561,7 @@ and then generate a GIF and a video animating the images.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `positions["box_size"]` if vacuum boundary conditions were used, and
   it will scale `positions["box_size"] / 2` if periodic boundary conditions were used.
-- `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
+- `box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Size of the plotting region 
   if vacuum boundary conditions were used.  Its unit doesn't have to be the same 
   as `length_unit`.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
@@ -1584,7 +1584,7 @@ function metallicityProfilePipeline(
     step::Int64 = 1,
     bins::Int64 = 100,
     box_factor::Float64 = 1.0,
-    box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
+    box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
     format::String = ".png",
@@ -1704,7 +1704,7 @@ image per snapshot, and then generate a GIF and a video animating the images.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `positions["box_size"]` if vacuum boundary conditions were used, and
   it will scale `positions["box_size"] / 2` if periodic boundary conditions were used.
-- `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
+- `box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Size of the plotting region 
   if vacuum boundary conditions were used.  Its unit doesn't have to be the same 
   as `length_unit`.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
@@ -1728,7 +1728,7 @@ function metallicityProfilePipeline(
     step::Int64 = 1,
     bins::Int64 = 100,
     box_factor::Float64 = 1.0,
-    box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
+    box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,  
     format::String = ".png",
@@ -1856,7 +1856,7 @@ and then generate a GIF and a video animating the images.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `positions["box_size"]` if vacuum boundary conditions were used, and
   it will scale `positions["box_size"] / 2` if periodic boundary conditions were used.
-- `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
+- `box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Size of the plotting region 
   if vacuum boundary conditions were used. Its unit doesn't have to be the same 
   as `length_unit`.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
@@ -1882,7 +1882,7 @@ function massProfilePipeline(
     bins::Int64 = 100,
     factor::Int64 = 0,
     box_factor::Float64 = 1.0,
-    box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
+    box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
@@ -2004,7 +2004,7 @@ per snapshot, and then generate a GIF and a video animating the images.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `positions["box_size"]` if vacuum boundary conditions were used, and
   it will scale `positions["box_size"] / 2` if periodic boundary conditions were used.
-- `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region 
+- `box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Size of the plotting region 
   if vacuum boundary conditions were used. Its unit doesn't have to be the same 
   as `length_unit`.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
@@ -2031,7 +2031,7 @@ function massProfilePipeline(
     bins::Int64 = 100,
     factor::Int64 = 0,
     box_factor::Float64 = 1.0,
-    box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
+    box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
@@ -2502,11 +2502,11 @@ at least five data points for the linear fitting.
   for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
-- `temp_filter::Unitful.Quantity = 3e4Unitful.K`: Maximum temperature allowed for the 
+- `temp_filter::Unitful.Quantity = Inf * Unitful.K`: Maximum temperature allowed for the 
   gas particles.
-- `age_filter::Unitful.Quantity = 100UnitfulAstro.Myr`: Maximum star age allowed for the 
+- `age_filter::Unitful.Quantity = 20.UnitfulAstro.Myr`: Maximum star age allowed for the 
   calculation of the SFR.
-- `max_r::Unitful.Quantity = 1000UnitfulAstro.kpc`: Maximum distance up to which the 
+- `max_r::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Maximum distance up to which the 
   parameters will be calculated, with units.
 - `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. 
   It has to be at least 5.
@@ -2532,9 +2532,9 @@ function KennicuttSchmidtPipeline(
     sim_cosmo::Int64 = 0,
     filter_function::Function = pass_all,
     step::Int64 = 1,
-    temp_filter::Unitful.Quantity = 3e4Unitful.K,
-    age_filter::Unitful.Quantity = 20UnitfulAstro.Myr,
-    max_r::Unitful.Quantity = 1000UnitfulAstro.kpc,
+    temp_filter::Unitful.Quantity = Inf * Unitful.K,
+    age_filter::Unitful.Quantity = 20.0UnitfulAstro.Myr,
+    max_r::Unitful.Quantity = 1000.0UnitfulAstro.kpc,
     bins::Int64 = 50,
     error_formating::String = "std_error",
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
@@ -2663,7 +2663,7 @@ end
 #   i.e. all snapshots will be plotted.
 # - `age_filter::Unitful.Quantity = 100UnitfulAstro.Myr`: Maximum star age allowed for the 
 #   calculation of the SFR.
-# - `max_r::Unitful.Quantity = 1000UnitfulAstro.kpc`: Maximum distance up to which the 
+# - `max_r::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Maximum distance up to which the 
 #   parameters will be calculated, with units.
 # - `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. 
 #   It has to be at least 5.
@@ -2690,7 +2690,7 @@ end
 #     filter_function::Function = pass_all,
 #     step::Int64 = 1,
 #     age_filter::Unitful.Quantity = 20UnitfulAstro.Myr,
-#     max_r::Unitful.Quantity = 1000UnitfulAstro.kpc,
+#     max_r::Unitful.Quantity = 1000.0UnitfulAstro.kpc,
 #     bins::Int64 = 50,
 #     error_formating::String = "std_error",
 #     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,

@@ -34,7 +34,7 @@ function relative(
 
     if log[1]
         xlims = log10.(Plots.xlims(p))
-        ax = 10^(xlims[1] + rx * (xlims[2] - xlims[1]))
+        ax = 10.0^(xlims[1] + rx * (xlims[2] - xlims[1]))
     else
         xlims = Plots.xlims(p)
         ax = xlims[1] + rx * (xlims[2] - xlims[1])
@@ -42,7 +42,7 @@ function relative(
 
     if log[2]
         ylims = log10.(Plots.ylims(p))
-        ay = 10^(ylims[1] + ry * (ylims[2] - ylims[1]))
+        ay = 10.0^(ylims[1] + ry * (ylims[2] - ylims[1]))
     else
         ylims = Plots.ylims(p)
         ay = ylims[1] + ry * (ylims[2] - ylims[1])
@@ -61,7 +61,7 @@ function relative(
 
         if log[3]
             zlims = log10.(Plots.zlims(p))
-            az = 10^(zlims[1] + rz * (zlims[2] - zlims[1]))
+            az = 10.0^(zlims[1] + rz * (zlims[2] - zlims[1]))
         else
             zlims = Plots.zlims(p)
             az = zlims[1] + rz * (zlims[2] - zlims[1])
@@ -132,8 +132,8 @@ Separate the range of values of `x_data` in `bins` contiguous windows, and repla
 every value within the window with the mean in order to smooth out the data. 
 
 # Arguments
-- `x_data::Vector{T} where {T <: Real}`: Data used to create the windows.
-- `y_data::Vector{T} where {T <: Real}`: Data to be smoothed out.
+- `x_data::Vector{<:Real}`: Data used to create the windows.
+- `y_data::Vector{<:Real}`: Data to be smoothed out.
 - `bins::Int64`: Number of windows to be used in the smoothing.
 - `log::Bool = false`: If the x axis will be divided using logarithmic bins.
 
@@ -141,8 +141,8 @@ every value within the window with the mean in order to smooth out the data.
 - The smooth data.
 """
 function smoothWindow(
-    x_data::Vector{T} where {T <: Real},
-    y_data::Vector{T} where {T <: Real},
+    x_data::Vector{<:Real},
+    y_data::Vector{<:Real},
     bins::Int64;
     log::Bool = false,
 )::NTuple{2, Vector{Float64}}
@@ -155,7 +155,7 @@ function smoothWindow(
 
     if log 
         # First positive value of the x axis.
-        start = log10(minimum(x -> x <= 0 ? Inf : x, x_data))
+        start = log10(minimum(x -> x <= 0.0 ? Inf : x, x_data))
         # Logarithmic widths of the smoothing windows.
         width = (log10(maximum(x_data)) - start) / bins
     else
@@ -174,7 +174,7 @@ function smoothWindow(
         # Find the indices of `x_data` which fall within window `i`.
         if log
             idx = findall(
-                x -> 10^(start + width * (i - 1)) <= x < 10^(start + width * i), 
+                x -> 10.0^(start + width * (i - 1)) <= x < 10.0^(start + width * i), 
                 x_data,
             )
         else 
@@ -244,7 +244,7 @@ function densityProfile(
             y_data[i] = 0.0
         else
             total_mass = sum(mass_data[idx])
-            volume = 4 / 3 * π * width^3 * (3 * i * i - 3 * i + 1)
+            volume = 4.0 / 3.0 * π * width^3.0 * (3.0 * i * i - 3.0 * i + 1.0)
 
             # Mean distance for window i.
             x_data[i] = sum(distance_data[idx]) / length(idx)
@@ -429,7 +429,7 @@ function CMDF(
     if x_norm
         Z = Z ./ max_Z
         # Width of the metallicity bins.
-        width = 1 / bins
+        width = 1.0 / bins
     else
         # Width of the metallicity bins.
 	    width = max_Z / bins  
@@ -537,13 +537,13 @@ function KennicuttSchmidtLaw(
 		idx_gas = findall(x ->  r_width * (i - 1) <= x < r_width * i, cold_gas_distance)
         gas_mass = sum(cold_gas_mass[idx_gas])
 		# Gas area density for window i.
-		x_data[i] = gas_mass / (π * r_width * r_width * (2 * i - 1))
+		x_data[i] = gas_mass / (π * r_width * r_width * (2.0 * i - 1.0))
 
         # Stars.
         idx_star = findall(x ->  r_width * (i - 1) <= x < r_width * i, young_star_distance)
         sfr = sum(young_star_mass[idx_star]) / age_filter 
         # SFR area density for window i.
-        y_data[i] = sfr / (π * r_width * r_width * (2 * i - 1))		
+        y_data[i] = sfr / (π * r_width * r_width * (2.0 * i - 1.0))		
 		
 	end
 
@@ -702,21 +702,21 @@ julia> format_error(69.42069, 73.4)
 function format_error(mean::Float64, error::Float64)::NTuple{2, Float64}
 
     # Positive error check.
-    error >= 0 || error("The error must be a positive number.")
+    error >= 0.0 || error("The error must be a positive number.")
 
-    if error == 0
+    if error == 0.0
         round_mean = mean
         round_error = error
     else
         sigdigit_pos = abs(log10(abs(error)))
 
-        if error < 1
+        if error < 1.0
             if abs(mean) < error
                 extra = 0
                 round_mean = 0.0
             else
-                first_digit = trunc(error * 10^(floor(sigdigit_pos) + 1))
-                first_digit == 1 ? extra = 1 : extra = 0
+                first_digit = trunc(error * 10.0^(floor(sigdigit_pos) + 1.0))
+                first_digit == 1.0 ? extra = 1 : extra = 0
 
                 digits = ceil(Int64, sigdigit_pos) + extra
                 round_mean = round(mean; digits)
@@ -726,8 +726,8 @@ function format_error(mean::Float64, error::Float64)::NTuple{2, Float64}
                 extra = 0
                 round_mean = 0.0
             else
-                first_digit = trunc(error / 10^(floor(sigdigit_pos)))
-                first_digit == 1 ? extra = 2 : extra = 1
+                first_digit = trunc(error / 10.0^(floor(sigdigit_pos)))
+                first_digit == 1.0 ? extra = 2 : extra = 1
 
                 sigdigits = ceil(Int64, log10(abs(mean))) - ceil(Int64, sigdigit_pos) + extra
                 round_mean = round(mean; sigdigits)
@@ -796,14 +796,14 @@ where H = H₀ * a and ϵ = Ωλ + (1 - Ωλ - Ω₀) / a² + Ω₀ / a³, evalu
 function energy_integrand(header::GadgetIO.SnapshotHeader, a::Float64)::Float64
 
     # Ω_K (curvature)
-    omega_K = 1 - header.omega_0 - header.omega_l
+    omega_K = 1.0 - header.omega_0 - header.omega_l
     # Energy function.
     E = header.omega_0 / (a * a * a) + omega_K / (a * a) + header.omega_l
     # Hubble constant in 1 / Gyr.
     H = header.h0 * HUBBLE_CONST * a
 
     # Integrand of the time integral in Gyr. 
-    return 1 / (H * sqrt(E))
+    return 1.0 / (H * sqrt(E))
 end
 
 """
@@ -852,4 +852,40 @@ function num_integrate(
 
     # Final result of the numerical integration.
     return sum(width .* integrand)
+end
+
+"""
+    centerOfMass(
+        position_data::Matrix{<:Real},
+        mass_data::Vector{<:Real},
+    )::NTuple{3, Float64}
+
+Calculate the center of mass as
+
+R = (1 / M) * ∑ m_i * r_i
+
+where M = ∑ m_i
+
+# Arguments
+- `position_data::Matrix{<:Real}`: The positions of the particles.
+- `mass_data::Vector{<:Real}`: The masses of the particles.
+
+# Returns
+- The center of mass in the unis of `position_data`.
+"""
+function centerOfMass(
+    position_data::Matrix{<:Real},
+    mass_data::Vector{<:Real},
+)::NTuple{3, Float64}
+
+    # Total mass
+    M = sum(mass_data)
+
+    R = [0.0, 0.0, 0.0]
+    for (col, mass) in zip(eachcol(position_data), mass_data)
+        R .+= col .* mass
+    end
+
+    return R[1] / M, R[2] / M, R[3] / M
+
 end

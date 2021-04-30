@@ -184,7 +184,7 @@ function timeSeriesData(
             GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
 
             a = header.time     # Scale factor.
-            z = (1 / a) - 1     # Redshift.
+            z = (1.0 / a) - 1.0     # Redshift.
 
             # Clock time
             if i == 1
@@ -401,7 +401,7 @@ Get the coordinates of the particles at a specific time step.
 - `filter_function::Function = pass_all`: A function with the signature: 
   foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
-- `box_size::Unitful.Quantity = 1000UnitfulAstro.kpc`: Size of the plotting region if 
+- `box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Size of the plotting region if 
   vacuum boundary conditions were used. It has to have units but they don't have to be 
   the same as `length_unit`.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
@@ -427,7 +427,7 @@ function positionData(
     snapshot::String;
     sim_cosmo::Int64 = 0,
     filter_function::Function = pass_all,
-    box_size::Unitful.Quantity = 1000UnitfulAstro.kpc,
+    box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
 )::Dict{String, Any}
 
@@ -442,6 +442,10 @@ function positionData(
             block_present(GadgetIO.select_file(snapshot, 0), "POS") ||
             error("There is no block 'POS' in snapshot located at $snapshot")
         )
+        (
+            block_present(GadgetIO.select_file(snapshot, 0), "MASS") ||
+            error("There is no block 'MASS' in snapshot located at $snapshot")
+        )
 
     else
 
@@ -455,6 +459,10 @@ function positionData(
             block_present(snapshot, "POS") ||
             error("There is no block 'POS' in snapshot located at $snapshot")
         )
+        (
+            block_present(snapshot, "MASS") ||
+            error("There is no block 'MASS' in snapshot located at $snapshot")
+        )
 
     end
 
@@ -462,10 +470,11 @@ function positionData(
     # given the type of boundary condition used.
     if header.boxsize == 0
         # Vacuum boundary condition.
-        size = round(ustrip(Float64, length_unit, box_size), sigdigits = 1)
+        size = round(ustrip(Float64, length_unit, box_size), sigdigits = 2)
     else
         # Periodic boundary conditions.
-        size = round(ustrip(Float64, length_unit, header.boxsize * GU.x_kpc), sigdigits = 1)
+        side_length = ustrip(Float64, length_unit, header.boxsize * GU.x_kpc)
+        size = round(side_length, sigdigits = 2)
     end
 
     if header.nall[1] != 0
@@ -481,10 +490,20 @@ function positionData(
         # Transformation from internal units to `length_unit`.
         gas_pos = @. ustrip(Float64, length_unit, gas_pos * GU.x_kpc)
 
+        # Masses of the gas particles, for center of mass calculation.
+        gas_masses = read_blocks_over_all_files(
+            snapshot, 
+            ["MASS"];
+            filter_function = x -> filter_function(x, "gas"), 
+            parttype = 0, 
+            verbose = false
+        )["MASS"]
+
     else
 
         # In the case that there are no gas particles.
         gas_pos = Array{Float64}(undef, 3, 0)
+        gas_masses = Float64[]
 
     end
 
@@ -500,6 +519,22 @@ function positionData(
 
         # Transformation from internal units to `length_unit`.
         dm_pos = @. ustrip(Float64, length_unit, dm_pos * GU.x_kpc)
+
+        # Masses of the dark matter particles, for center of mass calculation.
+        dm_masses = read_blocks_over_all_files(
+            snapshot, 
+            ["MASS"];
+            filter_function = x -> filter_function(x, "dark_matter"), 
+            parttype = 1, 
+            verbose = false
+        )["MASS"]
+
+        # Set the center of mass the the dark matter at (0, 0, 0).
+        R = centerOfMass(dm_pos, dm_masses)
+
+        dm_pos[1, :] .-= R[1]
+        dm_pos[2, :] .-= R[2]
+        dm_pos[3, :] .-= R[3]
 
     else
 
@@ -521,12 +556,35 @@ function positionData(
         # Transformation from internal units to `length_unit`.
         star_pos = @. ustrip(Float64, length_unit, star_pos * GU.x_kpc)
 
+        # Stellar masses for center of mass calculation.
+        star_masses = read_blocks_over_all_files(
+            snapshot, 
+            ["MASS"];
+            filter_function = x -> filter_function(x, "stars"), 
+            parttype = 4, 
+            verbose = false
+        )["MASS"]
+
     else
 
         # In the case that there are no star particles.
         star_pos = Array{Float64}(undef, 3, 0)
+        star_masses = Float64[]
 
     end
+
+    # Set the center of mass of the baryons at (0, 0, 0).
+    baryon_pos = hcat(gas_pos, star_pos) 
+    baryon_mass = vcat(gas_masses, star_masses)
+    R = centerOfMass(baryon_pos, baryon_mass)
+
+    gas_pos[1, :] .-= R[1]
+    gas_pos[2, :] .-= R[2]
+    gas_pos[3, :] .-= R[3]
+
+    star_pos[1, :] .-= R[1]
+    star_pos[2, :] .-= R[2]
+    star_pos[3, :] .-= R[3]
 
     return Dict(
         "gas" => gas_pos,
@@ -1008,7 +1066,7 @@ function tempData(
         μ = @. (1.0 + 4.0 * yHe) / (1.0 + yHe + ne)
         # T = (adiabatic_index - 1) * internal_energy_per_unit_mass * 
         #     (total_mass / total_number_of_particles) / Boltzmann_constant
-        T = @. ustrip(Float64, temp_unit, 2/3 * U * μ * Unitful.mp / Unitful.k)
+        T = @. ustrip(Float64, temp_unit, 2.0 / 3.0 * U * μ * Unitful.mp / Unitful.k)
         
     else
 
@@ -1058,6 +1116,11 @@ function ageData(
             block_present(GadgetIO.select_file(snapshot, 0), "AGE") ||
             error("There is no block 'AGE' in snapshot located at $snapshot")
         )
+        # First snapshot check.
+        (
+            !isempty(snap_0) ||
+            error("You have to provide an initial snapshot for cosmological simulations")
+        )
 
         header = read_header(GadgetIO.select_file(snapshot, 0))
         # Struct for unit conversion.
@@ -1073,11 +1136,7 @@ function ageData(
         )["AGE"]
 
         # Initial scale factor
-        if !isempty(snap_0)
-            a0 = read_header(GadgetIO.select_file(snap_0, 0)).time
-        else
-            a0 = 0.0
-        end
+        a0 = read_header(GadgetIO.select_file(snap_0, 0)).time
         
         birth_time = num_integrate.(x -> energy_integrand(header, x), a0, birth_a, 200)
         # Unit conversion.
@@ -1203,10 +1262,10 @@ function birthPlace(
         # Initial scale factor.
         a0 = read_header(GadgetIO.select_file(snap_files[1], 0)).time
 
-        birth_time = num_integrate.(x -> energy_integrand(header, x), a0, birth_a, 200)
+        birth_times = num_integrate.(x -> energy_integrand(header, x), a0, birth_a, 200)
 
         # Unit conversion.
-        birth_time = @. ustrip(Float64, time_unit, birth_time * UnitfulAstro.Gyr)
+        birth_times = @. ustrip(Float64, time_unit, birth_times * UnitfulAstro.Gyr)
 
     else
 
@@ -1353,11 +1412,11 @@ function sfrTxtData(
 
     # Struct for unit conversion.
     if sim_cosmo == 1
- 
+        
+        a = sfr_txt[:, 1]
         GU = [GadgetPhysicalUnits(; a_scale, hpar = header.h0) for a_scale in a]
 
-        # Column extraction and unit conversion.
-        a = sfr_txt[:, 1]
+        # Column extraction and unit conversion.  
         column_1 = num_integrate.(x -> energy_integrand(header, x), a[1], a, 200)
         column_2 = @. ustrip(Float64, mass_unit, sfr_txt[:, 2] * getfield.(GU, :m_msun))
         column_5 = @. ustrip(Float64, mass_unit, sfr_txt[:, 5] * getfield.(GU, :m_msun))

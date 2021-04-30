@@ -39,7 +39,7 @@ function scatterGridPlot(position_data::Dict{String, Any})::Plots.Plot
 
     if position_data["periodic"]
         # For periodic boundary conditions.
-        stars_size = gas_size = dm_size = (position_data["box_size"] / 2) * 0.95
+        stars_size = gas_size = dm_size = position_data["box_size"] / 2.0
     else
         # For vacuum boundary conditions.
         stars_size = position_data["box_size"] * 1.1
@@ -230,24 +230,18 @@ function densityMapPlot(
 
     if position_data["periodic"]
         # For periodic boundary conditions.
-        box_limits = (position_data["box_size"] / 2) * 0.95
-        param = mappingParameters(
-            x_lim = [-box_limits, box_limits],
-            y_lim = [-box_limits, box_limits],
-            z_lim = [-box_limits, box_limits],
-            boxsize = position_data["box_size"],
-            Npixels = resolution,
-        )
+        box_limits = position_data["box_size"] / 2.0
     else
         # For vacuum boundary conditions.
         box_limits = position_data["box_size"] * 1.05
-        param = mappingParameters(
-            x_lim = [-box_limits, box_limits],
-            y_lim = [-box_limits, box_limits],
-            z_lim = [-box_limits, box_limits],
-            Npixels = resolution,
-        )
     end
+
+    param = mappingParameters(
+        x_lim = [-box_limits, box_limits],
+        y_lim = [-box_limits, box_limits],
+        z_lim = [-box_limits, box_limits],
+        Npixels = resolution,
+    )
 
     binning = range(-box_limits, stop = box_limits, length = resolution)
     color_scheme = cgrad(color)
@@ -286,9 +280,10 @@ function densityMapPlot(
     end
 
     if plane == "XY" || plane == "All"
+
         sph_density = log10.(
             sphMapping(
-                pos, 
+				pos, 
                 hsml, 
                 mass, 
                 ρ, 
@@ -493,7 +488,7 @@ function starMapPlot(
     pos = position_data["stars"]
     if position_data["periodic"]
         # For periodic boundary conditions.
-        box_limits = (position_data["box_size"] / 2) * box_factor
+        box_limits = (position_data["box_size"] / 2.0) * box_factor
     else
         # For vacuum boundary conditions.
         box_limits = position_data["box_size"] * box_factor
@@ -691,7 +686,7 @@ function gasStarEvolutionPlot(
 
     if position_data["periodic"]
         # For periodic boundary conditions.
-        size = (position_data["box_size"] / 2) * 0.95
+        size = position_data["box_size"] / 2.0
     else
         # For vacuum boundary conditions.
         size = position_data["box_size"] * 5.5
@@ -1015,7 +1010,7 @@ function birthHistogramPlot(birth_data::Dict{String, Any}; bins::Int64 = 50)::Pl
 
     pos = birth_data["birth_place"]
     length_unit = birth_data["unit"]
-    distances = sqrt.(pos[1, :] .^ 2 .+ pos[2, :] .^ 2 .+ pos[3, :] .^ 2)
+    distances = sqrt.(pos[1, :] .^ 2.0 .+ pos[2, :] .^ 2.0 .+ pos[3, :] .^ 2.0)
 
     return histogram(
         distances;
@@ -1089,8 +1084,8 @@ function timeSeriesPlot(
     t = time_series["clock_time"]
     sfr = time_series["sfr"]
     baryonic_frac = [time_series["gas_bar_frac"] time_series["star_bar_frac"]]
-    number = [time_series["gas_number"] time_series["star_number"]] ./ 10^number_factor
-    mass = [time_series["gas_mass"] time_series["star_mass"]] ./ 10^mass_factor
+    number = [time_series["gas_number"] time_series["star_number"]] ./ 10.0^number_factor
+    mass = [time_series["gas_mass"] time_series["star_mass"]] ./ 10.0^mass_factor
 
     # Number of stars and gas particles vs. time.
     pl_number = plot(
@@ -1226,8 +1221,8 @@ function scaleFactorSeriesPlot(
     a = time_series["scale_factor"]
     sfr = time_series["sfr"]
     baryonic_frac = [time_series["gas_bar_frac"] time_series["star_bar_frac"]]
-    number = [time_series["gas_number"] time_series["star_number"]] ./ 10^number_factor
-    mass = [time_series["gas_mass"] time_series["star_mass"]] ./ 10^mass_factor
+    number = [time_series["gas_number"] time_series["star_number"]] ./ 10.0^number_factor
+    mass = [time_series["gas_mass"] time_series["star_mass"]] ./ 10.0^mass_factor
 
     # Number of stars and gas particles vs. scale factor.
     pl_number = plot(
@@ -1363,8 +1358,8 @@ function redshiftSeriesPlot(
     z = time_series["redshift"]
     sfr = time_series["sfr"]
     baryonic_frac = [time_series["gas_bar_frac"] time_series["star_bar_frac"]]
-    number = [time_series["gas_number"] time_series["star_number"]] ./ 10^number_factor
-    mass = [time_series["gas_mass"] time_series["star_mass"]] ./ 10^mass_factor
+    number = [time_series["gas_number"] time_series["star_number"]] ./ 10.0^number_factor
+    mass = [time_series["gas_mass"] time_series["star_mass"]] ./ 10.0^mass_factor
 
     # Number of stars and gas particles vs. redshift.
     pl_number = plot(
@@ -1520,8 +1515,8 @@ function compareSimulationsPlot(
     pgfplotsx()
 
     # Extract data and scale it by 10^factor.
-    x_data = collect(get.(data, x_quantity, 0)) ./ 10^x_factor
-    y_data = collect(get.(data, y_quantity, 0)) ./ 10^y_factor
+    x_data = collect(get.(data, x_quantity, 0)) ./ 10.0^x_factor
+    y_data = collect(get.(data, y_quantity, 0)) ./ 10.0^y_factor
 
     if smooth_data
         # If required, smooth the data with a moving window.
@@ -1818,7 +1813,7 @@ Make a density profile plot for a given time step.
   the y axis will be scaled by 10^10. The default is 0, i.e. no scaling.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `position_data["box_size"]` if vacuum boundary conditions were used, and
-  it will scale `position_data["box_size"] / 2` if periodic boundary conditions were used.
+  it will scale `position_data["box_size"] / 2.0` if periodic boundary conditions were used.
 
 # Returns
 - The plot generated by the PGFPlotsX backend of Plots.jl.
@@ -1848,12 +1843,12 @@ function densityProfilePlot(
         # In the case that there are no particles.
         distances = [Inf]
     else
-        distances = sqrt.(pos[1, :] .^ 2 .+ pos[2, :] .^ 2 .+ pos[3, :] .^ 2)
+        distances = sqrt.(pos[1, :] .^ 2.0 .+ pos[2, :] .^ 2.0 .+ pos[3, :] .^ 2.0)
     end
 
     if position_data["periodic"]
         # For periodic boundary conditions.
-        r_max = (position_data["box_size"] / 2) * box_factor
+        r_max = (position_data["box_size"] / 2.0) * box_factor
     else
         # Plotting region for vacuum boundary conditions.
         r_max = position_data["box_size"] * box_factor
@@ -1864,12 +1859,12 @@ function densityProfilePlot(
     ρ ./= 10^factor
 
     if scale == :log10
-        positive_rho = findall(x -> x > 0, ρ)
+        positive_rho = findall(x -> x > 0.0, ρ)
         if length(positive_rho) >= 2
             # If the data has two or more positive values, filter 
             # data points <= 0, to allow logarithmic plotting.
-            deleteat!(r, ρ .<= 0)
-            filter!(x -> x > 0, ρ)
+            deleteat!(r, ρ .<= 0.0)
+            filter!(x -> x > 0.0, ρ)
         else
             # If the data has less than two positive values, go back to linear scale.
             scale = :identity
@@ -1949,7 +1944,7 @@ Make a density profile plot comparing several datasets, for a given time step.
   the y axis will be scaled by 10^10. The default is 0, i.e. no scaling.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `position_data["box_size"]` if vacuum boundary conditions were used, and
-  it will scale `position_data["box_size"] / 2` if periodic boundary conditions were used.
+  it will scale `position_data["box_size"] / 2.0` if periodic boundary conditions were used.
 
 # Returns
 - The plot generated by the PGFPlotsX backend of Plots.jl.
@@ -1999,7 +1994,7 @@ function densityProfilePlot(
     masses = get.(mass_data, "mass", 0)
     positions = get.(position_data, type, 0)
     # Set the units.
-    density_unit = mass_unit / (length_unit^3)
+    density_unit = mass_unit / (length_unit^3.0)
 
     distances = Vector{Float64}[]
     for pos in positions
@@ -2007,13 +2002,16 @@ function densityProfilePlot(
             # In the case that there are no particles.
             push!(distances, [Inf])
         else
-            push!(distances, sqrt.(pos[1, :] .^ 2 .+ pos[2, :] .^ 2 .+ pos[3, :] .^ 2))
+            push!(
+                distances, 
+                sqrt.(pos[1, :] .^ 2.0 .+ pos[2, :] .^ 2.0 .+ pos[3, :] .^ 2.0),
+            )
         end
     end
 
     if periodicity
         # For periodic boundary conditions.
-        max_rs = (get.(position_data, "box_size", 0) ./ 2) .* box_factor
+        max_rs = (get.(position_data, "box_size", 0) ./ 2.0) .* box_factor
     else
         # Plotting region for vacuum boundary conditions.
         max_rs = get.(position_data, "box_size", 0) .* box_factor
@@ -2024,21 +2022,21 @@ function densityProfilePlot(
     for (mass, distance, max_r) in zip(masses, distances, max_rs)
         r_result, ρ_result = densityProfile(mass, distance, max_r, bins)
         # Scale data by 10^factor.
-        ρ_result ./= 10^factor
+        ρ_result ./= 10.0^factor
 
         push!(r, r_result)
         push!(ρ, ρ_result)
     end
 
     if scale == :log10
-        length_short_cases = minimum(length.(findall.(x -> x > 0, ρ)))
+        length_short_cases = minimum(length.(findall.(x -> x > 0.0, ρ)))
         if length_short_cases >= 2
 
             # If every dataset has at least two data points, filter  
             # values <= 0, to allow logarithmic plotting.
             @inbounds for i in eachindex(r, ρ)
-                deleteat!(r[i], ρ[i] .<= 0)
-                filter!(x -> x > 0, ρ[i])
+                deleteat!(r[i], ρ[i] .<= 0.0)
+                filter!(x -> x > 0.0, ρ[i])
             end
 
             # Fill the datasets with NaN so all have the same length.
@@ -2135,7 +2133,7 @@ Make a metallicity profile plot for a given time step.
 - `bins::Int64 = 100`: Number of subdivisions of the region to be used for the profile. 
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `position_data["box_size"]` if vacuum boundary conditions were used, and
-  it will scale `position_data["box_size"] / 2` if periodic boundary conditions were used.
+  it will scale `position_data["box_size"] / 2.0` if periodic boundary conditions were used.
 
 # Returns
 - The plot generated by the PGFPlotsX backend of Plots.jl.
@@ -2168,12 +2166,12 @@ function metallicityProfilePlot(
         # In the case that there are no particles.
         distances = [Inf]
     else
-        distances = sqrt.(pos[1, :] .^ 2 .+ pos[2, :] .^ 2 .+ pos[3, :] .^ 2)
+        distances = sqrt.(pos[1, :] .^ 2.0 .+ pos[2, :] .^ 2.0 .+ pos[3, :] .^ 2.0)
     end
 
     if position_data["periodic"]
         # For periodic boundary conditions.
-        r_max = (position_data["box_size"] / 2) * box_factor
+        r_max = (position_data["box_size"] / 2.0) * box_factor
     else
         # Plotting region for vacuum boundary conditions.
         r_max = position_data["box_size"] * box_factor
@@ -2182,12 +2180,12 @@ function metallicityProfilePlot(
     r, z = metallicityProfile(masses, distances, metallicity, r_max, bins)
 
     if scale == :log10
-        positive_z = findall(x -> x > 0, z)
+        positive_z = findall(x -> x > 0.0, z)
         if length(positive_z) >= 2
             # If the data has two or more positive values, filter 
             # data points <= 0, to allow logarithmic plotting.
-            deleteat!(r, z .<= 0)
-            filter!(x -> x > 0, z)
+            deleteat!(r, z .<= 0.0)
+            filter!(x -> x > 0.0, z)
 
         else
             # If the data has less than two positive values, go back to linear scale.
@@ -2253,7 +2251,7 @@ Make a metallicity profile plot comparing several datasets, for a given time ste
 - `bins::Int64 = 100`: Number of subdivisions of the region to be used for the profile. 
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `position_data["box_size"]` if vacuum boundary conditions were used, and
-  it will scale `position_data["box_size"] / 2` if periodic boundary conditions were used.
+  it will scale `position_data["box_size"] / 2.0` if periodic boundary conditions were used.
 
 # Returns
 - The plot generated by the PGFPlotsX backend of Plots.jl.
@@ -2309,13 +2307,16 @@ function metallicityProfilePlot(
             # In the case that there are no particles.
             push!(distances, [Inf])
         else
-            push!(distances, sqrt.(pos[1, :] .^ 2 .+ pos[2, :] .^ 2 .+ pos[3, :] .^ 2))
+            push!(
+                distances, 
+                sqrt.(pos[1, :] .^ 2.0 .+ pos[2, :] .^ 2.0 .+ pos[3, :] .^ 2.0),
+            )
         end
     end
 
     if periodicity
         # For periodic boundary conditions.
-        max_rs = (get.(position_data, "box_size", 0) ./ 2) .* box_factor
+        max_rs = (get.(position_data, "box_size", 0) ./ 2.0) .* box_factor
     else
         # Plotting region for vacuum boundary conditions.
         max_rs = get.(position_data, "box_size", 0) .* box_factor
@@ -2332,14 +2333,14 @@ function metallicityProfilePlot(
     end
 
     if scale == :log10
-        length_short_cases = minimum(length.(findall.(x -> x > 0, z)))
+        length_short_cases = minimum(length.(findall.(x -> x > 0.0, z)))
         if length_short_cases >= 2
 
             # If every dataset has at least two data points, filter  
             # values <= 0, to allow logarithmic plotting.
             @inbounds for i in eachindex(r, z)
-                deleteat!(r[i], z[i] .<= 0)
-                filter!(x -> x > 0, z[i])
+                deleteat!(r[i], z[i] .<= 0.0)
+                filter!(x -> x > 0.0, z[i])
             end
 
             # Fill the datasets with NaN so all have the same length.
@@ -2421,7 +2422,7 @@ Make an accumulated mass profile plot for a given time step.
   the y axis will be scaled by 10^10. The default is 0, i.e. no scaling.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `position_data["box_size"]` if vacuum boundary conditions were used, and
-  it will scale `position_data["box_size"] / 2` if periodic boundary conditions were used.
+  it will scale `position_data["box_size"] / 2.0` if periodic boundary conditions were used.
 
 # Returns
 - The plot generated by the PGFPlotsX backend of Plots.jl.
@@ -2449,12 +2450,12 @@ function massProfilePlot(
         # In the case that there are no particles.
         distances = [Inf]
     else
-        distances = sqrt.(pos[1, :] .^ 2 .+ pos[2, :] .^ 2 .+ pos[3, :] .^ 2)
+        distances = sqrt.(pos[1, :] .^ 2.0 .+ pos[2, :] .^ 2.0 .+ pos[3, :] .^ 2.0)
     end
 
     if position_data["periodic"]
         # For periodic boundary conditions.
-        r_max = (position_data["box_size"] / 2) * box_factor
+        r_max = (position_data["box_size"] / 2.0) * box_factor
     else
         # Plotting region for vacuum boundary conditions.
         r_max = position_data["box_size"] * box_factor
@@ -2465,12 +2466,12 @@ function massProfilePlot(
     m ./= 10^factor
 
     if scale == :log10
-        positive_mass = findall(x -> x > 0, m)
+        positive_mass = findall(x -> x > 0.0, m)
         if length(positive_mass) >= 2
             # If the data has two or more positive values, filter 
             # data points <= 0, to allow logarithmic plotting.
-            deleteat!(r, m .<= 0)
-            filter!(x -> x > 0, m)
+            deleteat!(r, m .<= 0.0)
+            filter!(x -> x > 0.0, m)
         else
             # If the data has less than two positive values, go back to linear scale.
             scale = :identity
@@ -2547,7 +2548,7 @@ Make an accumulated mass profile plot of several datasets, for a given time step
   the y axis will be scaled by 10^10. The default is 0, i.e. no scaling.
 - `box_factor::Float64 = 1.0`: Multiplicative factor for the plotting region. 
   It will scale `position_data["box_size"]` if vacuum boundary conditions were used, and
-  it will scale `position_data["box_size"] / 2` if periodic boundary conditions were used.
+  it will scale `position_data["box_size"] / 2.0` if periodic boundary conditions were used.
 
 # Returns
 - The plot generated by the PGFPlotsX backend of Plots.jl.
@@ -2603,13 +2604,16 @@ function massProfilePlot(
             # In the case that there are no particles.
             push!(distances, [Inf])
         else
-            push!(distances, sqrt.(pos[1, :] .^ 2 .+ pos[2, :] .^ 2 .+ pos[3, :] .^ 2))
+            push!(
+                distances, 
+                sqrt.(pos[1, :] .^ 2.0 .+ pos[2, :] .^ 2.0 .+ pos[3, :] .^ 2.0),
+            )
         end
     end
 
     if periodicity
         # For periodic boundary conditions.
-        max_rs = (get.(position_data, "box_size", 0) ./ 2) .* box_factor
+        max_rs = (get.(position_data, "box_size", 0) ./ 2.0) .* box_factor
     else
         # Plotting region for vacuum boundary conditions.
         max_rs = get.(position_data, "box_size", 0) .* box_factor
@@ -2620,21 +2624,21 @@ function massProfilePlot(
     for (mass, distance, max_r) in zip(masses, distances, max_rs)
         r_result, m_result = massProfile(mass, distance, max_r, bins)
         # Scale data by 10^factor.
-        m_result ./= 10^factor
+        m_result ./= 10.0^factor
 
         push!(r, r_result)
         push!(m, m_result)
     end
 
     if scale == :log10
-        length_short_cases = minimum(length.(findall.(x -> x > 0, m)))
+        length_short_cases = minimum(length.(findall.(x -> x > 0.0, m)))
         if length_short_cases >= 2
 
             # If every dataset has at least two data points, filter  
             # values <= 0, to allow logarithmic plotting.
             @inbounds for i in eachindex(r, m)
-                deleteat!(r[i], m[i] .<= 0)
-                filter!(x -> x > 0, m[i])
+                deleteat!(r[i], m[i] .<= 0.0)
+                filter!(x -> x > 0.0, m[i])
             end
 
             # Fill the datasets with NaN so all have the same length.
@@ -2840,14 +2844,14 @@ function sfrTxtPlot(
             x_data, y_data = smoothWindow(x_data, y_data, bins)
         end
 
-        # Filter data points <= 0, to allow logarithmic plotting.
+        # Filter data points <= 0.0, to allow logarithmic plotting.
         if scale[1] == :log10
-            deleteat!(y_data, x_data .<= 0)
-            filter!(x -> x > 0, x_data)
+            deleteat!(y_data, x_data .<= 0.0)
+            filter!(x -> x > 0.0, x_data)
         end
         if scale[2] == :log10
-            deleteat!(x_data, y_data .<= 0)
-            filter!(x -> x > 0, y_data)
+            deleteat!(x_data, y_data .<= 0.0)
+            filter!(x -> x > 0.0, y_data)
         end
 
         # Filter data points < `min_filter`.
@@ -2856,8 +2860,8 @@ function sfrTxtPlot(
         deleteat!(x_data, y_data .< min_filter[2])
         filter!(x -> x > min_filter[2], y_data)
 
-        x_data = x_data ./ 10^x_factor
-        y_data = y_data ./ 10^y_factor
+        x_data = x_data ./ 10.0^x_factor
+        y_data = y_data ./ 10.0^y_factor
 
         plot!(
             figure,
@@ -3030,8 +3034,8 @@ function sfrTxtPlot(
         filter!(z -> z > min_filter[2], y_data)
 
         # Scale data by 10^factor.
-        x_data = x_data ./ 10^x_factor
-        y_data = y_data ./ 10^y_factor
+        x_data = x_data ./ 10.0^x_factor
+        y_data = y_data ./ 10.0^y_factor
 
         push!(x, x_data)
         push!(y, y_data)
@@ -3039,14 +3043,14 @@ function sfrTxtPlot(
 
     # Data filtering for y axis logarithmic plotting.
     if scale[2] == :log10
-        length_short_cases = minimum(length.(findall.(z -> z > 0, y)))
+        length_short_cases = minimum(length.(findall.(z -> z > 0.0, y)))
         if length_short_cases >= 2
 
             # If every dataset has at least two data points, filter  
             # values <= 0, to allow logarithmic plotting.
             @inbounds for i in eachindex(x, y)
-                deleteat!(x[i], y[i] .<= 0)
-                filter!(z -> z > 0, y[i])
+                deleteat!(x[i], y[i] .<= 0.0)
+                filter!(z -> z > 0.0, y[i])
             end
 
             # Fill the datasets with NaN so all have the same length.
@@ -3069,14 +3073,14 @@ function sfrTxtPlot(
 
     # Data filtering for x axis logarithmic plotting.
     if scale[1] == :log10
-        length_short_cases = minimum(length.(findall.(z -> z > 0, x)))
+        length_short_cases = minimum(length.(findall.(z -> z > 0.0, x)))
         if length_short_cases >= 2
 
             # If every dataset has at least two data points, filter  
             # values <= 0, to allow logarithmic plotting.
             @inbounds for i in eachindex(x, y)
-                deleteat!(y[i], x[i] .<= 0)
-                filter!(z -> z > 0, x[i])
+                deleteat!(y[i], x[i] .<= 0.0)
+                filter!(z -> z > 0.0, x[i])
             end
 
             # Fill the datasets with NaN so all have the same length.
@@ -3336,8 +3340,8 @@ function KennicuttSchmidtPlot(
     star_pos = pos_data["stars"]
     length_unit = pos_data["unit"]
     max_R = ustrip(Float64, length_unit, max_r)
-    dist_gas = sqrt.(gas_pos[1, :] .^ 2 + gas_pos[2, :] .^ 2)
-    dist_stars = sqrt.(star_pos[1, :] .^ 2 + star_pos[2, :] .^ 2)
+    dist_gas = sqrt.(gas_pos[1, :] .^ 2.0 + gas_pos[2, :] .^ 2.0)
+    dist_stars = sqrt.(star_pos[1, :] .^ 2.0 + star_pos[2, :] .^ 2.0)
 
     # Temperatures
     gas_temp = temperature_data["temperature"]
@@ -3380,9 +3384,11 @@ function KennicuttSchmidtPlot(
     errors = stderror(linear_model)
     conf_intval = confint(linear_model)
     interval_intercept = maximum(
-        [conf_intval[1,2] - mean_intercept, mean_intercept - conf_intval[1,1]]
+        [conf_intval[1, 2] - mean_intercept, mean_intercept - conf_intval[1, 1]]
     )
-    interval_slope = maximum([conf_intval[2,2] - mean_slope, mean_slope - conf_intval[2,1]])
+    interval_slope = maximum(
+        [conf_intval[2, 2] - mean_slope, mean_slope - conf_intval[2, 1]]
+    )
 
     # Sets the slope and intercept with the right number of digits for display.
     if error_formating == "conf_interval"
