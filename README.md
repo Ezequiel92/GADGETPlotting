@@ -1,8 +1,6 @@
 # 🌌 GADGET Plotting
 
-[![ForTheBadge built-with-science](http://forthebadge.com/images/badges/built-with-science.svg)](https://GitHub.com/Ezequiel92/) 
-
-[![ForTheBadge made-with-julia](https://forthebadge.com/images/badges/made-with-julia.svg)](https://julialang.org)
+[![ForTheBadge built-with-science](http://forthebadge.com/images/badges/built-with-science.svg)](https://GitHub.com/Ezequiel92/) [![ForTheBadge made-with-julia](https://forthebadge.com/images/badges/made-with-julia.svg)](https://julialang.org)
 
 [![GitHub](https://img.shields.io/github/license/Ezequiel92/GADGETPlotting?style=flat-square)](https://github.com/Ezequiel92/GADGETPlotting/blob/main/LICENSE) [![Maintenance](https://img.shields.io/maintenance/yes/2021?style=flat-square)](mailto:lozano.ez@gmail.com)
 
@@ -23,7 +21,7 @@ There are four tiers of functions:
 - Plotting functions (`src/plotting.jl`): These are exported, but I do not recommend using them as is. If you insist in using them, read the section `Plotting backends warning` below. These are pure functions that take data in the format outputted by the data acquisition functions and return plot objects. They do all the data processing necessary to produce the plots, except the unit conversions. They will plot using the units selected when the data acquisition functions were called.
 - Pipeline functions (`src/pipelines.jl`): These are exported. These functions run a whole pipeline, from raw data to the final plot. They take the location of the snapshot files with some configuration parameters, and as a result, produce a series of plots/GIFs/videos. By default, some of these functions may generate a large number of images (but it can be configured to do less), and they may take a long time to run, especially if the function uses the `pgfplotsx` backend of [Plots.jl](https://github.com/JuliaPlots/Plots.jl).
 
-## 🚨 Plotting backends warning
+## 🚨 Plotting backends
 
 The plotting functions make use of different backends which are activated within each function. So, to save the figures after a plotting function call, you have to use `Base.invokelatest(savefig, figure, location)` instead of `savefig(figure, location)` (as it is done in `example/example_plotting.jl`). The pipeline functions do this internally, so you can call them directly with no extra caveats. 
 
