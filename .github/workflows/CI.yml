@@ -1,0 +1,25 @@
+name: Continuous integration
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        julia-version: ['1', 'nightly']
+        julia-arch: [x64, x86]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - name: Setup Julia environment
+        uses: julia-actions/setup-julia@v1.6.0
+        with:
+          version: ${{ matrix.julia-version }}
+      - name: Run Julia package tests
+        uses: julia-actions/julia-runtest@v1.6.0
+      - uses: julia-actions/julia-processcoverage@v1
+      - uses: codecov/codecov-action@v1.5.0
+        with:
+          file: lcov.info
