@@ -9,13 +9,13 @@ using GADGETPlotting, GadgetIO, Test, ReferenceTests, Plots
 	@test all(.≈(
         GADGETPlotting.relative(fig2D, 0.5, 0.5), 
         (50.5, 0.5), 
-         atol = 1e-2,
+        atol = 0.1,
     ))
 	fig3D = surface(rand(100, 100))
 	@test all(.≈(
         GADGETPlotting.relative(fig3D, 0.5, 0.5, 0.5), 
         (50.5, 50.5, 0.5), 
-        atol = 1e-2,
+        atol = 0.1,
     ))
 	
 	x_data = [1:1000...]
