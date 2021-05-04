@@ -9,8 +9,8 @@ const BOX_SIZE = 200UnitfulAstro.kpc
 const SIM_COSMO = 0
 const SNAP_N = 21
 
-function vec_compare(x, y; atol::Float64 = 1e-5)::Bool
-    return all(.≈(x, y; atol))
+function vec_compare(x, y; rtol::Float64 = 1e-8)::Bool
+    return all(.≈(x, y; rtol))
 end
 
 function deep_comparison(x::Dict, y::Dict)::Bool
@@ -145,10 +145,8 @@ end
     num_int_4 = GADGETPlotting.num_integrate(x -> sqrt(sqrt(1 / (x + 1))), 0, 1)
 
     jldopen(joinpath(BASE_DATA_PATH, "data_auxiliary.jld2"), "r") do file
-        println(file["density_p"][2])
-        println(density_p[2])
-        @test vec_compare(file["relative_2D"], relative_2D, atol = 0.1)
-        @test vec_compare(file["relative_3D"], relative_3D, atol = 0.1)
+        @test vec_compare(file["relative_2D"], relative_2D, rtol = 0.1)
+        @test vec_compare(file["relative_3D"], relative_3D, rtol = 0.1)
         @test vec_compare(file["smooth_w"][1], smooth_w[1])
         @test vec_compare(file["density_p"][1], density_p[1])
         @test vec_compare(file["density_p"][2], density_p[2])
