@@ -17,7 +17,7 @@ function deep_comparison(x::Dict, y::Dict)::Bool
 
     equal = Bool[]
     for key in keys(x)
-        if typeof(x[key]) <: Vector{<:Real}
+        if typeof(x[key]) <: AbstractArray{<:Real}
             push!(equal, vec_compare(x[key], y[key]))
         else
             push!(equal, x[key] == y[key])
