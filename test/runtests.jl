@@ -145,6 +145,8 @@ end
     num_int_4 = GADGETPlotting.num_integrate(x -> sqrt(sqrt(1 / (x + 1))), 0, 1)
 
     jldopen(joinpath(BASE_DATA_PATH, "data_auxiliary.jld2"), "r") do file
+        prinln(file["metallicity_p"][2])
+        println(density_p[2])
         @test vec_compare(file["relative_2D"], relative_2D, atol = 0.1)
         @test vec_compare(file["relative_3D"], relative_3D, atol = 0.1)
         @test vec_compare(file["smooth_w"][1], smooth_w[1])
