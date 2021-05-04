@@ -76,7 +76,8 @@ end
         @test vec_compare(file["pos"]["gas"], pos["gas"])
         @test vec_compare(file["pos"]["dark_matter"], pos["dark_matter"])
 
-
+        x = file["pos"]["stars"]
+        y = pos["stars"]
         println(all(.≈(x, y; rtol=1e-3)))
         println(.≈(x, y; rtol=1e-3))
         idx=findfirst(x -> !x, .≈(x, y; rtol=1e-3))
