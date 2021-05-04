@@ -123,8 +123,8 @@ end
 
 """
     smoothWindow(
-        x_data::Vector{T} where {T <: Real},
-        y_data::Vector{T} where {T <: Real},
+        x_data::Vector{<:Real},
+        y_data::Vector{<:Real},
         bins::Int64,
     )::NTuple{2, Vector{Float64}}
 

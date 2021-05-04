@@ -9,6 +9,20 @@ const BOX_SIZE = 200UnitfulAstro.kpc
 const SIM_COSMO = 0
 const SNAP_N = 21
 
+function deep_comparison(x::Dict, y::Dict)::Bool
+    
+    equal = Bool[]
+    for key in keys(x)
+        if typeof(x[key]) <: Vector{<:Real}
+            push!(equal, all(.≈(x[key], y[key])))
+        else
+            push!(equal, x[key] == y[key])
+        end
+    end
+
+    return all(equal)
+end
+
 @testset "Unit Conversion" begin
 
     ########################################################################################
@@ -54,19 +68,19 @@ const SNAP_N = 21
 	
     jldopen(joinpath(BASE_DATA_PATH, "data_acquisition.jld2"), "r") do file
         @test file["snaps"]["numbers"] == snaps["numbers"]
-        @test file["time_series"] == time_series
-        @test file["pos"] == pos
-        @test file["density"] == density
-        @test file["hsml"] == hsml
-        @test file["gas_mass"] == gas_mass
-        @test file["dm_mass"] == dm_mass
-        @test file["star_mass"] == star_mass
-        @test file["gas_z"] == gas_z
-        @test file["star_z"] == star_z
-        @test file["temp_data"] == temp_data
-        @test file["age_data"] == age_data
-        @test file["birth_pos"] == birth_pos
-        @test file["sfrtxt_data"] == sfrtxt_data
+        @test deep_comparison(file["time_series"], time_series)
+        @test deep_comparison(file["pos"], pos)
+        @test deep_comparison(file["density"], density)
+        @test deep_comparison(file["hsml"], hsml)
+        @test deep_comparison(file["gas_mass"], gas_mass)
+        @test deep_comparison(file["dm_mass"], dm_mass)
+        @test deep_comparison(file["star_mass"], star_mass)
+        @test deep_comparison(file["gas_z"], gas_z)
+        @test deep_comparison(file["star_z"], star_z)
+        @test deep_comparison(file["temp_data"], temp_data)
+        @test deep_comparison(file["age_data"], age_data)
+        @test deep_comparison(file["birth_pos"], birth_pos)
+        @test deep_comparison(file["sfrtxt_data"], sfrtxt_data)
     end
   
 	# Test auxiliary functions
@@ -129,11 +143,15 @@ const SNAP_N = 21
     jldopen(joinpath(BASE_DATA_PATH, "data_auxiliary.jld2"), "r") do file
         @test all(.≈(file["relative_2D"], relative_2D, atol = 0.1))
         @test all(.≈(file["relative_3D"], relative_3D, atol = 0.1))
-        @test file["smooth_w"][1] == smooth_w[1]
-        @test file["density_p"] == density_p
-        @test file["metallicity_p"] == metallicity_p
-        @test file["mass_p"] == mass_p
-        @test file["cmdf"] == cmdf
+        @test all(.≈(file["smooth_w"][1], smooth_w[1]))
+        @test all(.≈(file["density_p"][1], density_p[1]))
+        @test all(.≈(file["density_p"][2], density_p[2]))
+        @test all(.≈(file["metallicity_p"][1], metallicity_p[1]))
+        @test all(.≈(file["metallicity_p"][2], metallicity_p[2]))
+        @test all(.≈(file["mass_p"][1], mass_p[1]))
+        @test all(.≈(file["mass_p"][2], mass_p[2]))
+        @test all(.≈(file["cmdf"][1], cmdf[1]))
+        @test all(.≈(file["cmdf"][2], cmdf[2]))
         @test all(.≈(file["ksl"]["RHO"], ksl["RHO"]))
         @test all(.≈(file["ksl"]["SFR"], ksl["SFR"]))
         @test file["format_err_1"] == format_err_1

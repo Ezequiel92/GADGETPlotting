@@ -52,26 +52,6 @@ ksl = GADGETPlotting.KennicuttSchmidtLaw(
     ustrip(Float64, pos["unit"], BOX_SIZE),
     bins = 80,
 )
-# linear_model = KSL["LM"]
-# a = round(coef(linear_model)[1], sigdigits = 1)
-# m = round(coef(linear_model)[2], digits = 1)
-# a_error = round(stderror(linear_model)[1], sigdigits = 1)
-# m_error = round(stderror(linear_model)[2], sigdigits = 1)
-# scatter(KSL["RHO"], KSL["SFR"], label = "Data", xlabel = L"log(\rho)", ylabel = L"log(SFR)")
-# pl = plot!(KSL["RHO"], predict(linear_model), label = "Fit")
-# annotate!(
-#     GADGETPlotting.relative(pl, 0.5, 0.95)...,
-#     text(L"SFR = A\,\rho^m", "Courier", 8, :center),
-# )
-# annotate!(
-#     GADGETPlotting.relative(pl, 0.5, 0.9)...,
-#     text(L"m = %$m \pm %$m_error", "Courier", 8, :center),
-# )
-# annotate!(
-#     GADGETPlotting.relative(pl, 0.5, 0.85)...,
-#     text(L"log(A) = %$a \pm %$a_error", "Courier", 8, :center),
-# )
-# savefig(joinpath(BASE_OUT_PATH, "test_KennicuttSchmidtLaw.png"))
 
 format_err_1 = GADGETPlotting.format_error(69.42069, 0.038796)
 format_err_2 = GADGETPlotting.format_error(69.42069, 0.018796)
