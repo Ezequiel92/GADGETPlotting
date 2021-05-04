@@ -73,7 +73,12 @@ end
     jldopen(joinpath(BASE_DATA_PATH, "data_acquisition.jld2"), "r") do file
         @test file["snaps"]["numbers"] == snaps["numbers"]
         @test deep_comparison(file["time_series"], time_series)
-        @test deep_comparison(file["pos"], pos)
+        @test vec_compare(file["pos"]["gas"], pos["gas"])
+        @test vec_compare(file["pos"]["dark_matter"], pos["dark_matter"])
+        @test vec_compare(file["pos"]["stars"], pos["stars"])
+        @test file["pos"]["box_size"] == pos["box_size"]
+        @test file["pos"]["periodic"] == pos["periodic"]
+        @test file["pos"]["unit"] == pos["unit"]
         @test deep_comparison(file["density"], density)
         @test deep_comparison(file["hsml"], hsml)
         @test deep_comparison(file["gas_mass"], gas_mass)
