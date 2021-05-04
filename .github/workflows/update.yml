@@ -25,15 +25,6 @@ jobs:
       - run: println("::set-output name=manifest_version::$(VERSION.major).$(VERSION.minor)")
         shell: julia --color=yes {0}
         id: manifest_version
-      - run: echo "We will update the manifest at Manifest.${{ steps.manifest_version.outputs.manifest_version }}.toml"
-      - run: rm -rf Manifest.toml
-      - run: |
-          if [ -f "Manifest.${{ steps.manifest_version.outputs.manifest_version }}.toml" ]; then
-              echo "The manifest file exists, so I will update the existing manifest."
-              mv Manifest.${{ steps.manifest_version.outputs.manifest_version }}.toml Manifest.toml
-          else
-              echo "The manifest file does not exist, so I will create a new manifest from scratch."
-          fi
       - name: Cache artifacts
         uses: actions/cache@v2.1.5
         env:
@@ -51,12 +42,11 @@ jobs:
       - run: julia --color=yes -e 'import Pkg; Pkg.Registry.update()'
       - run: julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate'
       - run: julia --color=yes --project=@. -e 'import Pkg; Pkg.update()'
-      - run: mv Manifest.toml Manifest.${{ steps.manifest_version.outputs.manifest_version }}.toml
       - run: git status
       - uses: actions/upload-artifact@v2.2.3
         with:
           name: manifest_file_for_${{ steps.manifest_version.outputs.manifest_version }}
-          path: Manifest.${{ steps.manifest_version.outputs.manifest_version }}.toml
+          path: Manifest.toml
           if-no-files-found: error
   make_single_pr:
     needs: update_each_manifest
@@ -72,11 +62,10 @@ jobs:
       - uses: actions/download-artifact@v2.0.9
         with:
           path: /tmp/manifest_updater/download_artifacts
-      - run: mv /tmp/manifest_updater/download_artifacts/manifest_file_for_*/Manifest.*.toml .
+      - run: mv /tmp/manifest_updater/download_artifacts/manifest_file_for_*/Manifest.toml .
       - run: rm -rf /tmp/manifest_updater
-      - run: rm -rf Manifest.toml
       - run: chmod 600 Project.toml
-      - run: chmod 600 Manifest.*.toml
+      - run: chmod 600 Manifest.toml
       - run: git status
       - uses: peter-evans/create-pull-request@v3.8.2
         with:

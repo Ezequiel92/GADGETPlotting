@@ -14,7 +14,7 @@ using GADGETPlotting, GadgetIO, Unitful, UnitfulAstro, Plots, LaTeXStrings, GLM
 const BASE_OUT_PATH = joinpath(@__DIR__, "example_results")
 
 "Directory containing the snapshot files."
-const BASE_SRC_PATH = joinpath(@__DIR__, "test_data")
+const BASE_SRC_PATH = joinpath(@__DIR__, "example_data")
 
 "Base name of the snapshot files, set in the GADGET variable SnapshotFileBase."
 const SNAP_NAME = "snap"
@@ -37,7 +37,7 @@ mkpath(BASE_OUT_PATH)
 # Examples.
 ############################################################################################
 
-# include("example_data_acquisition.jl")
+include("example_data_acquisition.jl")
 # include("example_plotting.jl")
 # include("example_pipeline.jl")
 include("example_auxiliary.jl")

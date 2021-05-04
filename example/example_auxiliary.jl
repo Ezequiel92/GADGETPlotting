@@ -1,11 +1,9 @@
 ############################################################################################
-# AUXILIARY FUNCTIONS.
+# AUXILIARY FUNCTIONS
 ############################################################################################
 
-fig2D = plot(rand(100))
-println(GADGETPlotting.relative(fig2D, 0.5, 0.5))
-fig3D = surface(rand(100, 100))
-println(GADGETPlotting.relative(fig3D, 0.5, 0.5, 0.5))
+relative_2D = GADGETPlotting.relative(plot(rand(100)), 0.5, 0.5)
+relative_3D = GADGETPlotting.relative(surface(rand(100, 100)), 0.5, 0.5, 0.5)
 
 # GADGETPlotting.makeVideo(
 #     joinpath(BASE_OUT_PATH, "scatter_grid/images"),
@@ -17,63 +15,43 @@ println(GADGETPlotting.relative(fig3D, 0.5, 0.5, 0.5))
 
 # pgfplotsx()
 
-x_data = [1:1000...]
-y_data = rand(1000)
-x_smooth, y_smooth = GADGETPlotting.smoothWindow(x_data, y_data, 50)
-plot(x_data, y_data, seriestype = :scatter, legend = false)
-plot!(x_smooth, y_smooth, seriestype = :line, lw = 2)
-savefig(joinpath(BASE_OUT_PATH, "test_smoothWindow.png"))
-println(y_smooth)
-# positions = pos["gas"]
-# distances = sqrt.(positions[1, :] .^ 2 .+ positions[2, :] .^ 2 .+ positions[3, :] .^ 2)
-# box_size = ustrip(Float64, pos["unit"], BOX_SIZE)
-# r, ρ = GADGETPlotting.densityProfile(gas_mass["mass"], distances, box_size, 80)
-# plot(r, ρ, lw = 2, xlabel = "r / $(pos["unit"])", ylabel = L"\rho", legend = false)
-# savefig(joinpath(BASE_OUT_PATH, "test_densityProfile.png"))
+smooth_w = GADGETPlotting.smoothWindow([1:1000...], rand(1000), 50)
 
-# r, z = GADGETPlotting.metallicityProfile(
-#     gas_mass["mass"], 
-#     distances, 
-#     gas_z["Z"], 
-#     box_size, 
-#     80,
-# )
-# plot(r, z, lw = 2, xlabel = "r / $(pos["unit"])", ylabel = "Z / Zsun", legend = false)
-# savefig(joinpath(BASE_OUT_PATH, "test_metallicityProfile.png"))
+positions = pos["gas"]
+distances = sqrt.(positions[1, :] .^ 2 .+ positions[2, :] .^ 2 .+ positions[3, :] .^ 2)
+box_size = ustrip(Float64, pos["unit"], BOX_SIZE)
+density_p = GADGETPlotting.densityProfile(gas_mass["mass"], distances, box_size, 80)
 
-# r, m = GADGETPlotting.massProfile(gas_mass["mass"], distances, box_size, 80)
-# plot(r, m, lw = 2, xlabel = "r / $(pos["unit"])", ylabel = "Mass", legend = false)
-# savefig(joinpath(BASE_OUT_PATH, "test_massProfile.png"))
+metallicity_p = GADGETPlotting.metallicityProfile(
+    gas_mass["mass"], 
+    distances, 
+    gas_z["Z"], 
+    box_size, 
+    80,
+)
 
-# max_z = findmax(star_z["Z"])
-# max_Z = max_z[1] / star_mass["mass"][max_z[2]]
-# z, m = GADGETPlotting.CMDF(star_mass["mass"], star_z["Z"], max_Z, 50)
-# plot(
-#     z,
-#     m,
-#     lw = 2,
-#     xlabel = "Z",
-#     ylabel = L"M_{\star}(< Z) \, / \, M_{\star}",
-#     legend = false,
-# )
-# savefig(joinpath(BASE_OUT_PATH, "test_CMDF.png"))
+mass_p = GADGETPlotting.massProfile(gas_mass["mass"], distances, box_size, 80)
 
-# pos_gas = pos["gas"]
-# dist_gas = sqrt.(pos_gas[1, :] .^ 2 + pos_gas[2, :] .^ 2)
-# pos_stars = pos["stars"]
-# dist_stars = sqrt.(pos_stars[1, :] .^ 2 + pos_stars[2, :] .^ 2)
-# KSL = GADGETPlotting.KennicuttSchmidtLaw(
-#     gas_mass["mass"],
-#     dist_gas,
-#     temp_data["temperature"],
-#     star_mass["mass"],
-#     dist_stars,
-#     age_data["ages"],
-#     ustrip(Float64, temp_data["unit"], 3e4Unitful.K),
-#     ustrip(Float64, age_data["unit"], 200UnitfulAstro.Myr),
-#     ustrip(Float64, pos["unit"], BOX_SIZE),
-#     bins = 80,
-# )
+max_z = findmax(star_z["Z"])
+max_Z = max_z[1] / star_mass["mass"][max_z[2]]
+cmdf = GADGETPlotting.CMDF(star_mass["mass"], star_z["Z"], max_Z, 50)
+
+pos_gas = pos["gas"]
+dist_gas = sqrt.(pos_gas[1, :] .^ 2 + pos_gas[2, :] .^ 2)
+pos_stars = pos["stars"]
+dist_stars = sqrt.(pos_stars[1, :] .^ 2 + pos_stars[2, :] .^ 2)
+ksl = GADGETPlotting.KennicuttSchmidtLaw(
+    gas_mass["mass"],
+    dist_gas,
+    temp_data["temperature"],
+    star_mass["mass"],
+    dist_stars,
+    age_data["ages"],
+    ustrip(Float64, temp_data["unit"], 3e4Unitful.K),
+    ustrip(Float64, age_data["unit"], 200UnitfulAstro.Myr),
+    ustrip(Float64, pos["unit"], BOX_SIZE),
+    bins = 80,
+)
 # linear_model = KSL["LM"]
 # a = round(coef(linear_model)[1], sigdigits = 1)
 # m = round(coef(linear_model)[2], digits = 1)
@@ -95,16 +73,28 @@ println(y_smooth)
 # )
 # savefig(joinpath(BASE_OUT_PATH, "test_KennicuttSchmidtLaw.png"))
 
-# println(GADGETPlotting.format_error(69.42069, 0.038796))
-# println(GADGETPlotting.format_error(69.42069, 0.018796))
-# println(GADGETPlotting.format_error(69.42069, 0.0))
-# println(GADGETPlotting.format_error(69.42069, 73.4))
+format_err_1 = GADGETPlotting.format_error(69.42069, 0.038796)
+format_err_2 = GADGETPlotting.format_error(69.42069, 0.018796)
+format_err_3 = GADGETPlotting.format_error(69.42069, 0.0)
+format_err_4 = GADGETPlotting.format_error(69.42069, 73.4)
 
-# display(GADGETPlotting.pass_all(joinpath(BASE_SRC_PATH, SNAP_NAME * "_000"), "gas"))
+pass = GADGETPlotting.pass_all(joinpath(BASE_SRC_PATH, SNAP_NAME * "_000"), "gas")
 
-# header = read_header(joinpath(BASE_SRC_PATH, SNAP_NAME * "_000"))
-# println(GADGETPlotting.energy_integrand(header, 1.0))
+header = read_header(joinpath(BASE_SRC_PATH, SNAP_NAME * "_000"))
+energy_i = GADGETPlotting.energy_integrand(header, 1.0)
 
-# println(GADGETPlotting.num_integrate(sin, 0, 3π))
-# println(GADGETPlotting.num_integrate(x -> x^3 + 6 * x^2 + 9 * x + 2, 0, 4.69))
-# println(GADGETPlotting.num_integrate(x -> exp(x^x), 0, 1))
+num_int_1 = GADGETPlotting.num_integrate(sin, 0, 3π)
+num_int_2 = GADGETPlotting.num_integrate(x -> x^3 + 6 * x^2 + 9 * x + 2, 0, 4.69)
+num_int_3 = GADGETPlotting.num_integrate(x -> exp(x^x), 0, 1)
+num_int_4 = GADGETPlotting.num_integrate(x -> sqrt(sqrt(1 / (x + 1))), 0, 1)
+
+# Save numerical result for tests
+jldsave(
+    joinpath(BASE_OUT_PATH, "data_auxiliary.jld2"); 
+    relative_2D, relative_3D, smooth_w,
+    density_p, metallicity_p, mass_p,
+    cmdf, ksl, format_err_1,
+    format_err_2, format_err_3, format_err_4,
+    pass, energy_i, num_int_1, 
+    num_int_2, num_int_3, num_int_4,
+)
