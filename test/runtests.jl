@@ -75,6 +75,17 @@ end
         @test deep_comparison(file["time_series"], time_series)
         @test vec_compare(file["pos"]["gas"], pos["gas"])
         @test vec_compare(file["pos"]["dark_matter"], pos["dark_matter"])
+
+
+        println(all(.≈(x, y; rtol)))
+        println(.≈(x, y; rtol))
+        idx=findfirst(x -> !x, .≈(x, y; rtol))
+        println("x[idx]: ", x[idx])
+        println("y[idx]: ", y[idx])
+        
+
+
+
         @test vec_compare(file["pos"]["stars"], pos["stars"])
         @test file["pos"]["box_size"] == pos["box_size"]
         @test file["pos"]["periodic"] == pos["periodic"]
