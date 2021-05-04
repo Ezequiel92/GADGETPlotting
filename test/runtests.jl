@@ -9,12 +9,16 @@ const BOX_SIZE = 200UnitfulAstro.kpc
 const SIM_COSMO = 0
 const SNAP_N = 21
 
+function vec_compare(x, y; atol::Float64 = 1e-8)::Bool
+    return all(.≈(x, y; atol))
+end
+
 function deep_comparison(x::Dict, y::Dict)::Bool
-    
+
     equal = Bool[]
     for key in keys(x)
         if typeof(x[key]) <: Vector{<:Real}
-            push!(equal, all(.≈(x[key], y[key])))
+            push!(equal, vec_compare(x[key], y[key]))
         else
             push!(equal, x[key] == y[key])
         end
@@ -141,19 +145,19 @@ end
     num_int_4 = GADGETPlotting.num_integrate(x -> sqrt(sqrt(1 / (x + 1))), 0, 1)
 
     jldopen(joinpath(BASE_DATA_PATH, "data_auxiliary.jld2"), "r") do file
-        @test all(.≈(file["relative_2D"], relative_2D, atol = 0.1))
-        @test all(.≈(file["relative_3D"], relative_3D, atol = 0.1))
-        @test all(.≈(file["smooth_w"][1], smooth_w[1]))
-        @test all(.≈(file["density_p"][1], density_p[1]))
-        @test all(.≈(file["density_p"][2], density_p[2]))
-        @test all(.≈(file["metallicity_p"][1], metallicity_p[1]))
-        @test all(.≈(file["metallicity_p"][2], metallicity_p[2]))
-        @test all(.≈(file["mass_p"][1], mass_p[1]))
-        @test all(.≈(file["mass_p"][2], mass_p[2]))
-        @test all(.≈(file["cmdf"][1], cmdf[1]))
-        @test all(.≈(file["cmdf"][2], cmdf[2]))
-        @test all(.≈(file["ksl"]["RHO"], ksl["RHO"]))
-        @test all(.≈(file["ksl"]["SFR"], ksl["SFR"]))
+        @test vec_compare(file["relative_2D"], relative_2D, atol = 0.1)
+        @test vec_compare(file["relative_3D"], relative_3D, atol = 0.1)
+        @test vec_compare(file["smooth_w"][1], smooth_w[1])
+        @test vec_compare(file["density_p"][1], density_p[1])
+        @test vec_compare(file["density_p"][2], density_p[2])
+        @test vec_compare(file["metallicity_p"][1], metallicity_p[1])
+        @test vec_compare(file["metallicity_p"][2], metallicity_p[2])
+        @test vec_compare(file["mass_p"][1], mass_p[1])
+        @test vec_compare(file["mass_p"][2], mass_p[2])
+        @test vec_compare(file["cmdf"][1], cmdf[1])
+        @test vec_compare(file["cmdf"][2], cmdf[2])
+        @test vec_compare(file["ksl"]["RHO"], ksl["RHO"])
+        @test vec_compare(file["ksl"]["SFR"], ksl["SFR"])
         @test file["format_err_1"] == format_err_1
         @test file["format_err_2"] == format_err_2
         @test file["format_err_3"] == format_err_3
