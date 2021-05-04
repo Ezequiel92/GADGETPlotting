@@ -77,9 +77,9 @@ end
         @test vec_compare(file["pos"]["dark_matter"], pos["dark_matter"])
 
 
-        println(all(.≈(x, y; rtol)))
-        println(.≈(x, y; rtol))
-        idx=findfirst(x -> !x, .≈(x, y; rtol))
+        println(all(.≈(x, y; rtol=1e-3)))
+        println(.≈(x, y; rtol=1e-3))
+        idx=findfirst(x -> !x, .≈(x, y; rtol=1e-3))
         println("x[idx]: ", x[idx])
         println("y[idx]: ", y[idx])
         
