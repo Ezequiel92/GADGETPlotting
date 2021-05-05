@@ -1,4 +1,4 @@
-name: Update dependecies
+name: Update dependencies
 on:
   schedule:
     # Every Monday at 00:00.
