@@ -9,7 +9,7 @@ const BOX_SIZE = 200UnitfulAstro.kpc
 const SIM_COSMO = 0
 const SNAP_N = 21
 
-function vec_compare(x, y; rtol::Float64 = 1e-3)::Bool
+function vec_compare(x, y; rtol::Float64 = 1e-5)::Bool
     return all(.≈(x, y; rtol))
 end
 
@@ -76,14 +76,14 @@ end
         @test vec_compare(file["pos"]["gas"], pos["gas"])
         @test vec_compare(file["pos"]["dark_matter"], pos["dark_matter"])
 
-        x = file["pos"]["stars"]
-        y = pos["stars"]
-        println(all(.≈(x, y; rtol=1e-3)))
-        println(.≈(x, y; rtol=1e-3))
-        idx=findfirst(x -> !x, .≈(x, y; rtol=1e-3))
-        println(idx)
-        println("x[idx]: ", x[idx])
-        println("y[idx]: ", y[idx])
+        # x = file["pos"]["stars"]
+        # y = pos["stars"]
+        # println(all(.≈(x, y; rtol=1e-3)))
+        # println(.≈(x, y; rtol=1e-3))
+        # idx=findfirst(x -> !x, .≈(x, y; rtol=1e-3))
+        # println(idx)
+        # println("x[idx]: ", x[CartesianIndex(1, 1146)])
+        # println("y[idx]: ", y[CartesianIndex(1, 1146)])
         
 
 
