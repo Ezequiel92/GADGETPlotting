@@ -9,8 +9,8 @@ const BOX_SIZE = 200UnitfulAstro.kpc
 const SIM_COSMO = 0
 const SNAP_N = 21
 
-function vec_compare(x, y; rtol::Float64 = 1e-5)::Bool
-    return all(.≈(x, y; rtol))
+function vec_compare(x, y; atol::Float64 = 1e-3, rtol::Float64 = 1e-5)::Bool
+    return all(.≈(x, y; atol, rtol))
 end
 
 function deep_comparison(x::Dict, y::Dict)::Bool
