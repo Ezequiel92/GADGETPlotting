@@ -81,6 +81,7 @@ end
         println(all(.≈(x, y; rtol=1e-3)))
         println(.≈(x, y; rtol=1e-3))
         idx=findfirst(x -> !x, .≈(x, y; rtol=1e-3))
+        println(idx)
         println("x[idx]: ", x[idx])
         println("y[idx]: ", y[idx])
         
