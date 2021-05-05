@@ -73,25 +73,7 @@ end
     jldopen(joinpath(BASE_DATA_PATH, "data_acquisition.jld2"), "r") do file
         @test file["snaps"]["numbers"] == snaps["numbers"]
         @test deep_comparison(file["time_series"], time_series)
-        @test vec_compare(file["pos"]["gas"], pos["gas"])
-        @test vec_compare(file["pos"]["dark_matter"], pos["dark_matter"])
-
-        # x = file["pos"]["stars"]
-        # y = pos["stars"]
-        # println(all(.≈(x, y; rtol=1e-3)))
-        # println(.≈(x, y; rtol=1e-3))
-        # idx=findfirst(x -> !x, .≈(x, y; rtol=1e-3))
-        # println(idx)
-        # println("x[idx]: ", x[CartesianIndex(1, 1146)])
-        # println("y[idx]: ", y[CartesianIndex(1, 1146)])
-        
-
-
-
-        @test vec_compare(file["pos"]["stars"], pos["stars"])
-        @test file["pos"]["box_size"] == pos["box_size"]
-        @test file["pos"]["periodic"] == pos["periodic"]
-        @test file["pos"]["unit"] == pos["unit"]
+		@test deep_comparison(file["pos"], pos)
         @test deep_comparison(file["density"], density)
         @test deep_comparison(file["hsml"], hsml)
         @test deep_comparison(file["gas_mass"], gas_mass)
