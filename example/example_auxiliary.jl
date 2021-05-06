@@ -5,15 +5,15 @@
 relative_2D = GADGETPlotting.relative(plot(rand(100)), 0.5, 0.5)
 relative_3D = GADGETPlotting.relative(surface(rand(100, 100)), 0.5, 0.5, 0.5)
 
-# GADGETPlotting.makeVideo(
-#     joinpath(BASE_OUT_PATH, "scatter_grid/images"),
-#     ".png",
-#     BASE_OUT_PATH,
-#     "test_video",
-#     FPS,
-# )
+GADGETPlotting.makeVideo(
+    joinpath(BASE_OUT_PATH, "scatter_grid/images"),
+    ".png",
+    BASE_OUT_PATH,
+    "test_video",
+    FPS,
+)
 
-# pgfplotsx()
+pgfplotsx()
 
 smooth_w = GADGETPlotting.smoothWindow([1:1000...], rand(1000), 50)
 

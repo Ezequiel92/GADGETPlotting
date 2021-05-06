@@ -889,3 +889,126 @@ function centerOfMass(
     return R[1] / M, R[2] / M, R[3] / M
 
 end
+
+"""
+    comparison(
+        x::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}, 
+        y::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}; 
+        atol::Float64 = 1e-5, 
+        rtol::Float64 = 1e-5,
+    )::Bool
+
+Determines is two numbers, numeric arrays or numeric tuples are approximately equal.
+
+# Arguments
+- `x::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}`: First element to be compared.
+- `y::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}`: Second element to be compared.
+- `atol::Float64 = 1e-5`: Absolute tolerance.
+- `rtol::Float64 = 1e-5`: Relative tolerance.
+
+# Returns
+- Return `true` if every pair of elements (X, Y) in (x, y) pass
+  norm(X - Y) <= max(atol, rtol * max(norm(X), norm(Y))).
+"""
+function comparison(
+    x::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}, 
+    y::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}; 
+    atol::Float64 = 1e-5, 
+    rtol::Float64 = 1e-5,
+)::Bool
+
+    return all(isapprox.(x, y; atol, rtol))
+
+end
+
+"""
+    comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
+
+Determines is two elements are equal.
+
+# Arguments
+- `x`: First element to be compared.
+- `y`: Second element to be compared.
+- `atol::Float64 = 1e-5`: Absolute tolerance (for compatibility).
+- `rtol::Float64 = 1e-5`: Relative tolerance (for compatibility).
+
+# Returns
+- Return `true` if x == y.
+"""
+function comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
+
+    return isequal(x, y)
+
+end
+
+"""
+    deep_comparison(
+        x::Dict, 
+        y::Dict; 
+        atol::Float64 = 1e-5, 
+        rtol::Float64 = 1e-5,
+    )::Bool
+
+Determines is two dictionaries are approximately equal.
+
+Numeric elements are compared with comparison(), everything else with isequal().
+
+# Arguments
+- `x::Dict`: First dictionary to be compared.
+- `y::Dict`: Second dictionary to be compared.
+- `atol::Float64 = 1e-5`: Absolute tolerance for numeric elements.
+- `rtol::Float64 = 1e-5`: Relative tolerance for numeric elements.
+
+# Returns
+- Return `true` if every pair of elements pass the equality tests.
+"""
+function deep_comparison(
+    x::Dict, 
+    y::Dict; 
+    atol::Float64 = 1e-5, 
+    rtol::Float64 = 1e-5,
+)::Bool
+
+    if keys(x) != keys(y)
+        return false
+    end
+
+    return all([comparison(x[key], y[key]; atol, rtol) for key in keys(x)])
+    
+end
+
+"""
+    deep_comparison(
+        x::Union{AbstractArray, Tuple}, 
+        y::Union{AbstractArray, Tuple}; 
+        atol::Float64 = 1e-5, 
+        rtol::Float64 = 1e-5,
+    )::Bool
+
+Determines is two arrays or tuples are approximately equal.
+
+Numeric elements are compared with comparison(), everything else with isequal().
+
+# Arguments
+- `x::Union{AbstractArray, Tuple}`: First array to be compared.
+- `y::Union{AbstractArray, Tuple}`: Second array to be compared.
+- `atol::Float64 = 1e-5`: Absolute tolerance for numeric elements.
+- `rtol::Float64 = 1e-5`: Relative tolerance for numeric elements.
+
+# Returns
+- Return `true` if every pair of elements pass the equality tests.
+"""
+function deep_comparison(
+    x::Union{AbstractArray, Tuple}, 
+    y::Union{AbstractArray, Tuple}; 
+    atol::Float64 = 1e-5, 
+    rtol::Float64 = 1e-5,
+)::Bool
+
+    if length(x) != length(y)
+        return false
+    end
+
+    return all([comparison(X, Y; atol, rtol) for (X, Y) in zip(x, y)])
+    
+end

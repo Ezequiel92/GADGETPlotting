@@ -50,7 +50,7 @@ sfrtxt_data = GADGETPlotting.sfrTxtData(
     sim_cosmo = SIM_COSMO
 )
 
-# Save result for tests
+# Save numerical result for tests
 jldsave(
     joinpath(BASE_OUT_PATH, "data_acquisition.jld2"); 
     snaps, time_series, pos, 

@@ -1,10 +1,9 @@
 ############################################################################################
-# Example script for GADGETPlotting.jl. 
+#   Example script for GADGETPlotting.jl
 #
-# - When run as is, it shouldn't throw any errors.
-# - This script is not intended to be a comprehensive test of the functionality, 
-#   but just to be a check that nothing is seriously broken, and to give an example
-#   on how to import GADGETPlotting.jl and how to use every function.
+# - When run as is, it shouldn't throw any errors
+# - This script shows how to import GADGETPlotting.jl and gives examples 
+#   on how to use every function
 ############################################################################################
 
 push!(LOAD_PATH, "./src/")
@@ -34,19 +33,12 @@ const SNAP_N = 21
 mkpath(BASE_OUT_PATH)
 
 ############################################################################################
-# Examples.
+# Examples
 ############################################################################################
 
 include("example_data_acquisition.jl")
 include("example_plotting.jl")
-# include("example_pipeline.jl")
-# include("example_auxiliary.jl")
+include("example_pipeline.jl")
+include("example_auxiliary.jl")
 
 println("Everything worked just fine!!")
-
-############################################################################################
-# WARNING: The next line of code will delete all testing files produced by the 
-# `example_*.jl` scripts. If you don't want that, you should comment or delete it.
-############################################################################################
-
-# rm(BASE_OUT_PATH, recursive = true);
