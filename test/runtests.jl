@@ -27,10 +27,10 @@ function deep_comparison(x::Dict, y::Dict)::Bool
     return all(equal)
 end
 
-@testset "Unit Conversion" begin
+@testset "GADGETPlotting tests" begin
 
     ########################################################################################
-	# Test data acquisition
+	# Test data acquisition functions
 	########################################################################################
 
 	snaps = GADGETPlotting.getSnapshotPaths(SNAP_NAME, BASE_SRC_PATH)
@@ -86,8 +86,53 @@ end
         @test deep_comparison(file["birth_pos"], birth_pos)
         @test deep_comparison(file["sfrtxt_data"], sfrtxt_data)
     end
-  
+
+    ########################################################################################
+    # Test plotting functions
+    ########################################################################################
+
+    temp_img = joinpath(@__DIR__, "test_img.png")
+
+    Base.invokelatest(savefig, scatterGridPlot(pos), temp_img)
+    @test_reference  joinpath(BASE_DATA_PATH, "test_scatterGridPlot.png") load(temp_img)
+    rm(temp_img)
+
+    Base.invokelatest(
+        savefig, 
+        densityMapPlot(pos, gas_mass, density, hsml, plane = "XY"),
+        temp_img,
+    )
+    @test_reference  joinpath(BASE_DATA_PATH, "test_densityMapPlot_XY.png") load(temp_img)
+    rm(temp_img)
+
+    Base.invokelatest(savefig, starMapPlot(pos, axes = true), temp_img)
+    @test_reference  joinpath(BASE_DATA_PATH, "test_starMapPlot_All.png") load(temp_img)
+    rm(temp_img)
+
+    Base.invokelatest(savefig, gasStarEvolutionPlot(SNAP_N, time_series, pos), temp_img)
+    @test_reference  joinpath(BASE_DATA_PATH, "test_gasStarEvolutionPlot.png") load(temp_img)
+    rm(temp_img)
+
+    Base.invokelatest(savefig, CMDFPlot(star_mass, star_z, 1UnitfulAstro.Myr), temp_img)
+    @test_reference  joinpath(BASE_DATA_PATH, "test_CMDFPlot.png") load(temp_img)
+    rm(temp_img)
+
+    Base.invokelatest(
+        savefig, 
+        CMDFPlot(
+            [star_mass, star_mass], 
+            [star_z, star_z], 
+            1UnitfulAstro.Myr, 
+            ["sim1" "sim2"],
+        ),
+        temp_img,
+    )
+    @test_reference  joinpath(BASE_DATA_PATH, "test_compare_CMDFPlot.png") load(temp_img)
+    rm(temp_img)
+
+    ########################################################################################
 	# Test auxiliary functions
+    ########################################################################################
 
     relative_2D = GADGETPlotting.relative(plot(rand(100)), 0.5, 0.5)
     relative_3D = GADGETPlotting.relative(surface(rand(100, 100)), 0.5, 0.5, 0.5)

@@ -8,23 +8,6 @@ Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_scatterGridPlot
 figure = densityMapPlot(pos, gas_mass, density, hsml, plane = "XY")
 Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_densityMapPlot_XY.png"))
 
-figure = densityMapPlot(pos, gas_mass, density, hsml, axes = true)
-Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_densityMapPlot_All.png"))
-
-color = [:batlow, :bone, :CMRmap, :grayC, :inferno, :seaborn_rocket_gradient, :YlOrRd_9]
-
-for c in color
-    local figure = densityMapPlot(pos, gas_mass, density, hsml, color = c, axes = true)
-    Base.invokelatest(
-        savefig, 
-        figure, 
-        joinpath(BASE_OUT_PATH, "test_densityMapPlot_" * string(c) * ".png"),
-    )
-end
-
-figure = starMapPlot(pos, plane = "XY", axes = true)
-Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_starMapPlot_XY.png"))
-
 figure = starMapPlot(pos, axes = true)
 Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "test_starMapPlot_All.png"))
 

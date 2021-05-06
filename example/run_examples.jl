@@ -8,7 +8,7 @@
 ############################################################################################
 
 push!(LOAD_PATH, "./src/")
-using GADGETPlotting, GadgetIO, Unitful, UnitfulAstro, Plots, LaTeXStrings, GLM
+using GADGETPlotting, GadgetIO, Unitful, UnitfulAstro, Plots, LaTeXStrings, GLM, JLD2
 
 "Base path to the directories where the output images and animations will be saved."
 const BASE_OUT_PATH = joinpath(@__DIR__, "example_results")
@@ -38,7 +38,7 @@ mkpath(BASE_OUT_PATH)
 ############################################################################################
 
 include("example_data_acquisition.jl")
-# include("example_plotting.jl")
+include("example_plotting.jl")
 # include("example_pipeline.jl")
 include("example_auxiliary.jl")
 
