@@ -94,7 +94,7 @@ end
     temp_img = joinpath(@__DIR__, "test_img.png")
 
     Base.invokelatest(savefig, scatterGridPlot(pos), temp_img)
-    @test_reference joinpath(BASE_DATA_PATH, "test_scatterGridPlot.png") load(temp_img) by=psnr_equality(18)
+    @test_reference joinpath(BASE_DATA_PATH, "test_scatterGridPlot.png") load(temp_img) by=psnr_equality(15)
     rm(temp_img)
 
     Base.invokelatest(
@@ -102,19 +102,19 @@ end
         densityMapPlot(pos, gas_mass, density, hsml, plane = "XY"),
         temp_img,
     )
-    @test_reference joinpath(BASE_DATA_PATH, "test_densityMapPlot_XY.png") load(temp_img) by=psnr_equality(18)
+    @test_reference joinpath(BASE_DATA_PATH, "test_densityMapPlot_XY.png") load(temp_img) by=psnr_equality(15)
     rm(temp_img)
 
     Base.invokelatest(savefig, starMapPlot(pos, axes = true), temp_img)
-    @test_reference joinpath(BASE_DATA_PATH, "test_starMapPlot_All.png") load(temp_img) by=psnr_equality(18)
+    @test_reference joinpath(BASE_DATA_PATH, "test_starMapPlot_All.png") load(temp_img) by=psnr_equality(15)
     rm(temp_img)
 
     Base.invokelatest(savefig, gasStarEvolutionPlot(SNAP_N, time_series, pos), temp_img)
-    @test_reference joinpath(BASE_DATA_PATH, "test_gasStarEvolutionPlot.png") load(temp_img) by=psnr_equality(18)
+    @test_reference joinpath(BASE_DATA_PATH, "test_gasStarEvolutionPlot.png") load(temp_img) by=psnr_equality(15)
     rm(temp_img)
 
     Base.invokelatest(savefig, CMDFPlot(star_mass, star_z, 1UnitfulAstro.Myr), temp_img)
-    @test_reference joinpath(BASE_DATA_PATH, "test_CMDFPlot.png") load(temp_img) by=psnr_equality(18)
+    @test_reference joinpath(BASE_DATA_PATH, "test_CMDFPlot.png") load(temp_img) by=psnr_equality(15)
     rm(temp_img)
 
     Base.invokelatest(
@@ -127,7 +127,7 @@ end
         ),
         temp_img,
     )
-    @test_reference joinpath(BASE_DATA_PATH, "test_compare_CMDFPlot.png") load(temp_img) by=psnr_equality(18)
+    @test_reference joinpath(BASE_DATA_PATH, "test_compare_CMDFPlot.png") load(temp_img) by=psnr_equality(15)
     rm(temp_img)
 
     ########################################################################################
