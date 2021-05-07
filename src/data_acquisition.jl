@@ -167,6 +167,8 @@ function timeSeriesData(
 
     for (i, snapshot) in enumerate(snap_files)
 
+        header = read_header(snapshot)
+
         if sim_cosmo == 1
 
             # Data availability check.
@@ -179,7 +181,6 @@ function timeSeriesData(
                 error("There is no block 'SFR' in snapshot located at $snapshot")
             )
     
-            header = read_header(GadgetIO.select_file(snapshot, 0))
             # Struct for unit conversion.
             GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
 
@@ -212,7 +213,6 @@ function timeSeriesData(
                 error("There is no block 'SFR' in snapshot located at $snapshot")
             )
     
-            header = read_header(snapshot)
             # Struct for unit conversion.
             # For Newtonian simulations uses the default scale factor: a = 1.
             GU = GadgetPhysicalUnits(hpar = header.h0)
@@ -431,9 +431,10 @@ function positionData(
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
 )::Dict{String, Any}
 
-    if sim_cosmo == 1
+    header = read_header(snapshot)
 
-        header = read_header(GadgetIO.select_file(snapshot, 0))
+    if sim_cosmo == 1
+        
         # Struct for unit conversion.
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
 
@@ -449,7 +450,6 @@ function positionData(
 
     else
 
-        header = read_header(snapshot)
         # Struct for unit conversion.
         # For Newtonian simulation uses the default scale factor: a = 1.
         GU = GadgetPhysicalUnits(hpar = header.h0)
@@ -625,9 +625,10 @@ function densityData(
     density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3,
 )::Dict{String, Any}
 
+    header = read_header(snapshot)
+
     if sim_cosmo == 1
 
-        header = read_header(GadgetIO.select_file(snapshot, 0))
         # Struct for unit conversion.
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
 
@@ -639,7 +640,6 @@ function densityData(
 
     else
 
-        header = read_header(snapshot)
         # Struct for unit conversion.
         # For Newtonian simulation uses the default scale factor: a = 1.
         GU = GadgetPhysicalUnits(hpar = header.h0)
@@ -704,9 +704,10 @@ function hsmlData(
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
 )::Dict{String, Any}
 
-    if sim_cosmo == 1
+    header = read_header(snapshot)
 
-        header = read_header(GadgetIO.select_file(snapshot, 0))
+    if sim_cosmo == 1
+      
         # Struct for unit conversion.
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
 
@@ -718,7 +719,6 @@ function hsmlData(
 
     else
 
-        header = read_header(snapshot)
         # Struct for unit conversion.
         # For Newtonian simulation uses the default scale factor: a = 1.
         GU = GadgetPhysicalUnits(hpar = header.h0)
@@ -788,9 +788,10 @@ function massData(
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
 )::Dict{String, Any}
 
-    if sim_cosmo == 1
+    header = read_header(snapshot)
 
-        header = read_header(GadgetIO.select_file(snapshot, 0))
+    if sim_cosmo == 1
+        
         # Struct for unit conversion.
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
 
@@ -802,7 +803,6 @@ function massData(
 
     else
 
-        header = read_header(snapshot)
         # Struct for unit conversion.
         # For Newtonian simulation uses the default scale factor: a = 1.
         GU = GadgetPhysicalUnits(hpar = header.h0)
@@ -883,9 +883,10 @@ function zData(
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
 )::Dict{String, Any}
 
-    if sim_cosmo == 1
+    header = read_header(snapshot)
 
-        header = read_header(GadgetIO.select_file(snapshot, 0))
+    if sim_cosmo == 1
+        
         # Struct for unit conversion.
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
 
@@ -897,7 +898,6 @@ function zData(
 
     else
 
-        header = read_header(snapshot)
         # Struct for unit conversion.
         # For Newtonian simulation uses the default scale factor: a = 1.
         GU = GadgetPhysicalUnits(hpar = header.h0)
@@ -979,9 +979,10 @@ function tempData(
     temp_unit::Unitful.FreeUnits = Unitful.K,
 )::Dict{String, Any}
 
-    if sim_cosmo == 1
+    header = read_header(snapshot)
 
-        header = read_header(GadgetIO.select_file(snapshot, 0))
+    if sim_cosmo == 1
+  
         # Struct for unit conversion.
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
 
@@ -1001,7 +1002,6 @@ function tempData(
 
     else
 
-        header = read_header(snapshot)
         # Struct for unit conversion.
         # For Newtonian simulation uses the default scale factor: a = 1.
         GU = GadgetPhysicalUnits(hpar = header.h0)
@@ -1109,6 +1109,8 @@ function ageData(
     filter_function::Function = pass_all,
 )::Dict{String, Any}
 
+    header = read_header(snapshot)
+
     if sim_cosmo == 1
 
         # Data availability check.
@@ -1121,8 +1123,7 @@ function ageData(
             !isempty(snap_0) ||
             error("You have to provide an initial snapshot for cosmological simulations")
         )
-
-        header = read_header(GadgetIO.select_file(snapshot, 0))
+   
         # Struct for unit conversion.
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
 
@@ -1136,7 +1137,7 @@ function ageData(
         )["AGE"]
 
         # Initial scale factor
-        a0 = read_header(GadgetIO.select_file(snap_0, 0)).time
+        a0 = read_header(snap_0).time
         
         birth_time = num_integrate.(x -> energy_integrand(header, x), a0, birth_a, 200)
         # Unit conversion.
@@ -1151,7 +1152,6 @@ function ageData(
             error("There is no block 'AGE' in snapshot located at $snapshot")
         )
 
-        header = read_header(snapshot)
         # Struct for unit conversion.
         # For Newtonian simulation uses the default scale factor: a = 1.
         GU = GadgetPhysicalUnits(hpar = header.h0)     
@@ -1233,6 +1233,7 @@ function birthPlace(
     )
 
     snapshot = snap_files[snap_index]
+    header = read_header(snapshot)
 
     if sim_cosmo == 1
 
@@ -1246,7 +1247,6 @@ function birthPlace(
             error("There is no block 'AGE' in snapshot located at $snapshot")
         )
 
-        header = read_header(GadgetIO.select_file(snapshot, 0))
         # Struct for unit conversion.
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
 
@@ -1260,7 +1260,7 @@ function birthPlace(
         )["AGE"]
 
         # Initial scale factor.
-        a0 = read_header(GadgetIO.select_file(snap_files[1], 0)).time
+        a0 = read_header(first(snap_files)).time
 
         birth_times = num_integrate.(x -> energy_integrand(header, x), a0, birth_a, 200)
 
@@ -1279,7 +1279,6 @@ function birthPlace(
             error("There is no block 'AGE' in snapshot located at $snapshot")
         )
 
-        header = read_header(snapshot)
         # Struct for unit conversion.
         # For Newtonian simulation uses the default scale factor: a = 1.
         GU = GadgetPhysicalUnits(hpar = header.h0)     
