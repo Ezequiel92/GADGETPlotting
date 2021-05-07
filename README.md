@@ -4,7 +4,7 @@
 
 [![ForTheBadge made-with-julia](https://forthebadge.com/images/badges/made-with-julia.svg)](https://julialang.org)
 
-[![Codecov](https://img.shields.io/codecov/c/github/Ezequiel92/GADGETPlotting?style=flat-square)](https://codecov.io/github/Ezequiel92/BiblographyFormatter?branch=main) [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Ezequiel92/GADGETPlotting/Continuous%20integration?style=flat-square)](https://github.com/Ezequiel92/GADGETPlotting/actions) [![GitHub](https://img.shields.io/github/license/Ezequiel92/GADGETPlotting?style=flat-square)](https://github.com/Ezequiel92/GADGETPlotting/blob/main/LICENSE) [![Maintenance](https://img.shields.io/maintenance/yes/2021?style=flat-square)](mailto:lozano.ez@gmail.com)
+[![Codecov](https://img.shields.io/codecov/c/github/Ezequiel92/GADGETPlotting?style=for-the-badge&logo=Codecov&labelColor=2B2D2F)](https://codecov.io/github/Ezequiel92/BiblographyFormatter?branch=main) [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Ezequiel92/GADGETPlotting/Continuous%20integration?style=plastic&logo=GitHub&labelColor=2B2D2F)](https://github.com/Ezequiel92/GADGETPlotting/actions) [![GitHub](https://img.shields.io/github/license/Ezequiel92/GADGETPlotting?style=flat&logo=GNU&labelColor=2B2D2F)](https://github.com/Ezequiel92/GADGETPlotting/blob/main/LICENSE) [![Maintenance](https://img.shields.io/maintenance/yes/2021?style=flat-square&labelColor=2B2D2F)](mailto:lozano.ez@gmail.com)
 
 Julia module for creating plots, GIFs, and videos from the data produced by GAGET2/3/4 simulations.
 
