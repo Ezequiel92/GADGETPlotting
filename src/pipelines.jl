@@ -3,7 +3,7 @@
 ############################################################################################
 
 """
-    scatterGridPipeline(
+    scatter_grid_pipeline(
         base_name::String,
         source_path::String,
         anim_name::String,
@@ -11,7 +11,7 @@
         <keyword arguments>
     )::Nothing
 
-Save the results of the scatterGridPlot function as one image per snapshot, 
+Save the results of the scatter_grid_plot function as one image per snapshot, 
 and then generate a GIF and video animating the images. 
 
 # Arguments
@@ -40,7 +40,7 @@ and then generate a GIF and video animating the images.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   GR backend can be used, namely ".pdf", ".ps", ".svg" and ".png". 
 """
-function scatterGridPipeline(
+function scatter_grid_pipeline(
     base_name::String,
     source_path::String,
     anim_name::String,
@@ -55,7 +55,7 @@ function scatterGridPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshotPaths(base_name, source_path)
+    sim = get_snapshot_path(base_name, source_path)
 
     snap_files = @view sim["snap_files"][1:step:end] 
     snap_numbers = @view sim["numbers"][1:step:end] 
@@ -75,7 +75,7 @@ function scatterGridPipeline(
     # Generate and store the plots.                     
     animation = @animate for (number, snapshot) in zip(snap_numbers, snap_files)
 
-        positions = positionData(
+        positions = get_position(
             snapshot; 
             sim_cosmo, 
             filter_function, 
@@ -83,7 +83,7 @@ function scatterGridPipeline(
             length_unit,
         )
 
-        figure = scatterGridPlot(positions)
+        figure = scatter_grid_plot(positions)
 
         Base.invokelatest(
             savefig, 
@@ -104,13 +104,13 @@ function scatterGridPipeline(
     )
 
     # Make the video.
-    makeVideo(img_path, format, output_path, anim_name, frame_rate)
+    make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
 
 """
-    densityMapPipeline(
+    density_map_pipeline(
         base_name::String,
         source_path::String,
         anim_name::String,
@@ -118,7 +118,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the densityMapPlot function as one image per snapshot, 
+Save the results of the density_map_plot function as one image per snapshot, 
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -154,7 +154,7 @@ and then generate a GIF and a video animating the images.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the 
   GR backend can be used, namely ".pdf", ".ps", ".svg" and ".png". 
 """
-function densityMapPipeline(
+function density_map_pipeline(
     base_name::String,
     source_path::String,
     anim_name::String,
@@ -171,7 +171,7 @@ function densityMapPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshotPaths(base_name, source_path)
+    sim = get_snapshot_path(base_name, source_path)
 
     snap_files = @view sim["snap_files"][1:step:end]  
     snap_numbers = @view sim["numbers"][1:step:end]  
@@ -182,15 +182,15 @@ function densityMapPipeline(
     # Generate and store the plots.                      
     animation = @animate for (number, snapshot) in zip(snap_numbers, snap_files)
 
-        pos = positionData(snapshot; sim_cosmo, filter_function, box_size, length_unit)
-        mass = massData(snapshot, "gas"; sim_cosmo, filter_function)
+        pos = get_position(snapshot; sim_cosmo, filter_function, box_size, length_unit)
+        mass = get_mass(snapshot, "gas"; sim_cosmo, filter_function)
 
         density_unit = mass["unit"] / length_unit^3
 
-        density = densityData(snapshot; sim_cosmo, filter_function, density_unit)
-        hsml = hsmlData(snapshot; sim_cosmo, filter_function, length_unit)
+        density = get_density(snapshot; sim_cosmo, filter_function, density_unit)
+        hsml = get_hsml(snapshot; sim_cosmo, filter_function, length_unit)
 
-        figure = densityMapPlot(pos, mass, density, hsml; plane, axes)
+        figure = density_map_plot(pos, mass, density, hsml; plane, axes)
 
         Base.invokelatest(
             savefig, 
@@ -209,13 +209,13 @@ function densityMapPipeline(
     )
 
     # Make the video.
-    makeVideo(img_path, format, output_path, anim_name, frame_rate)
+    make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
 
 """
-    starMapPipeline(
+    star_map_pipeline(
         base_name::String,
         source_path::String,
         anim_name::String,
@@ -223,7 +223,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the starMapPlot function as one image per snapshot, 
+Save the results of the star_map_plot function as one image per snapshot, 
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -262,7 +262,7 @@ and then generate a GIF and a video animating the images.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the 
   GR backend can be used, namely ".pdf", ".ps", ".svg" and ".png". 
 """
-function starMapPipeline(
+function star_map_pipeline(
     base_name::String,
     source_path::String,
     anim_name::String,
@@ -280,7 +280,7 @@ function starMapPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshotPaths(base_name, source_path)
+    sim = get_snapshot_path(base_name, source_path)
 
     snap_files = @view sim["snap_files"][1:step:end]
     snap_numbers = @view sim["numbers"][1:step:end]
@@ -300,9 +300,9 @@ function starMapPipeline(
     # Generate and store the plots.                     
     animation = @animate for (number, snapshot) in zip(snap_numbers, snap_files)
 
-        pos = positionData(snapshot; sim_cosmo, filter_function, box_size, length_unit)
+        pos = get_position(snapshot; sim_cosmo, filter_function, box_size, length_unit)
 
-        figure = starMapPlot(pos; plane, box_factor, axes)
+        figure = star_map_plot(pos; plane, box_factor, axes)
 
         Base.invokelatest(
             savefig, 
@@ -323,13 +323,13 @@ function starMapPipeline(
     )
 
     # Make the video.
-    makeVideo(img_path, format, output_path, anim_name, frame_rate)
+    make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
 
 """
-    gasStarEvolutionPipeline(
+    gas_star_evolution_pipeline(
         base_name::String,
         source_path::String,
         anim_name::String,
@@ -337,7 +337,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the gasStarEvolutionPlot for the last snapshot as one image and 
+Save the results of the gas_star_evolution_plot for the last snapshot as one image and 
 generate a GIF and a video animating the whole evolution for all snapshots. 
                                 
 # Arguments
@@ -372,7 +372,7 @@ generate a GIF and a video animating the whole evolution for all snapshots.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the 
   GR backend can be used, namely ".pdf", ".ps", ".svg" and ".png". 
 """
-function gasStarEvolutionPipeline(
+function gas_star_evolution_pipeline(
     base_name::String,
     source_path::String,
     anim_name::String,
@@ -389,8 +389,8 @@ function gasStarEvolutionPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshotPaths(base_name, source_path)
-    time_series = timeSeriesData(
+    sim = get_snapshot_path(base_name, source_path)
+    time_series = get_time_evolution(
         sim["snap_files"]; 
         sim_cosmo, 
         filter_function, 
@@ -417,7 +417,7 @@ function gasStarEvolutionPipeline(
     data_iter = enumerate(zip(snap_numbers, snap_files))                 
     animation = @animate for (i, (number, snapshot)) in data_iter
 
-        positions = positionData(
+        positions = get_position(
             snapshot; 
             sim_cosmo, 
             filter_function, 
@@ -425,7 +425,7 @@ function gasStarEvolutionPipeline(
             length_unit,
         )
 
-        figure = gasStarEvolutionPlot(1 + step * (i - 1), time_series, positions)
+        figure = gas_star_evolution_plot(1 + step * (i - 1), time_series, positions)
 
         Base.invokelatest(
             savefig, 
@@ -446,7 +446,7 @@ function gasStarEvolutionPipeline(
     )
 
     # Make the video.
-    makeVideo(temp_path, format, output_path, anim_name, frame_rate)
+    make_video(temp_path, format, output_path, anim_name, frame_rate)
 
     # Move the last figure out of the temporary directory.
     mv(
@@ -462,7 +462,7 @@ function gasStarEvolutionPipeline(
 end
 
 """
-    CMDFPipeline(
+    cmdf_pipeline(
         base_name::String,
         source_path::String,
         anim_name::String,
@@ -470,7 +470,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the CMDFPlot function as one image per snapshot, if there are stars 
+Save the results of the cmdf_plot function as one image per snapshot, if there are stars 
 present, and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -497,7 +497,7 @@ present, and then generate a GIF and a video animating the images.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
-function CMDFPipeline(
+function cmdf_pipeline(
     base_name::String,
     source_path::String,
     anim_name::String,
@@ -512,8 +512,8 @@ function CMDFPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
+    sim = get_snapshot_path(base_name, source_path)
+    time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
 
     snap_files = @view sim["snap_files"][1:step:end] 
     snap_numbers = @view sim["numbers"][1:step:end] 
@@ -539,10 +539,10 @@ function CMDFPipeline(
         header = read_header(snapshot)
         
         if header.nall[5] != 0
-            mass_data = massData(snapshot, "stars"; sim_cosmo, filter_function)
-            z_data = zData(snapshot, "stars"; sim_cosmo, filter_function)
+            mass_data = get_mass(snapshot, "stars"; sim_cosmo, filter_function)
+            z_data = get_metallicity(snapshot, "stars"; sim_cosmo, filter_function)
 
-            figure = CMDFPlot(
+            figure = cmdf_plot(
                 mass_data, 
                 z_data,
                 time * time_unit; 
@@ -571,13 +571,13 @@ function CMDFPipeline(
     # )
 
     # Make the video.
-    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
+    # make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
 
 """
-    CMDFPipeline(
+    cmdf_pipeline(
         base_name::Vector{String},
         source_path::Vector{String},
         anim_name::String,
@@ -586,7 +586,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the CMDFPlot function for several simulations as one image per snapshot,
+Save the results of the cmdf_plot function for several simulations as one image per snapshot,
 if there are stars present, and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -614,7 +614,7 @@ if there are stars present, and then generate a GIF and a video animating the im
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
-function CMDFPipeline(
+function cmdf_pipeline(
     base_name::Vector{String},
     source_path::Vector{String},
     anim_name::String,
@@ -630,10 +630,10 @@ function CMDFPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim_data = [getSnapshotPaths(base_name[i], path)["snap_files"]
+    sim_data = [get_snapshot_path(base_name[i], path)["snap_files"]
                 for (i, path) in enumerate(source_path)]
     # Time stamps (they should be the same for every dataset).
-    time_data = timeSeriesData(sim_data[1]; sim_cosmo, filter_function, time_unit)
+    time_data = get_time_evolution(sim_data[1]; sim_cosmo, filter_function, time_unit)
     times = @view time_data["clock_time"][1:step:end]
 
     # Length of the shortest simulation.
@@ -668,7 +668,7 @@ function CMDFPipeline(
             masses = massData.(snapshots, "stars"; sim_cosmo, filter_function)
             metallicities = zData.(snapshots, "stars"; sim_cosmo, filter_function) 
 
-            figure = CMDFPlot(
+            figure = cmdf_plot(
                 masses, 
                 metallicities,
                 time * time_unit,
@@ -698,13 +698,13 @@ function CMDFPipeline(
     # )
 
     # Make the video.
-    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
+    # make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
 
 """
-    birthHistogramPipeline(
+    birth_histogram_pipeline(
         base_name::String,
         source_path::String,
         anim_name::String,
@@ -712,7 +712,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the birthHistogramPlot function as one image per snapshot, if there are 
+Save the results of the birth_histogram_plot function as one image per snapshot, if there are 
 stars present, and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -738,7 +738,7 @@ stars present, and then generate a GIF and a video animating the images.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
-function birthHistogramPipeline(
+function birth_histogram_pipeline(
     base_name::String,
     source_path::String,
     anim_name::String,
@@ -752,8 +752,8 @@ function birthHistogramPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function)
+    sim = get_snapshot_path(base_name, source_path)
+    time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function)
 
     snap_files = @view sim["snap_files"][1:step:end] 
     snap_numbers = @view sim["numbers"][1:step:end] 
@@ -778,7 +778,7 @@ function birthHistogramPipeline(
         header = read_header(snapshot)
 
         if header.nall[5] != 0
-            nursery = birthPlace(
+            nursery = get_birth_place(
                 1 + step * (i - 1), 
                 sim["snap_files"], 
                 time_data["clock_time"],
@@ -789,7 +789,7 @@ function birthHistogramPipeline(
                 time_unit = time_data["units"]["time"],
             )
 
-            figure = birthHistogramPlot(nursery, bins = 50)
+            figure = birth_histogram_plot(nursery, bins = 50)
 
             Base.invokelatest(
                 savefig, 
@@ -811,13 +811,13 @@ function birthHistogramPipeline(
     # )
 
     # Make the video.
-    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
+    # make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
 
 """
-    evolutionSummaryPipeline(
+    evolution_summary_pipeline(
         base_name::String,
         source_path::String,
         fig_name::String; 
@@ -861,7 +861,7 @@ Args:
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
-function evolutionSummaryPipeline(
+function evolution_summary_pipeline(
     base_name::String,
     source_path::String,
     fig_name::String;
@@ -876,12 +876,12 @@ function evolutionSummaryPipeline(
     format::String = ".png",
 )::Nothing
 
-    snap_files = getSnapshotPaths(base_name, source_path)
+    snap_files = get_snapshot_path(base_name, source_path)
 
     # Create a directory to save the plots, if it doesn't exist.
     mkpath(output_path)
 
-    time_series = timeSeriesData(
+    time_series = get_time_evolution(
                     snap_files["snap_files"]; 
                     sim_cosmo, 
                     filter_function,
@@ -891,7 +891,7 @@ function evolutionSummaryPipeline(
                 )
 
     # Parameters vs. time. 
-    figure_t = timeSeriesPlot(time_series; mass_factor, number_factor)
+    figure_t = time_series_plot(time_series; mass_factor, number_factor)
     Base.invokelatest(
         savefig, 
         figure_t, 
@@ -901,7 +901,7 @@ function evolutionSummaryPipeline(
     if sim_cosmo == 1
 
         # Parameters vs. scale factor. 
-        figure_a = scaleFactorSeriesPlot(time_series;mass_factor, number_factor)
+        figure_a = scale_factor_series_plot(time_series;mass_factor, number_factor)
         Base.invokelatest(
             savefig, 
             figure_a, 
@@ -909,7 +909,7 @@ function evolutionSummaryPipeline(
         )
 
         # Parameters vs. redshift. 
-        figure_z = redshiftSeriesPlot(time_series; mass_factor, number_factor)
+        figure_z = redshift_series_plot(time_series; mass_factor, number_factor)
         Base.invokelatest(
             savefig, 
             figure_z, 
@@ -922,7 +922,7 @@ function evolutionSummaryPipeline(
 end
 
 """
-    compareSimulationsPipeline(
+    compare_simulations_pipeline(
         base_name::Vector{String},
         source_path::Vector{String},
         labels::Array{String, 2},
@@ -1011,7 +1011,7 @@ One column per simulation, one row per sanpshot.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png".  
 """
-function compareSimulationsPipeline(
+function compare_simulations_pipeline(
     base_name::Vector{String},
     source_path::Vector{String},
     labels::Array{String, 2},
@@ -1037,8 +1037,8 @@ function compareSimulationsPipeline(
     format::String = ".png",
 )::Nothing
 
-    time_series = [timeSeriesData(
-                        getSnapshotPaths(name, path)["snap_files"]; 
+    time_series = [get_time_evolution(
+                        get_snapshot_path(name, path)["snap_files"]; 
                         sim_cosmo,
                         filter_function, 
                         mass_unit, 
@@ -1061,7 +1061,7 @@ function compareSimulationsPipeline(
         # Name of the snapshot files (first column)
         snapshots = [
             basename(snap) 
-            for snap in getSnapshotPaths(base_name[1], source_path[1])["snap_files"]
+            for snap in get_snapshot_path(base_name[1], source_path[1])["snap_files"]
         ]
         
         # Unit of the quantity
@@ -1088,7 +1088,7 @@ function compareSimulationsPipeline(
     end
 
     # `y_quantity` vs. `x_quantity` plot.  
-    figure = compareSimulationsPlot(
+    figure = compare_simulations_plot(
         time_series,
         x_quantity,
         y_quantity,
@@ -1112,7 +1112,7 @@ function compareSimulationsPipeline(
 end
 
 """
-    densityHistogramPipeline(
+    density_histogram_pipeline(
         base_name::String,
         source_path::String,
         anim_name::String,
@@ -1120,7 +1120,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the densityHistogramPlot function as one image per snapshot, 
+Save the results of the density_histogram_plot function as one image per snapshot, 
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -1151,7 +1151,7 @@ and then generate a GIF and a video animating the images.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
-function densityHistogramPipeline(
+function density_histogram_pipeline(
     base_name::String,
     source_path::String,
     anim_name::String,
@@ -1167,8 +1167,8 @@ function densityHistogramPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
+    sim = get_snapshot_path(base_name, source_path)
+    time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
 
     snap_files = @view sim["snap_files"][1:step:end]
     snap_numbers = @view sim["numbers"][1:step:end]
@@ -1191,9 +1191,9 @@ function densityHistogramPipeline(
     # animation = @animate 
     for (time, number, snapshot) in data_iter
 
-        density = densityData(snapshot; sim_cosmo, filter_function, density_unit)
+        density = get_density(snapshot; sim_cosmo, filter_function, density_unit)
 
-        figure = densityHistogramPlot(density, time * time_unit; factor)
+        figure = density_histogram_plot(density, time * time_unit; factor)
 
         Base.invokelatest(
             savefig, 
@@ -1214,13 +1214,13 @@ function densityHistogramPipeline(
     # )
 
     # Make the video.
-    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
+    # make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
 
 """
-    densityProfilePipeline(
+    density_profile_pipeline(
         base_name::String,
         source_path::String,
         anim_name::String,
@@ -1229,7 +1229,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the densityProfilePlot function as one image per snapshot,
+Save the results of the density_profile_plot function as one image per snapshot,
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -1276,7 +1276,7 @@ and then generate a GIF and a video animating the images.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
-function densityProfilePipeline(
+function density_profile_pipeline(
     base_name::String,
     source_path::String,
     anim_name::String,
@@ -1298,8 +1298,8 @@ function densityProfilePipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
+    sim = get_snapshot_path(base_name, source_path)
+    time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
 
     snap_files = @view sim["snap_files"][1:step:end] 
     snap_numbers = @view sim["numbers"][1:step:end] 
@@ -1322,16 +1322,16 @@ function densityProfilePipeline(
     # animation = @animate          
     for (time, number, snapshot) in data_iter
 
-        positions = positionData(
+        positions = get_position(
             snapshot; 
             sim_cosmo, 
             filter_function, 
             box_size, 
             length_unit,
         )
-        mass = massData(snapshot, type; sim_cosmo, filter_function, mass_unit)
+        mass = get_mass(snapshot, type; sim_cosmo, filter_function, mass_unit)
 
-        figure = densityProfilePlot(
+        figure = density_profile_plot(
             positions,
             mass,
             time * time_unit;
@@ -1360,13 +1360,13 @@ function densityProfilePipeline(
     # )
 
     # Make the video.
-    # makeVideo(img_path, format, output_path * type, anim_name, frame_rate)
+    # make_video(img_path, format, output_path * type, anim_name, frame_rate)
 
     return nothing
 end
 
 """
-    densityProfilePipeline(
+    density_profile_pipeline(
         base_name::Vector{String},
         source_path::Vector{String},
         anim_name::String,
@@ -1376,7 +1376,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the densityProfilePlot function for several simulations as one image 
+Save the results of the density_profile_plot function for several simulations as one image 
 per snapshot, and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -1424,7 +1424,7 @@ per snapshot, and then generate a GIF and a video animating the images.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
-function densityProfilePipeline(
+function density_profile_pipeline(
     base_name::Vector{String},
     source_path::Vector{String},
     anim_name::String,
@@ -1447,11 +1447,11 @@ function densityProfilePipeline(
 )::Nothing
     
     # Get the simulation data.
-    sim_data = [getSnapshotPaths(base_name[i], path)["snap_files"] 
+    sim_data = [get_snapshot_path(base_name[i], path)["snap_files"] 
                 for (i, path) in enumerate(source_path)]
 
     # Time stamps (they should be the same for every dataset).
-    time_data = timeSeriesData(sim_data[1]; sim_cosmo, filter_function, time_unit)
+    time_data = get_time_evolution(sim_data[1]; sim_cosmo, filter_function, time_unit)
     times = @view time_data["clock_time"][1:step:end]
 
     # Length of the shortest simulation.
@@ -1487,7 +1487,7 @@ function densityProfilePipeline(
         )
         masses = massData.(snapshots, type; sim_cosmo, filter_function, mass_unit)
 
-        figure = densityProfilePlot(
+        figure = density_profile_plot(
             positions,
             masses,
             time * time_unit,
@@ -1517,13 +1517,13 @@ function densityProfilePipeline(
     # )
 
     # Make the video.
-    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
+    # make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
 
 """
-    metallicityProfilePipeline(
+    metallicity_profile_pipeline(
         base_name::String,
         source_path::String,
         anim_name::String,
@@ -1532,7 +1532,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the metallicityProfilePlot function as one image per snapshot,
+Save the results of the metallicity_profile_plot function as one image per snapshot,
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -1571,7 +1571,7 @@ and then generate a GIF and a video animating the images.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
-function metallicityProfilePipeline(
+function metallicity_profile_pipeline(
     base_name::String,
     source_path::String,
     anim_name::String,
@@ -1591,8 +1591,8 @@ function metallicityProfilePipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
+    sim = get_snapshot_path(base_name, source_path)
+    time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
 
     snap_files = @view sim["snap_files"][1:step:end] 
     snap_numbers = @view sim["numbers"][1:step:end] 
@@ -1615,17 +1615,17 @@ function metallicityProfilePipeline(
     # animation = @animate          
     for (time, number, snapshot) in data_iter
 
-        positions = positionData(
+        positions = get_position(
             snapshot; 
             sim_cosmo, 
             filter_function, 
             box_size, 
             length_unit,
         )
-        mass = massData(snapshot, type; sim_cosmo, filter_function)
-        metallicities = zData(snapshot, type; sim_cosmo, filter_function)
+        mass = get_mass(snapshot, type; sim_cosmo, filter_function)
+        metallicities = get_metallicity(snapshot, type; sim_cosmo, filter_function)
 
-        figure = metallicityProfilePlot(
+        figure = metallicity_profile_plot(
             positions,
             mass,
             metallicities,
@@ -1654,13 +1654,13 @@ function metallicityProfilePipeline(
     # )
 
     # Make the video.
-    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
+    # make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
 
 """
-    metallicityProfilePipeline(
+    metallicity_profile_pipeline(
         base_name::Vector{String},
         source_path::Vector{String},
         anim_name::String,
@@ -1670,7 +1670,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the metallicityProfilePlot function for several simulations as one 
+Save the results of the metallicity_profile_plot function for several simulations as one 
 image per snapshot, and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -1714,7 +1714,7 @@ image per snapshot, and then generate a GIF and a video animating the images.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
-function metallicityProfilePipeline(
+function metallicity_profile_pipeline(
     base_name::Vector{String},
     source_path::Vector{String},
     anim_name::String,
@@ -1735,11 +1735,11 @@ function metallicityProfilePipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim_data = [getSnapshotPaths(base_name[i], path)["snap_files"] 
+    sim_data = [get_snapshot_path(base_name[i], path)["snap_files"] 
                 for (i, path) in enumerate(source_path)]
 
     # Time stamps (they should be the same for every dataset).
-    time_data = timeSeriesData(sim_data[1]; sim_cosmo, filter_function, time_unit)
+    time_data = get_time_evolution(sim_data[1]; sim_cosmo, filter_function, time_unit)
     times = @view time_data["clock_time"][1:step:end]
 
     # Length of the shortest simulation.
@@ -1776,7 +1776,7 @@ function metallicityProfilePipeline(
         masses = massData.(snapshots, type; sim_cosmo, filter_function)
         metallicities = zData.(snapshots, type; sim_cosmo, filter_function)
 
-        figure = metallicityProfilePlot(
+        figure = metallicity_profile_plot(
             positions,
             masses,
             metallicities,
@@ -1806,13 +1806,13 @@ function metallicityProfilePipeline(
     # )
 
     # Make the video.
-    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
+    # make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
 
 """
-    massProfilePipeline(
+    mass_profile_pipeline(
         base_name::String,
         source_path::String,
         anim_name::String,
@@ -1821,7 +1821,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the massProfilePlot function as one image per snapshot,
+Save the results of the mass_profile_plot function as one image per snapshot,
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -1868,7 +1868,7 @@ and then generate a GIF and a video animating the images.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
-function massProfilePipeline(
+function mass_profile_pipeline(
     base_name::String,
     source_path::String,
     anim_name::String,
@@ -1890,8 +1890,8 @@ function massProfilePipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
+    sim = get_snapshot_path(base_name, source_path)
+    time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
 
     snap_files = @view sim["snap_files"][1:step:end] 
     snap_numbers = @view sim["numbers"][1:step:end] 
@@ -1914,16 +1914,16 @@ function massProfilePipeline(
     # animation = @animate          
     for (time, number, snapshot) in data_iter
 
-        positions = positionData(
+        positions = get_position(
             snapshot; 
             sim_cosmo, 
             filter_function, 
             box_size, 
             length_unit,
         )
-        mass = massData(snapshot, type; sim_cosmo, filter_function, mass_unit)
+        mass = get_mass(snapshot, type; sim_cosmo, filter_function, mass_unit)
 
-        figure = massProfilePlot(
+        figure = mass_profile_plot(
             positions,
             mass,
             time * time_unit;
@@ -1952,13 +1952,13 @@ function massProfilePipeline(
     # )
 
     # Make the video.
-    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
+    # make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
 
 """
-    massProfilePipeline(
+    mass_profile_pipeline(
         base_name::Vector{String},
         source_path::Vector{String},
         anim_name::String,
@@ -1968,7 +1968,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the massProfilePlot function for several simulations as one image 
+Save the results of the mass_profile_plot function for several simulations as one image 
 per snapshot, and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -2016,7 +2016,7 @@ per snapshot, and then generate a GIF and a video animating the images.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png".  
 """
-function massProfilePipeline(
+function mass_profile_pipeline(
     base_name::Vector{String},
     source_path::Vector{String},
     anim_name::String,
@@ -2039,11 +2039,11 @@ function massProfilePipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim_data = [getSnapshotPaths(base_name[i], path)["snap_files"] 
+    sim_data = [get_snapshot_path(base_name[i], path)["snap_files"] 
                 for (i, path) in enumerate(source_path)]
 
     # Time stamps (they should be the same for every dataset).
-    time_data = timeSeriesData(sim_data[1]; sim_cosmo, filter_function, time_unit)
+    time_data = get_time_evolution(sim_data[1]; sim_cosmo, filter_function, time_unit)
     times = @view time_data["clock_time"][1:step:end]
 
     # Length of the shortest simulation.
@@ -2079,7 +2079,7 @@ function massProfilePipeline(
         )
         masses = massData.(snapshots, type; sim_cosmo, filter_function)
 
-        figure = massProfilePlot(
+        figure = mass_profile_plot(
             positions,
             masses,
             time * time_unit,
@@ -2109,13 +2109,13 @@ function massProfilePipeline(
     # )
 
     # Make the video.
-    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
+    # make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
 
 """
-    sfrTxtPipeline(
+    sfr_txt_pipeline(
         snapshots::Vector{String},
         source_path::Vector{String},
         x_axis::Int64,
@@ -2123,7 +2123,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the sfrTxtPlot function as one image per simulation or one image 
+Save the results of the sfr_txt_plot function as one image per simulation or one image 
 per column depending on `comparison_type`.
 
 # Warning 
@@ -2175,7 +2175,7 @@ GADGET3. GADGET4 produces a sfr.txt, but it is not compatible with this function
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
-function sfrTxtPipeline(
+function sfr_txt_pipeline(
     snapshots::Vector{String},
     source_path::Vector{String},
     x_axis::Int64,
@@ -2211,14 +2211,14 @@ function sfrTxtPipeline(
     mkpath(output_path)
 
     sfr_data = [
-        sfrTxtData(source, snap; sim_cosmo, mass_unit, time_unit, sfr_unit) 
+        get_sfr_txt(source, snap; sim_cosmo, mass_unit, time_unit, sfr_unit) 
         for (source, snap) in zip(source_path, snapshots)
     ]
 
     if comparison_type == 0
         @inbounds for (i, source) in enumerate(source_path)
 
-            figure = sfrTxtPlot(
+            figure = sfr_txt_plot(
                 sfr_data[i], 
                 x_axis, 
                 y_axis;
@@ -2240,7 +2240,7 @@ function sfrTxtPipeline(
     else 
         @inbounds for (i, column) in enumerate(y_axis)
 
-            figure = sfrTxtPlot(
+            figure = sfr_txt_plot(
                 sfr_data, 
                 x_axis, 
                 column,
@@ -2266,7 +2266,7 @@ function sfrTxtPipeline(
 end
 
 """
-    temperatureHistogramPipeline(
+    temperature_histogram_pipeline(
         base_name::String,
         source_path::String,
         anim_name::String,
@@ -2274,7 +2274,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the temperatureHistogramPlot function as one image per snapshot, 
+Save the results of the temperature_histogram_plot function as one image per snapshot, 
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -2300,7 +2300,7 @@ and then generate a GIF and a video animating the images.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
-function temperatureHistogramPipeline(
+function temperature_histogram_pipeline(
     base_name::String,
     source_path::String,
     anim_name::String,
@@ -2314,8 +2314,8 @@ function temperatureHistogramPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function)
+    sim = get_snapshot_path(base_name, source_path)
+    time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function)
     time_unit = time_data["units"]["time"]
 
     snap_files = @view sim["snap_files"][1:step:end] 
@@ -2339,9 +2339,9 @@ function temperatureHistogramPipeline(
     # animation = @animate          
     for (time, number, snapshot) in data_iter
 
-        temp_data = tempData(snapshot; sim_cosmo, filter_function, temp_unit)
+        temp_data = get_temperature(snapshot; sim_cosmo, filter_function, temp_unit)
 
-        figure = temperatureHistogramPlot(temp_data, time * time_unit, bins = 30)
+        figure = temperature_histogram_plot(temp_data, time * time_unit, bins = 30)
 
         Base.invokelatest(
             savefig, 
@@ -2362,13 +2362,13 @@ function temperatureHistogramPipeline(
     # )
 
     # Make the video.
-    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
+    # make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
 
 """
-    rhoTempPipeline(
+    rho_temp_pipeline(
         base_name::String,
         source_path::String,
         anim_name::String,
@@ -2376,7 +2376,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the rhoTempPlot function as one image per snapshot, 
+Save the results of the rho_temp_plot function as one image per snapshot, 
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -2405,7 +2405,7 @@ and then generate a GIF and a video animating the images.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
-function rhoTempPipeline(
+function rho_temp_pipeline(
     base_name::String,
     source_path::String,
     anim_name::String,
@@ -2420,8 +2420,8 @@ function rhoTempPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function)
+    sim = get_snapshot_path(base_name, source_path)
+    time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function)
     time_unit = time_data["units"]["time"]
 
     snap_files = @view sim["snap_files"][1:step:end] 
@@ -2445,10 +2445,10 @@ function rhoTempPipeline(
     # animation = @animate          
     for (time, number, snapshot) in data_iter
 
-        temp_data = tempData(snapshot; sim_cosmo, filter_function, temp_unit)
-        density_data = densityData(snapshot; sim_cosmo, filter_function, density_unit)
+        temp_data = get_temperature(snapshot; sim_cosmo, filter_function, temp_unit)
+        density_data = get_density(snapshot; sim_cosmo, filter_function, density_unit)
 
-        figure = rhoTempPlot(temp_data, density_data, time * time_unit)
+        figure = rho_temp_plot(temp_data, density_data, time * time_unit)
 
         Base.invokelatest(
             savefig, 
@@ -2469,19 +2469,19 @@ function rhoTempPipeline(
     # )
 
     # Make the video.
-    # makeVideo(img_path, format, output_path, anim_name, frame_rate)
+    # make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
 
 """
-    KennicuttSchmidtPipeline(
+    kennicutt_schmidt_pipeline(
         base_name::String,
         source_path::String; 
         <keyword arguments>
     )::Nothing
 
-Save the results of the KennicuttSchmidtPlot function as one image per snapshot.
+Save the results of the kennicutt_schmidt_plot function as one image per snapshot.
 
 It will produce output only for the snapshots that have enough young stars to produce 
 at least five data points for the linear fitting.
@@ -2525,7 +2525,7 @@ at least five data points for the linear fitting.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
-function KennicuttSchmidtPipeline(
+function kennicutt_schmidt_pipeline(
     base_name::String,
     source_path::String;
     output_path::String = "Kennicutt_Schmidt",
@@ -2545,8 +2545,8 @@ function KennicuttSchmidtPipeline(
 )::Nothing
 
     # Get the simulation data.
-    sim = getSnapshotPaths(base_name, source_path)
-    time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
+    sim = get_snapshot_path(base_name, source_path)
+    time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
 
     snap_files = @view sim["snap_files"][1:step:end] 
     snap_numbers = @view sim["numbers"][1:step:end] 
@@ -2574,11 +2574,11 @@ function KennicuttSchmidtPipeline(
         if header.nall[5] != 0
 
             # Gas masses.
-            gas_mass_data = massData(snapshot, "gas"; sim_cosmo, filter_function, mass_unit)
+            gas_mass_data = get_mass(snapshot, "gas"; sim_cosmo, filter_function, mass_unit)
             # Gas temperatures.
-            temperature_data = tempData(snapshot; sim_cosmo, filter_function, temp_unit)
+            temperature_data = get_temperature(snapshot; sim_cosmo, filter_function, temp_unit)
             # Stars masses.
-            star_mass_data = massData(
+            star_mass_data = get_mass(
                 snapshot, 
                 "stars"; 
                 sim_cosmo, 
@@ -2586,7 +2586,7 @@ function KennicuttSchmidtPipeline(
                 mass_unit,
             )
             # Stars ages.
-            age_data = ageData(
+            age_data = get_age(
                 snapshot, 
                 time * time_unit; 
                 sim_cosmo, 
@@ -2594,14 +2594,14 @@ function KennicuttSchmidtPipeline(
                 filter_function,
             )
             # Positions.
-            pos_data = positionData(
+            pos_data = get_position(
                 snapshot; 
                 sim_cosmo, 
                 filter_function,  
                 length_unit,
             )
 
-            figure = KennicuttSchmidtPlot(
+            figure = kennicutt_schmidt_plot(
                 gas_mass_data,
                 temperature_data,
                 star_mass_data,
@@ -2634,13 +2634,13 @@ function KennicuttSchmidtPipeline(
 end
 
 # """
-#     KennicuttSchmidtPipeline2(
+#     kennicutt_schmidt_pipeline2(
 #         base_name::String,
 #         source_path::String; 
 #         <keyword arguments>
 #     )::Nothing
 
-# Save the results of the KennicuttSchmidtPlot function as one image per snapshot.
+# Save the results of the kennicutt_schmidt_plot function as one image per snapshot.
 
 # It will produce output only for the snapshots that have enough young stars to produce 
 # at least five data points for the linear fitting.
@@ -2682,7 +2682,7 @@ end
 # - `format::String = ".png"`: File format of the output figure. All formats supported by the
 #   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 # """
-# function KennicuttSchmidtPipeline2(
+# function kennicutt_schmidt_pipeline2(
 #     base_name::String,
 #     source_path::String;
 #     output_path::String = "Kennicutt_Schmidt",
@@ -2701,8 +2701,8 @@ end
 # )::Nothing
 
 #     # Get the simulation data.
-#     sim = getSnapshotPaths(base_name, source_path)
-#     time_data = timeSeriesData(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
+#     sim = get_snapshot_path(base_name, source_path)
+#     time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
 
 #     snap_files = @view sim["snap_files"][1:step:end] 
 #     snap_numbers = @view sim["numbers"][1:step:end] 
@@ -2728,10 +2728,10 @@ end
 #         if header.nall[5] != 0
 
 #             # Gas masses.
-#             gas_mass_data = massData(snapshot, "gas"; sim_cosmo, filter_function, mass_unit)
+#             gas_mass_data = get_mass(snapshot, "gas"; sim_cosmo, filter_function, mass_unit)
             
 #             # Stars masses.
-#             star_mass_data = massData(
+#             star_mass_data = get_mass(
 #                 snapshot, 
 #                 "stars"; 
 #                 sim_cosmo, 
@@ -2740,17 +2740,17 @@ end
 #             )
 
 #             # Stars ages.
-#             age_data = ageData(snapshot, time * time_unit; sim_cosmo, filter_function)
+#             age_data = get_age(snapshot, time * time_unit; sim_cosmo, filter_function)
 
 #             # Positions.
-#             pos_data = positionData(
+#             pos_data = get_position(
 #                 snapshot; 
 #                 sim_cosmo, 
 #                 filter_function,  
 #                 length_unit,
 #             )
 
-#             figure = KennicuttSchmidtPlot2(
+#             figure = kennicutt_schmidt_plot2(
 #                 gas_mass_data,
 #                 star_mass_data,
 #                 age_data,

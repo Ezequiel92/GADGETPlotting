@@ -15,40 +15,40 @@ const SNAP_N = 21
 	# Test data acquisition functions
 	########################################################################################
 
-	snaps = GADGETPlotting.getSnapshotPaths(SNAP_NAME, BASE_SRC_PATH)
+	snaps = GADGETPlotting.get_snapshot_path(SNAP_NAME, BASE_SRC_PATH)
 
 	snap_files = snaps["snap_files"]
     sim_cosmo = SIM_COSMO
     snap_n = snap_files[SNAP_N]
 
-	time_series = GADGETPlotting.timeSeriesData(snap_files; sim_cosmo)
-	pos = GADGETPlotting.positionData(
+	time_series = GADGETPlotting.get_time_evolution(snap_files; sim_cosmo)
+	pos = GADGETPlotting.get_position(
 		snap_n;
 		sim_cosmo,
 		box_size = BOX_SIZE,
 		length_unit = UnitfulAstro.Mpc,
 	)
-	density = GADGETPlotting.densityData(snap_n; sim_cosmo)
-	hsml = GADGETPlotting.hsmlData(snap_n; sim_cosmo)
-	gas_mass = GADGETPlotting.massData(snap_n, "gas"; sim_cosmo)
-	dm_mass = GADGETPlotting.massData(snap_n, "dark_matter"; sim_cosmo)
-	star_mass = GADGETPlotting.massData(snap_n, "stars"; sim_cosmo)
-	gas_z = GADGETPlotting.zData(snap_n, "gas"; sim_cosmo)
-	star_z = GADGETPlotting.zData(snap_n, "stars"; sim_cosmo)
-	temp_data = GADGETPlotting.tempData(snap_n; sim_cosmo)
-	age_data = GADGETPlotting.ageData(
+	density = GADGETPlotting.get_density(snap_n; sim_cosmo)
+	hsml = GADGETPlotting.get_hsml(snap_n; sim_cosmo)
+	gas_mass = GADGETPlotting.get_mass(snap_n, "gas"; sim_cosmo)
+	dm_mass = GADGETPlotting.get_mass(snap_n, "dark_matter"; sim_cosmo)
+	star_mass = GADGETPlotting.get_mass(snap_n, "stars"; sim_cosmo)
+	gas_z = GADGETPlotting.get_metallicity(snap_n, "gas"; sim_cosmo)
+	star_z = GADGETPlotting.get_metallicity(snap_n, "stars"; sim_cosmo)
+	temp_data = GADGETPlotting.get_temperature(snap_n; sim_cosmo)
+	age_data = GADGETPlotting.get_age(
 		snap_n,
 		time_series["clock_time"][SNAP_N] * time_series["units"]["time"];
 		sim_cosmo,
 	)
-	birth_pos = GADGETPlotting.birthPlace(
+	birth_pos = GADGETPlotting.get_birth_place(
 		SNAP_N,
 		snap_files,
 		time_series["clock_time"],
 		time_series["units"]["time"];
 		sim_cosmo,
 	)
-	sfrtxt_data = GADGETPlotting.sfrTxtData(BASE_SRC_PATH, FIRST_SNAP; sim_cosmo)
+	sfrtxt_data = GADGETPlotting.get_sfr_txt(BASE_SRC_PATH, FIRST_SNAP; sim_cosmo)
 	
     jldopen(joinpath(BASE_DATA_PATH, "data_acquisition.jld2"), "r") do file
         @test file["snaps"]["numbers"] == snaps["numbers"]
@@ -73,56 +73,56 @@ const SNAP_N = 21
 
     temp_img = joinpath(@__DIR__, "test_img.png")
 
-    @test_nowarn fig = scatterGridPlot(pos)
+    @test_nowarn fig = scatter_grid_plot(pos)
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "scatterGridPlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "scatter_grid_plot.png") load(temp_img)
 
-    @test_nowarn fig = densityMapPlot(pos, gas_mass, density, hsml)
+    @test_nowarn fig = density_map_plot(pos, gas_mass, density, hsml)
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "densityMapPlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "density_map_plot.png") load(temp_img)
 
-    @test_nowarn fig = starMapPlot(pos)
+    @test_nowarn fig = star_map_plot(pos)
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "starMapPlot_All.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "star_map_plot_All.png") load(temp_img)
 
-    @test_nowarn fig = gasStarEvolutionPlot(SNAP_N, time_series, pos)
+    @test_nowarn fig = gas_star_evolution_plot(SNAP_N, time_series, pos)
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "gasStarEvolutionPlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "gas_star_evolution_plot.png") load(temp_img)
 
-    @test_nowarn fig = CMDFPlot(star_mass, star_z, 1UnitfulAstro.Myr)
+    @test_nowarn fig = cmdf_plot(star_mass, star_z, 1UnitfulAstro.Myr)
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "CMDFPlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "cmdf_plot.png") load(temp_img)
 
-    @test_nowarn fig = CMDFPlot(
+    @test_nowarn fig = cmdf_plot(
         [star_mass, star_mass], 
         [star_z, star_z], 
         1UnitfulAstro.Myr, 
         ["sim1" "sim2"],
     )
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "compare_CMDFPlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "compare_cmdf_plot.png") load(temp_img)
 
-    @test_nowarn fig = birthHistogramPlot(birth_pos, bins = 50)
+    @test_nowarn fig = birth_histogram_plot(birth_pos, bins = 50)
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "birthHistogramPlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "birth_histogram_plot.png") load(temp_img)
 
-    @test_nowarn fig = timeSeriesPlot(time_series, mass_factor = 0, number_factor = 4)
+    @test_nowarn fig = time_series_plot(time_series, mass_factor = 0, number_factor = 4)
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "timeSeriesPlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "time_series_plot.png") load(temp_img)
 
-    @test_nowarn fig = scaleFactorSeriesPlot(
+    @test_nowarn fig = scale_factor_series_plot(
         time_series, 
         mass_factor = 0, 
         number_factor = 4,
     )
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "scaleFactorSeriesPlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "scale_factor_series_plot.png") load(temp_img)
 
-    @test_nowarn fig = redshiftSeriesPlot(time_series, mass_factor = 0, number_factor = 4)
+    @test_nowarn fig = redshift_series_plot(time_series, mass_factor = 0, number_factor = 4)
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "redshiftSeriesPlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "redshift_series_plot.png") load(temp_img)
 
-    @test_nowarn fig = compareSimulationsPlot(
+    @test_nowarn fig = compare_simulations_plot(
         [time_series, time_series],
         "star_mass",
         "sfr",
@@ -132,13 +132,13 @@ const SNAP_N = 21
         scale = [:identity, :log10],
     )
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "compareSimulationsPlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "compare_simulations_plot.png") load(temp_img)
 
-    @test_nowarn fig = densityHistogramPlot(density, 1UnitfulAstro.Myr, factor = 10)
+    @test_nowarn fig = density_histogram_plot(density, 1UnitfulAstro.Myr, factor = 10)
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "densityHistogramPlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "density_histogram_plot.png") load(temp_img)
 
-    @test_nowarn fig = densityProfilePlot(
+    @test_nowarn fig = density_profile_plot(
         pos, 
         gas_mass, 
         1UnitfulAstro.Myr, 
@@ -147,9 +147,9 @@ const SNAP_N = 21
         factor = 6,
     )
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "densityProfilePlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "density_profile_plot.png") load(temp_img)
     
-    @test_nowarn fig = densityProfilePlot(
+    @test_nowarn fig = density_profile_plot(
         [pos, pos],
         [gas_mass, gas_mass],
         1UnitfulAstro.Myr,
@@ -159,9 +159,9 @@ const SNAP_N = 21
         factor = 6,
     )
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "compare_densityProfilePlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "compare_density_profile_plot.png") load(temp_img)
 
-    @test_nowarn fig = metallicityProfilePlot(
+    @test_nowarn fig = metallicity_profile_plot(
         pos, 
         gas_mass, 
         gas_z, 
@@ -170,9 +170,9 @@ const SNAP_N = 21
         bins = 50,
     )
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "metallicityProfilePlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "metallicity_profile_plot.png") load(temp_img)
 
-    @test_nowarn fig = metallicityProfilePlot(
+    @test_nowarn fig = metallicity_profile_plot(
         [pos, pos],
         [gas_mass, gas_mass],
         [gas_z, gas_z],
@@ -182,9 +182,9 @@ const SNAP_N = 21
         bins = 50,
     )
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "compare_metallicityProfilePlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "compare_metallicity_profile_plot.png") load(temp_img)
 
-    @test_nowarn fig = massProfilePlot(
+    @test_nowarn fig = mass_profile_plot(
         pos, 
         gas_mass, 
         1UnitfulAstro.Myr, 
@@ -193,9 +193,9 @@ const SNAP_N = 21
         factor = 10,
     )
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "massProfilePlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "mass_profile_plot.png") load(temp_img)
 
-    @test_nowarn fig = massProfilePlot(
+    @test_nowarn fig = mass_profile_plot(
         [pos, pos],
         [gas_mass, gas_mass],
         1UnitfulAstro.Myr,
@@ -205,9 +205,9 @@ const SNAP_N = 21
         factor = 10,
     )
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "compare_massProfilePlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "compare_mass_profile_plot.png") load(temp_img)
 
-    @test_nowarn fig = sfrTxtPlot(
+    @test_nowarn fig = sfr_txt_plot(
         sfrtxt_data,
         1,
         [4, 6],
@@ -216,9 +216,9 @@ const SNAP_N = 21
         scale = (:identity, :log10),
     )
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "compare_columns_sfrTxtPlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "compare_columns_sfr_txt_plot.png") load(temp_img)
 
-    @test_nowarn fig = sfrTxtPlot(
+    @test_nowarn fig = sfr_txt_plot(
         [sfrtxt_data, sfrtxt_data],
         1,
         6,
@@ -228,17 +228,17 @@ const SNAP_N = 21
         scale = (:identity, :log10),
     )
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "compare_sims_sfrTxtPlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "compare_sims_sfr_txt_plot.png") load(temp_img)
 
-    @test_nowarn fig = temperatureHistogramPlot(temp_data, 1UnitfulAstro.Myr, bins = 30)
+    @test_nowarn fig = temperature_histogram_plot(temp_data, 1UnitfulAstro.Myr, bins = 30)
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "temperatureHistogramPlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "temperature_histogram_plot.png") load(temp_img)
 
-    @test_nowarn fig = rhoTempPlot(temp_data, density, 1UnitfulAstro.Myr)
+    @test_nowarn fig = rho_temp_plot(temp_data, density, 1UnitfulAstro.Myr)
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "rhoTempPlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "rho_temp_plot.png") load(temp_img)
 
-    @test_nowarn fig = KennicuttSchmidtPlot(
+    @test_nowarn fig = kennicutt_schmidt_plot(
         gas_mass,
         temp_data,
         star_mass,
@@ -252,7 +252,7 @@ const SNAP_N = 21
         error_formating = "conf_interval",
     )
     # Base.invokelatest(savefig, fig, temp_img)
-    # @test_reference joinpath(BASE_DATA_PATH, "KennicuttSchmidtPlot.png") load(temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "kennicutt_schmidt_plot.png") load(temp_img)
     
     # @test_nowarn rm(temp_img)
 
@@ -263,14 +263,14 @@ const SNAP_N = 21
     relative_2D = GADGETPlotting.relative(plot(rand(100)), 0.5, 0.5)
     relative_3D = GADGETPlotting.relative(surface(rand(100, 100)), 0.5, 0.5, 0.5)
 
-    smooth_w = GADGETPlotting.smoothWindow([1:1000...], rand(1000), 50)
+    smooth_w = GADGETPlotting.smooth_window([1:1000...], rand(1000), 50)
 
     positions = pos["gas"]
     distances = sqrt.(positions[1, :] .^ 2 .+ positions[2, :] .^ 2 .+ positions[3, :] .^ 2)
     box_size = ustrip(Float64, pos["unit"], BOX_SIZE)
-    density_p = GADGETPlotting.densityProfile(gas_mass["mass"], distances, box_size, 80)
+    density_p = GADGETPlotting.density_profile(gas_mass["mass"], distances, box_size, 80)
 
-    metallicity_p = GADGETPlotting.metallicityProfile(
+    metallicity_p = GADGETPlotting.metallicity_profile(
         gas_mass["mass"], 
         distances, 
         gas_z["Z"], 
@@ -278,17 +278,17 @@ const SNAP_N = 21
         80,
     )
 
-    mass_p = GADGETPlotting.massProfile(gas_mass["mass"], distances, box_size, 80)
+    mass_p = GADGETPlotting.mass_profile(gas_mass["mass"], distances, box_size, 80)
 
     max_z = findmax(star_z["Z"])
     max_Z = max_z[1] / star_mass["mass"][max_z[2]]
-    cmdf = GADGETPlotting.CMDF(star_mass["mass"], star_z["Z"], max_Z, 50)
+    cmdf = GADGETPlotting.compute_cmdf(star_mass["mass"], star_z["Z"], max_Z, 50)
 
     pos_gas = pos["gas"]
     dist_gas = sqrt.(pos_gas[1, :] .^ 2 + pos_gas[2, :] .^ 2)
     pos_stars = pos["stars"]
     dist_stars = sqrt.(pos_stars[1, :] .^ 2 + pos_stars[2, :] .^ 2)
-    ksl = GADGETPlotting.KennicuttSchmidtLaw(
+    ksl = GADGETPlotting.kennicutt_schmidt_law(
         gas_mass["mass"],
         dist_gas,
         temp_data["temperature"],

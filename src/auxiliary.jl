@@ -73,7 +73,7 @@ function relative(
 end
 
 """
-    makeVideo(
+    make_video(
         source_path::String,
         source_format::String,
         output_path::String,
@@ -93,7 +93,7 @@ any format available in ImageIO.jl, e.g. ".png", ".svg", ".jpeg", etc.
 - `output_filename::String`: Name of the video to be generated without extension.	
 - `frame_rate::Int64`: Frame rate of the video to be generated.
 """
-function makeVideo(
+function make_video(
     source_path::String,
     source_format::String,
     output_path::String,
@@ -122,7 +122,7 @@ function makeVideo(
 end
 
 """
-    smoothWindow(
+    smooth_window(
         x_data::Vector{<:Real},
         y_data::Vector{<:Real},
         bins::Int64,
@@ -140,7 +140,7 @@ every value within the window with the mean in order to smooth out the data.
 # Returns
 - The smooth data.
 """
-function smoothWindow(
+function smooth_window(
     x_data::Vector{<:Real},
     y_data::Vector{<:Real},
     bins::Int64;
@@ -194,7 +194,7 @@ function smoothWindow(
 end
 
 """
-    densityProfile(
+    density_profile(
         mass_data::Vector{Float64},
         distance_data::Vector{Float64},
         max_radius::Float64,
@@ -215,7 +215,7 @@ Compute a density profile up to a radius `max_radius`.
 - A Tuple of two Arrays. 
   The first with the radial distances and the second with the densities.
 """
-function densityProfile(
+function density_profile(
     mass_data::Vector{Float64},
     distance_data::Vector{Float64},
     max_radius::Float64,
@@ -257,7 +257,7 @@ function densityProfile(
 end
 
 """
-    metallicityProfile(
+    metallicity_profile(
         mass_data::Vector{Float64},
         distance_data::Vector{Float64},
         z_data::Vector{Float64},
@@ -282,7 +282,7 @@ and normalize it to the solar metallicity.
 - A Tuple of two Arrays.
   The first with the radial distances and the second with the metallicities.
 """
-function metallicityProfile(
+function metallicity_profile(
     mass_data::Vector{Float64},
     distance_data::Vector{Float64},
     z_data::Vector{Float64},
@@ -325,7 +325,7 @@ function metallicityProfile(
 end
 
 """
-    massProfile(
+    mass_profile(
         mass_data::Vector{Float64},
         distance_data::Vector{Float64},
         max_radius::Float64,
@@ -346,7 +346,7 @@ Compute an accumulated mass profile up to a radius `max_radius`.
 - A Tuple of two Arrays.
   The first with the radial distances and the second with the accumulated masses.
 """
-function massProfile(
+function mass_profile(
     mass_data::Vector{Float64},
     distance_data::Vector{Float64},
     max_radius::Float64,
@@ -385,7 +385,7 @@ function massProfile(
 end
 
 """
-    CMDF(
+    compute_cmdf(
         mass_data::Vector{Float64},
         metallicity_data::Vector{Float64},
         max_Z::Float64,
@@ -408,7 +408,7 @@ Compute the cumulative metallicity distribution function up to a metallicity `ma
 - A Tuple of two Arrays.
   The first with the metallicities and the second with the accumulated masses.
 """
-function CMDF(
+function compute_cmdf(
     mass_data::Vector{Float64},
     metallicity_data::Vector{Float64},
     max_Z::Float64,
@@ -461,7 +461,7 @@ function CMDF(
 end
 
 """
-    KennicuttSchmidtLaw(
+    kennicutt_schmidt_law(
         gas_mass_data::Vector{Float64},
         gas_distance_data::Vector{Float64},
         temperature_data::Vector{Float64},
@@ -499,7 +499,7 @@ Compute mass area density and the SFR area density for the Kennicutt-Schmidt law
   - Key "SFR" => Logarithm of the SFR area densities.
   - Key "LM" => Linear model given by GLM.jl.
 """
-function KennicuttSchmidtLaw(
+function kennicutt_schmidt_law(
     gas_mass_data::Vector{Float64},
     gas_distance_data::Vector{Float64},
     temperature_data::Vector{Float64},
@@ -570,7 +570,7 @@ function KennicuttSchmidtLaw(
 end
 
 # """
-#     KennicuttSchmidtLaw2(
+#     kennicutt_schmidt_law2(
 #         gas_mass_data::Vector{Float64},
 #         gas_distance_data::Vector{Float64},
 #         temperature_data::Vector{Float64},
@@ -605,7 +605,7 @@ end
 #   - Key "SFR" => Logarithm of the SFR area densities.
 #   - Key "LM" => Linear model given by GLM.jl.
 # """
-# function KennicuttSchmidtLaw2(
+# function kennicutt_schmidt_law2(
 #     gas_mass_data::Vector{Float64},
 #     gas_distance_data::Vector{Float64},
 #     star_mass_data::Vector{Float64},
@@ -855,7 +855,7 @@ function num_integrate(
 end
 
 """
-    centerOfMass(
+    center_of_mass(
         position_data::Matrix{<:Real},
         mass_data::Vector{<:Real},
     )::NTuple{3, Float64}
@@ -873,7 +873,7 @@ where M = ∑ m_i
 # Returns
 - The center of mass in the unis of `position_data`.
 """
-function centerOfMass(
+function center_of_mass(
     position_data::Matrix{<:Real},
     mass_data::Vector{<:Real},
 )::NTuple{3, Float64}

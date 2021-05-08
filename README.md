@@ -18,7 +18,7 @@ Julia module for creating plots, GIFs, and videos from the data produced by GAGE
 
 There are four tiers of functions:
 
-- Auxiliary functions (`src/auxiliary.jl`): These are only for internal use. All but `makeVideo` are pure functions that do soma data processing. Some of these are exported for testing purposes.
+- Auxiliary functions (`src/auxiliary.jl`): These are only for internal use. All but `make_video` are pure functions that do soma data processing. Some of these are exported for testing purposes.
 - Data acquisition functions (`src/data_acquisition.jl`): These are only for internal use. They take the location of the data files, apply some transformation (e.g. unit conversions) and return the data inside a familiar data structure.
 - Plotting functions (`src/plotting.jl`): These are exported, but I do not recommend using them as is. If you insist in using them, read the [Plotting backends](https://github.com/Ezequiel92/GADGETPlotting#-plotting-backends) section below. These are pure functions that take data in the format outputted by the data acquisition functions and return plot objects. They do all the data processing necessary to create the plots, except unit conversions. They will plot using the units selected when the data acquisition functions were called.
 - Pipeline functions (`src/pipelines.jl`): These are exported. These functions run a whole pipeline, from raw data to the final plot. They take the location of the snapshot files with some configuration parameters, and as a result, produce a series of plots/GIFs/videos. By default, some of these functions may generate a large number of images (but it can be configured to do less), and they may take a long time to run, especially if the function uses the `pgfplotsx` backend of [Plots.jl](https://github.com/JuliaPlots/Plots.jl).
@@ -60,5 +60,5 @@ More examples can be found in the repository [plotting_scripts](https://github.c
 
 ## ⚠️ Warnings
 
-- Some functions use data generated exclusively by GADGET3, which is not a publicly available code. See for example the documentation for the `sfrTxtData` function.
+- Some functions use data generated exclusively by GADGET3, which is not a publicly available code. See for example the documentation for the `sfr_txt_data` function.
 - This script is written for personal use and may break at any moment. So, use it at your own risk.

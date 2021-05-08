@@ -5,7 +5,7 @@
 relative_2D = GADGETPlotting.relative(plot(rand(100)), 0.5, 0.5)
 relative_3D = GADGETPlotting.relative(surface(rand(100, 100)), 0.5, 0.5, 0.5)
 
-GADGETPlotting.makeVideo(
+GADGETPlotting.make_video(
     joinpath(BASE_OUT_PATH, "scatter_grid/images"),
     ".png",
     BASE_OUT_PATH,
@@ -15,14 +15,14 @@ GADGETPlotting.makeVideo(
 
 pgfplotsx()
 
-smooth_w = GADGETPlotting.smoothWindow([1:1000...], rand(1000), 50)
+smooth_w = GADGETPlotting.smooth_window([1:1000...], rand(1000), 50)
 
 positions = pos["gas"]
 distances = sqrt.(positions[1, :] .^ 2 .+ positions[2, :] .^ 2 .+ positions[3, :] .^ 2)
 box_size = ustrip(Float64, pos["unit"], BOX_SIZE)
-density_p = GADGETPlotting.densityProfile(gas_mass["mass"], distances, box_size, 80)
+density_p = GADGETPlotting.density_profile(gas_mass["mass"], distances, box_size, 80)
 
-metallicity_p = GADGETPlotting.metallicityProfile(
+metallicity_p = GADGETPlotting.metallicity_profile(
     gas_mass["mass"], 
     distances, 
     gas_z["Z"], 
@@ -30,17 +30,17 @@ metallicity_p = GADGETPlotting.metallicityProfile(
     80,
 )
 
-mass_p = GADGETPlotting.massProfile(gas_mass["mass"], distances, box_size, 80)
+mass_p = GADGETPlotting.mass_profile(gas_mass["mass"], distances, box_size, 80)
 
 max_z = findmax(star_z["Z"])
 max_Z = max_z[1] / star_mass["mass"][max_z[2]]
-cmdf = GADGETPlotting.CMDF(star_mass["mass"], star_z["Z"], max_Z, 50)
+cmdf = GADGETPlotting.compute_cmdf(star_mass["mass"], star_z["Z"], max_Z, 50)
 
 pos_gas = pos["gas"]
 dist_gas = sqrt.(pos_gas[1, :] .^ 2 + pos_gas[2, :] .^ 2)
 pos_stars = pos["stars"]
 dist_stars = sqrt.(pos_stars[1, :] .^ 2 + pos_stars[2, :] .^ 2)
-ksl = GADGETPlotting.KennicuttSchmidtLaw(
+ksl = GADGETPlotting.kennicutt_schmidt_law(
     gas_mass["mass"],
     dist_gas,
     temp_data["temperature"],

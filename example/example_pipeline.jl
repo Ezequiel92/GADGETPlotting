@@ -2,7 +2,7 @@
 # PIPELINE FUNCTIONS
 ############################################################################################
 
-scatterGridPipeline(
+scatter_grid_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
     "scatter_animation",
@@ -13,7 +13,7 @@ scatterGridPipeline(
     length_unit = UnitfulAstro.Mpc,
 )
 
-densityMapPipeline(
+density_map_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
     "density_animation",
@@ -24,7 +24,7 @@ densityMapPipeline(
     box_size = BOX_SIZE,
 )
 
-starMapPipeline(
+star_map_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
     "star_animation",
@@ -35,7 +35,7 @@ starMapPipeline(
     box_size = BOX_SIZE,
 )
 
-gasStarEvolutionPipeline(
+gas_star_evolution_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
     "gas_star_evolution",
@@ -45,7 +45,7 @@ gasStarEvolutionPipeline(
     box_size = BOX_SIZE,
 )
 
-CMDFPipeline(
+cmdf_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
     "CMDF_animation",
@@ -54,7 +54,7 @@ CMDFPipeline(
     sim_cosmo = SIM_COSMO,
 )
 
-CMDFPipeline(
+cmdf_pipeline(
     [SNAP_NAME, SNAP_NAME],
     [BASE_SRC_PATH, BASE_SRC_PATH],
     "CMDF_animation",
@@ -64,7 +64,7 @@ CMDFPipeline(
     sim_cosmo = SIM_COSMO,
 )
 
-birthHistogramPipeline(
+birth_histogram_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
     "birth_histogram_animation",
@@ -73,7 +73,7 @@ birthHistogramPipeline(
     sim_cosmo = SIM_COSMO,
 )
 
-evolutionSummaryPipeline(
+evolution_summary_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
     "evolution_summary",
@@ -83,7 +83,7 @@ evolutionSummaryPipeline(
     number_factor = 4,
 )
 
-compareSimulationsPipeline(
+compare_simulations_pipeline(
     [SNAP_NAME, SNAP_NAME],
     [BASE_SRC_PATH, BASE_SRC_PATH],
     ["sim1" "sim2"],
@@ -97,7 +97,7 @@ compareSimulationsPipeline(
     text_quantity = "star_mass"
 )
 
-densityHistogramPipeline(
+density_histogram_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
     "density_histogram_animation",
@@ -107,7 +107,7 @@ densityHistogramPipeline(
     factor = 10,
 )
 
-densityProfilePipeline(
+density_profile_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
     "density_profile_animation",
@@ -122,7 +122,7 @@ densityProfilePipeline(
     box_size = BOX_SIZE,
 )
 
-densityProfilePipeline(
+density_profile_pipeline(
     [SNAP_NAME, SNAP_NAME],
     [BASE_SRC_PATH, BASE_SRC_PATH],
     "compare_density_profile_animation",
@@ -138,7 +138,7 @@ densityProfilePipeline(
     box_size = BOX_SIZE,
 )
 
-metallicityProfilePipeline(
+metallicity_profile_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
     "metallicity_profile_animation",
@@ -152,7 +152,7 @@ metallicityProfilePipeline(
     box_size = BOX_SIZE,
 )
 
-metallicityProfilePipeline(
+metallicity_profile_pipeline(
     [SNAP_NAME, SNAP_NAME],
     [BASE_SRC_PATH, BASE_SRC_PATH],
     "compare_metallicity_profile_animation",
@@ -167,7 +167,7 @@ metallicityProfilePipeline(
     box_size = BOX_SIZE,
 )
 
-massProfilePipeline(
+mass_profile_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
     "mass_profile_animation",
@@ -182,7 +182,7 @@ massProfilePipeline(
     box_size = BOX_SIZE,
 )
 
-massProfilePipeline(
+mass_profile_pipeline(
     [SNAP_NAME, SNAP_NAME],
     [BASE_SRC_PATH, BASE_SRC_PATH],
     "compare_mass_profile_animation",
@@ -198,7 +198,7 @@ massProfilePipeline(
     box_size = BOX_SIZE,
 )
 
-sfrTxtPipeline(
+sfr_txt_pipeline(
     [SNAP_NAME * "_000", SNAP_NAME * "_000"],
     [BASE_SRC_PATH, BASE_SRC_PATH],
     1,
@@ -210,7 +210,7 @@ sfrTxtPipeline(
     scale = (:identity, :log10),
 )
 
-sfrTxtPipeline(
+sfr_txt_pipeline(
     [SNAP_NAME * "_000", SNAP_NAME * "_000"],
     [BASE_SRC_PATH, BASE_SRC_PATH],
     1,
@@ -224,7 +224,7 @@ sfrTxtPipeline(
     scale = (:identity, :log10),
 )
 
-temperatureHistogramPipeline(
+temperature_histogram_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
     "temperature_histogram_animation",
@@ -233,7 +233,7 @@ temperatureHistogramPipeline(
     sim_cosmo = SIM_COSMO,
 )
 
-rhoTempPipeline(
+rho_temp_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
     "rho_vs_temp_animation",
@@ -242,7 +242,7 @@ rhoTempPipeline(
     sim_cosmo = SIM_COSMO,
 )
 
-KennicuttSchmidtPipeline(
+kennicutt_schmidt_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH;
     output_path = joinpath(BASE_OUT_PATH, "Kennicutt_Schmidt"),

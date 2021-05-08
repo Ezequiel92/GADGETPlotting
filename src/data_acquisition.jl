@@ -3,7 +3,7 @@
 ############################################################################################
 
 """
-    function getSnapshotPaths(
+    function get_snapshot_path(
         base_name::String,
         source_path::String,
     )::Dict{String, Vector{String}}
@@ -21,16 +21,13 @@ Get the paths to the GADGET output files, grouping them by snapshot.
   - Key "numbers" => A Vector with the numbers that characterize each snapshot.
   - Key "snap_files" => A Vector with the paths to the snapshot files.
 """
-function getSnapshotPaths(
+function get_snapshot_path(
     base_name::String, 
     source_path::String
 )::Dict{String, Vector{String}}
 
     # Get the full list of paths to every GADGET file in `source_path`.
-    file_list = vcat(
-        glob("**/" * base_name * "_*", source_path), 
-        glob(base_name * "_*", source_path)
-    )
+    file_list = [glob("**/" * base_name * "_*", source_path); glob(base_name * "_*", source_path)]
 
     # Data availability check.
     !isempty(file_list) || error("I couldn't find any snapshots in $source_path.")
@@ -52,7 +49,7 @@ function getSnapshotPaths(
 end
 
 """
-    timeSeriesData(snap_files::Vector{String}; <keyword arguments>)::Dict{String, Any}
+    get_time_evolution(snap_files::Vector{String}; <keyword arguments>)::Dict{String, Any}
 					
 Get several parameters defined at every snapshot, as a series of values for the whole 
 simulation. 
@@ -78,7 +75,7 @@ The parameters are:
 - "star_bar_frac" (Baryonic star fraction)
 
 # Arguments
-- `snap_files::Vector{String}`: Output of the function getSnapshotPaths corresponding 
+- `snap_files::Vector{String}`: Output of the function get_snapshot_paths corresponding 
   to the key "snap_files", containing an Array with the paths to the snapshots.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
@@ -104,7 +101,7 @@ The parameters are:
   - Key "units" => A dictionary with the units used, for easy piping with other functions.
   - Key "labels" => A dictionary with the labels to be used when plotting the quantities.
 """
-function timeSeriesData(
+function get_time_evolution(
     snap_files::Vector{String};
     sim_cosmo::Int64 = 0,
     filter_function::Function = pass_all,
@@ -253,7 +250,7 @@ function timeSeriesData(
             gas_mass = ustrip(Float64, mass_unit, gas_mass * GU.m_msun)
 
             # Global gas density.
-            densities = densityData(
+            densities = get_density(
                 snapshot; 
                 sim_cosmo,
                 filter_function, 
@@ -389,7 +386,7 @@ function timeSeriesData(
 end
 
 """
-    positionData(snapshot::String; <keyword arguments>)::Dict{String, Any}
+    get_position(snapshot::String; <keyword arguments>)::Dict{String, Any}
 
 Get the coordinates of the particles at a specific time step.
 
@@ -423,7 +420,7 @@ Get the coordinates of the particles at a specific time step.
     true -> periodic boundary condition.
   - Key "unit" => The unit of length used, i.e. is a pass-through of `length_unit`. 
 """
-function positionData(
+function get_position(
     snapshot::String;
     sim_cosmo::Int64 = 0,
     filter_function::Function = pass_all,
@@ -530,7 +527,7 @@ function positionData(
         )["MASS"]
 
         # Set the center of mass the the dark matter at (0, 0, 0).
-        R = centerOfMass(dm_pos, dm_masses)
+        R = center_of_mass(dm_pos, dm_masses)
 
         dm_pos[1, :] .-= R[1]
         dm_pos[2, :] .-= R[2]
@@ -575,8 +572,8 @@ function positionData(
 
     # Set the center of mass of the baryons at (0, 0, 0).
     baryon_pos = hcat(gas_pos, star_pos) 
-    baryon_mass = vcat(gas_masses, star_masses)
-    R = centerOfMass(baryon_pos, baryon_mass)
+    baryon_mass = [gas_masses; star_masses]
+    R = center_of_mass(baryon_pos, baryon_mass)
 
     gas_pos[1, :] .-= R[1]
     gas_pos[2, :] .-= R[2]
@@ -597,7 +594,7 @@ function positionData(
 end
 
 """
-    densityData(snapshot::String; <keyword arguments>)::Dict{String,Any}
+    get_density(snapshot::String; <keyword arguments>)::Dict{String,Any}
 
 Get the densities of the gas particles at a specific time step.
 
@@ -618,7 +615,7 @@ Get the densities of the gas particles at a specific time step.
   - Key "density" => Array with the densities of the gas particles. 
   - Key "unit" => The unit of density used, i.e. is a pass-through of `density_unit`. 
 """
-function densityData(
+function get_density(
     snapshot::String;
     sim_cosmo::Int64 = 0,
     filter_function::Function = pass_all,
@@ -676,7 +673,7 @@ function densityData(
 end
 
 """
-    hsmlData(snapshot::String; <keyword arguments>)::Dict{String,Any}
+    get_hsml(snapshot::String; <keyword arguments>)::Dict{String,Any}
 
 Get the smoothing lengths of the gas particles at a specific time step.
 
@@ -697,7 +694,7 @@ Get the smoothing lengths of the gas particles at a specific time step.
   - Key "hsml" => A Vector with the smoothing lengths of the gas particles. 
   - Key "unit" => The unit of length used, i.e. is a pass-through of `length_unit`. 
 """
-function hsmlData(
+function get_hsml(
     snapshot::String;
     sim_cosmo::Int64 = 0,
     filter_function::Function = pass_all,
@@ -755,7 +752,7 @@ function hsmlData(
 end
 
 """
-    massData(snapshot::String, type::String; <keyword arguments>)::Dict{String,Any}
+    get_mass(snapshot::String, type::String; <keyword arguments>)::Dict{String,Any}
 
 Get the mass of the particles at a specific time step.
 
@@ -780,7 +777,7 @@ Get the mass of the particles at a specific time step.
   - Key "unit" => The unit of mass used, i.e. is a pass-through of `mass_unit`. 
   - Key "type" => A String with the particle type.
 """
-function massData(
+function get_mass(
     snapshot::String,
     type::String;
     sim_cosmo::Int64 = 0,
@@ -851,7 +848,7 @@ function massData(
 end
 
 """
-    zData(snapshot::String, type::String; <keyword arguments>)::Dict{String,Any}
+    get_metallicity(snapshot::String, type::String; <keyword arguments>)::Dict{String,Any}
 
 Get the metallicity (as mass content of metals) of the particles at a specific time step.
 
@@ -875,7 +872,7 @@ Get the metallicity (as mass content of metals) of the particles at a specific t
   - Key "unit" => The unit of mass used, i.e. is a pass-through of `mass_unit`. 
   - Key "type" => A String with the particle type. 
 """
-function zData(
+function get_metallicity(
     snapshot::String,
     type::String;
     sim_cosmo::Int64 = 0,
@@ -952,7 +949,7 @@ function zData(
 end
 
 """
-    tempData(snapshot::String; <keyword arguments>)::Dict{String,Any}
+    get_temperature(snapshot::String; <keyword arguments>)::Dict{String,Any}
 
 Get the temperature of the gas particles at a specific time step.
 
@@ -972,7 +969,7 @@ Get the temperature of the gas particles at a specific time step.
   - Key "temperature" => A Vector with the temperatures of the particles.  
   - Key "unit" => The unit of temperature used, i.e. is a pass-through of `temp_unit`. 
 """
-function tempData(
+function get_temperature(
     snapshot::String;
     sim_cosmo::Int64 = 0,
     filter_function::Function = pass_all,
@@ -1025,9 +1022,9 @@ function tempData(
     if header.nall[1] != 0
 
         # Mass.
-        mass_data = massData(snapshot, "gas"; sim_cosmo)
-        mass = mass_data["mass"]
-        mass_unit = mass_data["unit"]
+        m_data = get_mass(snapshot, "gas"; sim_cosmo)
+        mass = m_data["mass"]
+        mass_unit = m_data["unit"]
 
         # Metallicity.
         z = read_blocks_over_all_files(
@@ -1079,7 +1076,7 @@ function tempData(
 end
 
 """
-    ageData(snapshot::String, time::Unitful.Quantity; <keyword arguments>)::Dict{String,Any}
+    get_age(snapshot::String, time::Unitful.Quantity; <keyword arguments>)::Dict{String,Any}
 
 Get the ages of the stars at a specific time step.
 
@@ -1101,7 +1098,7 @@ Get the ages of the stars at a specific time step.
   - Key "ages" => The ages of the stars.  
   - Key "unit" => The unit of time used. 
 """
-function ageData(
+function get_age(
     snapshot::String,
     time::Unitful.Quantity;
     sim_cosmo::Int64 = 0,
@@ -1179,7 +1176,7 @@ function ageData(
 end
 
 """
-    birthPlace(
+    get_birth_place(
         snap_index::Int64,
         snap_files::Vector{String},
         time_stamps::Vector{Float64},
@@ -1191,7 +1188,7 @@ Get the birth location of the stars in a given snapshot.
 
 # Arguments
 - `snap_index::Int64`: Index in `snap_files` of the snapshot whose stars will be located.
-- `snap_files::Vector{String}`: Output of the function getSnapshotPaths corresponding 
+- `snap_files::Vector{String}`: Output of the function get_snapshot_paths corresponding 
   to the key "snap_files", containing an Array with the paths to the snapshots.
 - `time_stamps::Vector{Float64}`: Clock time of every snapshot in `snap_files`.
 - `stamps_unit::Unitful.FreeUnits`: Unit of time of the `time_stamps`.
@@ -1210,7 +1207,7 @@ Get the birth location of the stars in a given snapshot.
 -  A 2 dimensional arrays with the positions of the stars. Each row is a star
   and each column corresponds to coordinates x, y and z respectively.
 """
-function birthPlace(
+function get_birth_place(
     snap_index::Int64,
     snap_files::Vector{String},
     time_stamps::Vector{Float64},
@@ -1326,7 +1323,7 @@ function birthPlace(
             )["ID"]
 
             # Index of the target star, in the snapshot where it was born.
-            birth_idx = findfirst(x -> x == id, nursery_ids)
+            birth_idx = findfirst(isequal(id), nursery_ids)
 
             # If the star is found end the loop.
             birth_idx === nothing || break
@@ -1358,7 +1355,7 @@ function birthPlace(
 end
 
 """
-    sfrTxtData(
+    get_sfr_txt(
         source_path::String,
         snapshot::String; 
         <keyword arguments>
@@ -1395,7 +1392,7 @@ GADGET3. GADGET4 produces a sfr.txt, but it is not compatible with this function
   - Key "5" => The fifth column (real total mass).  
   - Key "6" => The sixth column (real SFR).  
 """
-function sfrTxtData(
+function get_sfr_txt(
     source_path::String,
     snapshot::String;
     sim_cosmo::Int64 = 0,
