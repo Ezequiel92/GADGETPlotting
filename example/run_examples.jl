@@ -1,44 +1,66 @@
 ############################################################################################
-#   Example script for GADGETPlotting.jl
+#   Example scripts for GADGETPlotting.jl
 #
 # - When run as is, it shouldn't throw any errors
-# - This script shows how to import GADGETPlotting.jl and gives examples 
-#   on how to use every function
+# - This script shows how to import GADGETPlotting.jl and gives examples on how 
+#   to use every function, for an isolated and a cosmological simulation
+# - When run it produces `.jld2` files, used for testing.
 ############################################################################################
 
-push!(LOAD_PATH, "./src/")
+push!(LOAD_PATH, joinpath(@__DIR__, "../src/"))
 using GADGETPlotting, GadgetIO, Unitful, UnitfulAstro, Plots, LaTeXStrings, GLM, JLD2
-
-"Base path to the directories where the output images and animations will be saved."
-const BASE_OUT_PATH = joinpath(@__DIR__, "example_results")
-
-"Directory containing the snapshot files."
-const BASE_SRC_PATH = joinpath(@__DIR__, "example_data")
 
 "Base name of the snapshot files, set in the GADGET variable SnapshotFileBase."
 const SNAP_NAME = "snap"
 
+############################################################################################
+# Examples (isolated)
+############################################################################################
+
+"Base path to the directories where the output images and animations will be saved."
+BASE_OUT_PATH = joinpath(@__DIR__, "example_results/isolated")
+
+"Directory containing the snapshot files."
+BASE_SRC_PATH = joinpath(@__DIR__, "example_data/isolated")
+
+"Path to the fist snapshot."
+FIRST_SNAP = joinpath(BASE_SRC_PATH, SNAP_NAME * "_000")
+
 "Side dimension of the simulated region, for the case of vacuum boundary conditions."
-const BOX_SIZE = 200UnitfulAstro.kpc
+BOX_SIZE = 200UnitfulAstro.kpc
 
 "Value of ComovingIntegrationOn: 0 -> Newtonian simulation, 1 -> Cosmological simulation."
-const SIM_COSMO = 0
+SIM_COSMO = 0
 
 "Frame rate for the animations."
-const FPS = 4
+FPS = 4
 
 "One particular snapshot index for testing purposes."
-const SNAP_N = 21
+SNAP_N = 21
 
 mkpath(BASE_OUT_PATH)
 
+include("example_data_acquisition.jl")
+# include("example_plotting.jl")
+# include("example_pipeline.jl")
+include("example_auxiliary.jl")
+
 ############################################################################################
-# Examples
+# Examples (cosmological)
 ############################################################################################
 
+BASE_OUT_PATH = joinpath(@__DIR__, "example_results/cosmological")
+BASE_SRC_PATH = joinpath(@__DIR__, "example_data/cosmological")
+FIRST_SNAP = joinpath(BASE_SRC_PATH, SNAP_NAME * "dir_019/" * SNAP_NAME * "_019")
+SIM_COSMO = 1
+FPS = 1
+SNAP_N = 2 
+
+mkpath(BASE_OUT_PATH)
+
 include("example_data_acquisition.jl")
-include("example_plotting.jl")
-include("example_pipeline.jl")
+# include("example_plotting.jl")
+# include("example_pipeline.jl")
 include("example_auxiliary.jl")
 
 println("Everything worked just fine!!")

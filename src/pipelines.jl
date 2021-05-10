@@ -1,5 +1,5 @@
 ############################################################################################
-# PIPELINE FUNCTIONS.
+# Pipeline functions
 ############################################################################################
 
 """
@@ -11,7 +11,7 @@
         <keyword arguments>
     )::Nothing
 
-Save the results of the scatter_grid_plot function as one image per snapshot, 
+Save the results of the scatter\\_grid\\_plot function as one image per snapshot, 
 and then generate a GIF and video animating the images. 
 
 # Arguments
@@ -22,13 +22,13 @@ and then generate a GIF and video animating the images.
 - `anim_name::String`: File name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
 - `output_path::String = "scatter_grid"`: Path to the output directory. The images will 
-  be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
-  is the number of the snapshot. The GIF and the video will be stored in `output_path`.
+  be stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where XXX 
+  is the number of the snapshot. The GIF and the video will be stored in `output\\_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass\\_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
@@ -118,7 +118,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the density_map_plot function as one image per snapshot, 
+Save the results of the density\\_map\\_plot function as one image per snapshot, 
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -129,13 +129,13 @@ and then generate a GIF and a video animating the images.
 - `anim_name::String`: File name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
 - `output_path::String = "density_map"`: Path to the output directory. The images will 
-  be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
+  be stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where XXX 
   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass\\_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
@@ -223,7 +223,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the star_map_plot function as one image per snapshot, 
+Save the results of the star\\_map\\_plot function as one image per snapshot, 
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -234,13 +234,13 @@ and then generate a GIF and a video animating the images.
 - `anim_name::String`: File name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
 - `output_path::String = "star_map"`: Path to the output directory. The images will 
-  be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
+  be stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where XXX 
   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass\\_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
@@ -337,7 +337,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the gas_star_evolution_plot for the last snapshot as one image and 
+Save the results of `gas_star_evolution_plot` for the last snapshot as one image and 
 generate a GIF and a video animating the whole evolution for all snapshots. 
                                 
 # Arguments
@@ -349,13 +349,13 @@ generate a GIF and a video animating the whole evolution for all snapshots.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
 - `output_path::String = "gas_star_evolution"`: Path to the output directory. 
   The image will be stored in `output_path`/images/ and will be named 
-  `base_name`_XXX`format` where XXX is the number of the last snapshot. 
+  `base_name`\\_XXX`format` where XXX is the number of the last snapshot. 
   The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass\\_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
@@ -470,7 +470,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the cmdf_plot function as one image per snapshot, if there are stars 
+Save the results of the cmdf\\_plot function as one image per snapshot, if there are stars 
 present, and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -481,19 +481,19 @@ present, and then generate a GIF and a video animating the images.
 - `anim_name::String`: File name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
 - `output_path::String = "CMDF"`: Path to the output directory. The images will be stored 
-  in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX is the 
+  in `output_path`/images/ and will be named `base_name`\\_XXX`format` where XXX is the 
   number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass\\_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
 - `x_norm::Bool = false`: If the x axis will be normalized to its maximum value. 
-- `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
-  all available time units in Unitful and UnitfulAstro can be used.
+- `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the time 
+  stamps, all available time units in Unitful and UnitfulAstro can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
@@ -586,7 +586,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the cmdf_plot function for several simulations as one image per snapshot,
+Save the results of the cmdf\\_plot function for several simulations as one image per snapshot,
 if there are stars present, and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -598,19 +598,19 @@ if there are stars present, and then generate a GIF and a video animating the im
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
 - `labels::Array{String, 2}`: Labels for the different simulations.
 - `output_path::String = "CMDF"`: Path to the output directory. The images will be stored 
-  in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX is the 
+  in `output_path`/images/ and will be named `base_name`\\_XXX`format` where XXX is the 
   ordinal of the frame. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass\\_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
 - `x_norm::Bool = false`: If the x axis will be normalized to its maximum value. 
-- `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
-  all available time units in Unitful and UnitfulAstro can be used.
+- `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the time
+  stamps, all available time units in Unitful and UnitfulAstro can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
 """
@@ -723,13 +723,13 @@ stars present, and then generate a GIF and a video animating the images.
 - `anim_name::String`: File name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
 - `output_path::String = "birth_histogram"`: Path to the output directory. The images 
-  will be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where 
+  will be stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where 
   XXX is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
@@ -838,14 +838,14 @@ Args:
 - `source_path::String`: Path to the directory containing the snapshot files, 
   set in the GADGET variable OutputDir.
 - `fig_name::String`: Base name for the figures. The images will be named
-  `fig_name`_vs_XXX`format` where XXX is 'time', 'redshift' or 'scale_factor'.
+  `fig_name`\\_vs\\_XXX`format` where XXX is 'time', 'redshift' or 'scale_factor'.
 - `output_path::String = "evolution_summary"`: Path to the output directory. The images 
   will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `mass_factor::Int64 = 0`: Numerical exponent to scale the mass, e.g. if mass_factor = 10 
   the corresponding axis will be scaled by 10^10.
@@ -974,7 +974,7 @@ One column per simulation, one row per sanpshot.
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `title::String = ""`: Title for the figure. If an empty string is given, no title is 
   printed.
@@ -1008,6 +1008,9 @@ One column per simulation, one row per sanpshot.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
   in the output, all available length units in Unitful.jl and UnitfulAstro.jl 
   can be used.
+- `density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3`: Unit of 
+  density to be used in the output, all available density units in Unitful.jl and 
+  UnitfulAstro.jl can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png".  
 """
@@ -1034,6 +1037,7 @@ function compare_simulations_pipeline(
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
     sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
+    density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3,
     format::String = ".png",
 )::Nothing
 
@@ -1045,6 +1049,7 @@ function compare_simulations_pipeline(
                         time_unit, 
                         sfr_unit,
                         length_unit,
+                        density_unit,
                     ) for (name, path) in zip(base_name, source_path)]
 
     # Create a directory to store the figure if it doesn't exist.
@@ -1072,7 +1077,7 @@ function compare_simulations_pipeline(
         elseif text_quantity in ["gas_mass", "dm_mass", "star_mass"]
             unit = string(mass_unit)
         elseif text_quantity == "gas_density"
-            unit = string(mass_unit / length_unit^3)
+            unit = string(density_unit)
         else
             unit = "dimensionless"
         end
@@ -1120,7 +1125,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the density_histogram_plot function as one image per snapshot, 
+Save the results of the density\\_histogram\\_plot function as one image per snapshot, 
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -1131,13 +1136,13 @@ and then generate a GIF and a video animating the images.
 - `anim_name::String`: File name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
 - `output_path::String = "density_histogram"`: Path to the output directory. The images 
-  will be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where 
+  will be stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where 
   XXX is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
@@ -1229,7 +1234,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the density_profile_plot function as one image per snapshot,
+Save the results of the density\\_profile\\_plot function as one image per snapshot,
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -1244,13 +1249,13 @@ and then generate a GIF and a video animating the images.
   "dark_matter" -> Dark matter particle.
   "stars" -> Star particle.
 - `output_path::String = "density_profile"`: Path to the output directory. The images 
-  will be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where 
+  will be stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where 
   XXX is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `scale::Symbol = :identity`: Scaling to be used for the y axis.
   The two options are:
@@ -1376,7 +1381,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the density_profile_plot function for several simulations as one image 
+Save the results of the density\\_profile\\_plot function for several simulations as one image 
 per snapshot, and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -1398,7 +1403,7 @@ per snapshot, and then generate a GIF and a video animating the images.
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `scale::Symbol = :identity`: Scaling to be used for the y axis.
   The two options are:
@@ -1532,7 +1537,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the metallicity_profile_plot function as one image per snapshot,
+Save the results of the metallicity\\_profile\\_plot function as one image per snapshot,
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -1547,13 +1552,13 @@ and then generate a GIF and a video animating the images.
   "dark_matter" -> Dark matter particle.
   "stars" -> Star particle.
 - `output_path::String = "metallicity_profile"`: Path to the output directory. The images 
-  will be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where 
+  will be stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where 
   XXX is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
@@ -1562,7 +1567,7 @@ and then generate a GIF and a video animating the images.
   It will scale `positions["box_size"]` if vacuum boundary conditions were used, and
   it will scale `positions["box_size"] / 2` if periodic boundary conditions were used.
 - `box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Size of the plotting region 
-  if vacuum boundary conditions were used.  Its unit doesn't have to be the same 
+  if vacuum boundary conditions were used. Its unit doesn't have to be the same 
   as `length_unit`.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
   output, all available length units in Unitful and UnitfulAstro can be used.
@@ -1670,7 +1675,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the metallicity_profile_plot function for several simulations as one 
+Save the results of the metallicity\\_profile\\_plot function for several simulations as one 
 image per snapshot, and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -1692,7 +1697,7 @@ image per snapshot, and then generate a GIF and a video animating the images.
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `scale::Symbol = :identity`: Scaling to be used for the y axis.
   The two options are:
@@ -1821,7 +1826,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the mass_profile_plot function as one image per snapshot,
+Save the results of the mass\\_profile\\_plot function as one image per snapshot,
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -1840,13 +1845,13 @@ and then generate a GIF and a video animating the images.
   :identity => no scaling.
   :log10 => logarithmic scaling.
 - `output_path::String = "mass_profile"`: Path to the output directory. The images will be 
-  stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX is 
+  stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where XXX is 
   the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
@@ -1968,7 +1973,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the mass_profile_plot function for several simulations as one image 
+Save the results of the mass\\_profile\\_plot function for several simulations as one image 
 per snapshot, and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -1990,7 +1995,7 @@ per snapshot, and then generate a GIF and a video animating the images.
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `scale::Symbol = :identity`: Scaling to be used for the y axis.
   The two options are:
@@ -2123,7 +2128,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the sfr_txt_plot function as one image per simulation or one image 
+Save the results of the sfr\\_txt\\_plot function as one image per simulation or one image 
 per column depending on `comparison_type`.
 
 # Warning 
@@ -2163,7 +2168,7 @@ GADGET3. GADGET4 produces a sfr.txt, but it is not compatible with this function
   the corresponding axis will be scaled by 10^10. The default is 0, i.e. no scaling.
 - `min_filter::NTuple{2, Float64} = (-Inf, -Inf)`: Value filter for the x and y axes. 
   It will apply equally to every figure produced. If a value of the x data is lower 
-  than min_filter[1], then it is deleted. Equivalently with the y axis and min_filter[2]. 
+  than min_filter[1], then it is deleted. Equivalently with the y axis and min\\_filter[2]. 
   The default is -Inf for both, i.e. no filtering.
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
   all available mass units in Unitful and UnitfulAstro can be used.
@@ -2274,7 +2279,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the temperature_histogram_plot function as one image per snapshot, 
+Save the results of the temperature\\_histogram\\_plot function as one image per snapshot, 
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -2285,13 +2290,13 @@ and then generate a GIF and a video animating the images.
 - `anim_name::String`: File name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
 - `output_path::String = "temperature_histogram"`: Path to the output directory. The images 
-  will be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where 
+  will be stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where 
   XXX is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
@@ -2376,7 +2381,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the rho_temp_plot function as one image per snapshot, 
+Save the results of the rho\\_temp\\_plot function as one image per snapshot, 
 and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -2387,13 +2392,13 @@ and then generate a GIF and a video animating the images.
 - `anim_name::String`: File name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
 - `output_path::String = "rho_vs_temp"`: Path to the output directory. The images will be 
-  stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX is 
+  stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where XXX is 
   the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
@@ -2481,7 +2486,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the kennicutt_schmidt_plot function as one image per snapshot.
+Save the results of the kennicutt\\_schmidt\\_plot function as one image per snapshot.
 
 It will produce output only for the snapshots that have enough young stars to produce 
 at least five data points for the linear fitting.
@@ -2492,13 +2497,13 @@ at least five data points for the linear fitting.
 - `source_path::String`: Paths to the directories containing the snapshot files, 
   set in the GADGET variable OutputDir.
 - `output_path::String = "Kennicutt_Schmidt"`: Path to the output directory. The images will 
-  be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
+  be stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where XXX 
   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
   i.e. all snapshots will be plotted.
@@ -2513,13 +2518,11 @@ at least five data points for the linear fitting.
 - `error_formating::String = "std_error"`: What type of error for the fitting results to 
   print. The options are:
   "std_error": `mean ± standard_error`.
-  "conf_interval": `mean ± max(upper_95% - mean, mean - lower_95%)`.
+  "conf_interval": `mean ± max(upper\\_95% - mean, mean - lower\\_95%)`.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
   all available time units in Unitful and UnitfulAstro can be used.
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
   all available mass units in Unitful and UnitfulAstro can be used.
-- `temp_unit::Unitful.FreeUnits = Unitful.K`: Unit of temperature to be used in the 
-  output, all available temperature units in Unitful and UnitfulAstro can be used.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
   output, all available length units in Unitful and UnitfulAstro can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
@@ -2539,7 +2542,6 @@ function kennicutt_schmidt_pipeline(
     error_formating::String = "std_error",
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
-    temp_unit::Unitful.FreeUnits = Unitful.K,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
     format::String = ".png",
 )::Nothing
@@ -2576,7 +2578,12 @@ function kennicutt_schmidt_pipeline(
             # Gas masses.
             gas_mass_data = get_mass(snapshot, "gas"; sim_cosmo, filter_function, mass_unit)
             # Gas temperatures.
-            temperature_data = get_temperature(snapshot; sim_cosmo, filter_function, temp_unit)
+            temperature_data = get_temperature(
+                snapshot; 
+                sim_cosmo, 
+                filter_function, 
+                temp_unit = unit(temp_filter),
+            )
             # Stars masses.
             star_mass_data = get_mass(
                 snapshot, 
@@ -2632,150 +2639,3 @@ function kennicutt_schmidt_pipeline(
 
     return nothing
 end
-
-# """
-#     kennicutt_schmidt_pipeline2(
-#         base_name::String,
-#         source_path::String; 
-#         <keyword arguments>
-#     )::Nothing
-
-# Save the results of the kennicutt_schmidt_plot function as one image per snapshot.
-
-# It will produce output only for the snapshots that have enough young stars to produce 
-# at least five data points for the linear fitting.
-
-# # Arguments
-# - `base_name::String`: Base names of the snapshot files, set in the GADGET 
-#   variable SnapshotFileBase.
-# - `source_path::String`: Paths to the directories containing the snapshot files, 
-#   set in the GADGET variable OutputDir.
-# - `output_path::String = "Kennicutt_Schmidt"`: Path to the output directory. The images will 
-#   be stored in `output_path`/images/ and will be named `base_name`_XXX`format` where XXX 
-#   is the number of the snapshot. The GIF and the video will be stored in `output_path`.
-# - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
-#   0 -> Newtonian simulation (static universe).
-#   1 -> Cosmological simulation (expanding universe).
-# - `filter_function::Function = pass_all`: A function with the signature: 
-#   foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
-#   for an example. By default no particles are filtered.
-# - `step::Int64 = 1`: Step used to traverse the list of snapshots. The default is 1, 
-#   i.e. all snapshots will be plotted.
-# - `age_filter::Unitful.Quantity = 100UnitfulAstro.Myr`: Maximum star age allowed for the 
-#   calculation of the SFR.
-# - `max_r::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Maximum distance up to which the 
-#   parameters will be calculated, with units.
-# - `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. 
-#   It has to be at least 5.
-# - `error_formating::String = "std_error"`: What type of error for the fitting results to 
-#   print. The options are:
-#   "std_error": `mean ± standard_error`.
-#   "conf_interval": `mean ± max(upper_95% - mean, mean - lower_95%)`.
-# - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
-#   all available time units in Unitful and UnitfulAstro can be used.
-# - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
-#   all available mass units in Unitful and UnitfulAstro can be used.
-# - `temp_unit::Unitful.FreeUnits = Unitful.K`: Unit of temperature to be used in the 
-#   output, all available temperature units in Unitful and UnitfulAstro can be used.
-# - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
-#   output, all available length units in Unitful and UnitfulAstro can be used.
-# - `format::String = ".png"`: File format of the output figure. All formats supported by the
-#   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
-# """
-# function kennicutt_schmidt_pipeline2(
-#     base_name::String,
-#     source_path::String;
-#     output_path::String = "Kennicutt_Schmidt",
-#     sim_cosmo::Int64 = 0,
-#     filter_function::Function = pass_all,
-#     step::Int64 = 1,
-#     age_filter::Unitful.Quantity = 20UnitfulAstro.Myr,
-#     max_r::Unitful.Quantity = 1000.0UnitfulAstro.kpc,
-#     bins::Int64 = 50,
-#     error_formating::String = "std_error",
-#     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
-#     mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
-#     temp_unit::Unitful.FreeUnits = Unitful.K,
-#     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
-#     format::String = ".png",
-# )::Nothing
-
-#     # Get the simulation data.
-#     sim = get_snapshot_path(base_name, source_path)
-#     time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
-
-#     snap_files = @view sim["snap_files"][1:step:end] 
-#     snap_numbers = @view sim["numbers"][1:step:end] 
-#     times = @view time_data["clock_time"][1:step:end]
-
-#     # Create a directory to save the plots, if it doesn't exist.
-#     img_path = mkpath(joinpath(output_path, "images"))
-
-#      # Progress bar.
-#      prog_bar = Progress(
-#         length(snap_files), 
-#         dt = 0.5, 
-#         desc = "Generating the Kennicutt-Schmidt plots... ",
-#         color = :blue,
-#         barglyphs = BarGlyphs("|#  |"),
-#     )
-
-#     # Generate and store the plots.
-#     data_iter = zip(times, snap_numbers, snap_files)        
-#     for (time, number, snapshot) in data_iter
-
-#         header = read_header(snapshot)
-#         if header.nall[5] != 0
-
-#             # Gas masses.
-#             gas_mass_data = get_mass(snapshot, "gas"; sim_cosmo, filter_function, mass_unit)
-            
-#             # Stars masses.
-#             star_mass_data = get_mass(
-#                 snapshot, 
-#                 "stars"; 
-#                 sim_cosmo, 
-#                 filter_function, 
-#                 mass_unit,
-#             )
-
-#             # Stars ages.
-#             age_data = get_age(snapshot, time * time_unit; sim_cosmo, filter_function)
-
-#             # Positions.
-#             pos_data = get_position(
-#                 snapshot; 
-#                 sim_cosmo, 
-#                 filter_function,  
-#                 length_unit,
-#             )
-
-#             figure = kennicutt_schmidt_plot2(
-#                 gas_mass_data,
-#                 star_mass_data,
-#                 age_data,
-#                 pos_data,
-#                 age_filter,
-#                 max_r,
-#                 time * time_unit;
-#                 bins,
-#                 error_formating,
-#             )
-
-#             if figure !== nothing
-#                 # If there was enough data to make a fit.
-#                 Base.invokelatest(
-#                     savefig, 
-#                     figure, 
-#                     joinpath(img_path, base_name * "_" * number * format),
-#                 )
-#             end
-
-#         end
-
-#         next!(prog_bar)
-
-#     end
-
-#     return nothing
-# end

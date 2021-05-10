@@ -1,5 +1,5 @@
 ############################################################################################
-# DATA ACQUISITION FUNCTIONS.
+# Data acquisition functions
 ############################################################################################
 
 """
@@ -75,13 +75,13 @@ The parameters are:
 - "star_bar_frac" (Baryonic star fraction)
 
 # Arguments
-- `snap_files::Vector{String}`: Output of the function get_snapshot_paths corresponding 
+- `snap_files::Vector{String}`: Output of the function `get_snapshot_paths` corresponding 
   to the key "snap_files", containing an Array with the paths to the snapshots.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
   all available mass units in Unitful.jl and UnitfulAstro.jl can be used.
@@ -93,6 +93,9 @@ The parameters are:
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
   in the output, all available length units in Unitful.jl and UnitfulAstro.jl 
   can be used.
+- `density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3`: Unit of 
+  density to be used in the output, all available density units in Unitful.jl and 
+  UnitfulAstro.jl can be used.
 
 # Returns
 - A dictionary.
@@ -109,6 +112,7 @@ function get_time_evolution(
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
     sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
+    density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3,
 )::Dict{String, Any}
 
     # Number of snapshots.
@@ -139,6 +143,7 @@ function get_time_evolution(
             "time" => time_unit,
             "sfr" => sfr_unit,
             "length" => length_unit,
+            "density" => density_unit,
         ),
         # Labels for printing.
         "labels" => Dict(
@@ -254,7 +259,7 @@ function get_time_evolution(
                 snapshot; 
                 sim_cosmo,
                 filter_function, 
-                density_unit = mass_unit / length_unit^3
+                density_unit,
             )
             volume = sum(masses ./ densities["density"])
             gas_density = gas_mass / volume
@@ -396,7 +401,7 @@ Get the coordinates of the particles at a specific time step.
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Size of the plotting region if 
   vacuum boundary conditions were used. It has to have units but they don't have to be 
@@ -410,7 +415,7 @@ Get the coordinates of the particles at a specific time step.
   - Keys "gas", "dark_matter", "stars" => 2 dimensional arrays with the positions of 
     the particles of the type given by the key. Each row is a 
     particle and each column correspond to coordinates x, y and z respectively.
-  - Key "box_size" => The range of values for the plotting of the positions, 
+  - Key "box\\_size" => The range of values for the plotting of the positions, 
     i.e. a range of ± `box_size` if vacuum boundary conditions were used, 
     or (0, `header.boxsize`) if periodic boundary conditions were used.
     Notice how the side length of the region is 2 * `box_size` for vacuum boundary 
@@ -604,7 +609,7 @@ Get the densities of the gas particles at a specific time step.
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3`: Unit of 
   density to be used in the output, all available density units in Unitful.jl and 
@@ -683,7 +688,7 @@ Get the smoothing lengths of the gas particles at a specific time step.
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
   in the output, all available length units in Unitful.jl and UnitfulAstro.jl 
@@ -766,7 +771,7 @@ Get the mass of the particles at a specific time step.
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
   all available mass units in Unitful.jl and UnitfulAstro.jl can be used.
@@ -861,7 +866,7 @@ Get the metallicity (as mass content of metals) of the particles at a specific t
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
   all available mass units in Unitful.jl and UnitfulAstro.jl can be used.
@@ -959,7 +964,7 @@ Get the temperature of the gas particles at a specific time step.
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `temp_unit::Unitful.FreeUnits = Unitful.K`: Unit of temperature to be used in the output, 
   all available temperature units in Unitful.jl and UnitfulAstro.jl can be used.
@@ -1090,7 +1095,7 @@ Get the ages of the stars at a specific time step.
 - `snap_0::String = ""`: Path to the fist snapshot. Only relevant for cosmological
   simulations (`sim_cosmo = 1`).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 
 # Returns
@@ -1188,7 +1193,7 @@ Get the birth location of the stars in a given snapshot.
 
 # Arguments
 - `snap_index::Int64`: Index in `snap_files` of the snapshot whose stars will be located.
-- `snap_files::Vector{String}`: Output of the function get_snapshot_paths corresponding 
+- `snap_files::Vector{String}`: Output of the function `get_snapshot_paths` corresponding 
   to the key "snap_files", containing an Array with the paths to the snapshots.
 - `time_stamps::Vector{Float64}`: Clock time of every snapshot in `snap_files`.
 - `stamps_unit::Unitful.FreeUnits`: Unit of time of the `time_stamps`.
@@ -1196,7 +1201,7 @@ Get the birth location of the stars in a given snapshot.
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `filter_function::Function = pass_all`: A function with the signature: 
-  foo(snap_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
+  foo(snap\\_file::String, type::String)::Vector{Int64}. See `pass_all` in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
   in the output, all available length units in Unitful.jl and UnitfulAstro.jl 

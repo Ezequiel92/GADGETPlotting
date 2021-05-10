@@ -1,5 +1,5 @@
 ############################################################################################
-# PLOTTING FUNCTIONS
+# Example plotting functions
 ############################################################################################
 
 figure = scatter_grid_plot(pos)
@@ -143,7 +143,7 @@ Base.invokelatest(
 )
 
 figure = sfr_txt_plot(
-    sfrtxt_data,
+    sfr_txt_data,
     1,
     [4, 6],
     title = "run_A_01",
@@ -157,7 +157,7 @@ Base.invokelatest(
 )
 
 figure = sfr_txt_plot(
-    [sfrtxt_data, sfrtxt_data],
+    [sfr_txt_data, sfr_txt_data],
     1,
     6,
     ["sim_1" "sim_2"],
