@@ -54,17 +54,20 @@ More examples can be found in the repository [plotting_scripts](https://github.c
 
 I make extensive use of [Ludwig Boess](https://github.com/LudwigBoess/) packages to read snapshots, manipulate units and apply kernels to GADGET data.
 
-### GADGET
+### _Official GADGET_
 
 [GADGET2](https://wwwmpa.mpa-garching.mpg.de/gadget/)
 
 [GADGET4](https://wwwmpa.mpa-garching.mpg.de/gadget4/)
 
-### Other vizualization tools
+### _Alternative vizualization tools_
 
 [Splash](https://splash-viz.readthedocs.io/en/latest/) (in FORTRAN)
+
 [yt](https://yt-project.org/) (in Python)
+
 [pynbody/tangos](https://pynbody.github.io/) (in Python)
+
 [pygad](https://bitbucket.org/broett/pygad/src/master/) (in Python)
 
 ## 📣 Contact
