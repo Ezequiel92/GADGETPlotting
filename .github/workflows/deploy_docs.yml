@@ -15,8 +15,6 @@ jobs:
         include:
           - jlenv: 'docs/'
             makejl: 'docs/make.jl'
-          - jlenv: 'docs/pdf/'
-            makejl: 'docs/pdf/make.jl'
     steps:
       - uses: actions/checkout@v2.3.4
       - uses: julia-actions/setup-julia@v1.6.0
