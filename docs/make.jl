@@ -8,5 +8,6 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/Ezequiel92/GADGETPlotting.jl.git"
+    repo = "github.com/Ezequiel92/GADGETPlotting.jl.git",
+	devbranch = "main",
 )
