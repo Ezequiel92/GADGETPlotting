@@ -56,7 +56,7 @@ comparison
 deep_comparison
 ```
 
-## Internal API
+## Internal functions
 
 ### Data Acquisition
 
