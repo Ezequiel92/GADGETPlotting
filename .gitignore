@@ -2,3 +2,4 @@
 *.mp4
 *.gif
 docs/build/
+#docs/src/assets/themes/
