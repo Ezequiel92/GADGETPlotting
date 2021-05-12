@@ -8,9 +8,8 @@ const formats = Any[
 ]
 
 makedocs(
-    format = formats,
     sitename="GADGETPlotting.jl",
-    format = Documenter.HTML(),
+    format = formats,
     modules = [GADGETPlotting],
 )
 
