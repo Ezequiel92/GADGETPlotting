@@ -7,9 +7,9 @@ CI = get(ENV, "CI", nothing) == "true" || get(ENV, "GITHUB_TOKEN", nothing) !== 
 # Themes.compile(joinpath(@__DIR__,"src/assets/geostats-light.scss"), joinpath(@__DIR__,"src/assets/themes/documenter-light.css"))
 # Themes.compile(joinpath(@__DIR__,"src/assets/geostats-dark.scss"), joinpath(@__DIR__,"src/assets/themes/documenter-dark.css"))
 
-for file in ("geostats-light.scss", "geostats-dark.scss")
-    download("https://raw.githubusercontent.com/JuliaEarth/GeoStats.jl/master/docs/src/assets/$file", joinpath(@__DIR__, "src/assets/$file"))
-end
+# for file in ("geostats-light.scss", "geostats-dark.scss")
+#     download("https://raw.githubusercontent.com/JuliaEarth/GeoStats.jl/master/docs/src/assets/$file", joinpath(@__DIR__, "src/assets/$file"))
+# end
 
 # compile the themes
 Themes.compile(joinpath(@__DIR__, "src/assets/geostats-light.scss"), joinpath(@__DIR__, "src/assets/themes/documenter-light.css"))
