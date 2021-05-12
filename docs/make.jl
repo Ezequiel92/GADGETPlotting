@@ -16,5 +16,5 @@ makedocs(
 deploydocs(
     repo = "github.com/Ezequiel92/GADGETPlotting.git",
     devbranch = "main",
-    versions = ["stable" => "stable", devurl => devurl],
+    versions = ["stable" => "stable", "dev" => "dev"],
 )
