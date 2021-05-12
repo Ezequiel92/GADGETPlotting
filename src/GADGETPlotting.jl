@@ -14,26 +14,50 @@ if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@optle
     @eval Base.Experimental.@optlevel 3
 end
 
-"Hₒ = 100 km s^(-1) Mpc^(-1) in Gyr^(-1)"
+############################################################################################
+# Global constants. 
+############################################################################################
+
+@doc raw"""
+``H_0 = 100 \, \mathrm{km} \, \mathrm{s}^{-1} \, \mathrm{Mpc}^{-1} \ \mathrm{in} \ \mathrm{Gyr}^{-1}``
+"""
 const HUBBLE_CONST = 0.102201
 
 """
 Solar metallicity.
 
-M. Asplund et al. (2009). The Chemical Composition of the Sun. Annual Review of Astronomy 
-and Astrophysics, 47(1), 481–522. https://doi.org/10.1146/annurev.astro.46.060407.145222
+M. Asplund et al. (2009). *The Chemical Composition of the Sun.* Annual Review of Astronomy 
+and Astrophysics, **47(1)**, 481–522. [https://doi.org/10.1146/annurev.astro.46.060407.145222](https://doi.org/10.1146/annurev.astro.46.060407.145222)
 """
 const SOLAR_METALLICITY = 0.0134
 
 """
-Slope, intercept and unit of area density for the Kennicutt-Schmidt law.
+Slope for the Kennicutt-Schmidt law.
 
-R. C. Kennicutt (1998). The Global Schmidt Law in Star-forming Galaxies. The Astrophysical 
-Journal, 498(2), 541-552. https://doi.org/10.1086/305588
+R. C. Kennicutt (1998). *The Global Schmidt Law in Star-forming Galaxies.* The Astrophysical 
+Journal, **498(2)**, 541-552. [https://doi.org/10.1086/305588](https://doi.org/10.1086/305588)
 """
 const KENNICUTT98_SLOPE = 1.4
+
+"""
+Intercept for the Kennicutt-Schmidt law.
+
+R. C. Kennicutt (1998). *The Global Schmidt Law in Star-forming Galaxies.* The Astrophysical 
+Journal, **498(2)**, 541-552. [https://doi.org/10.1086/305588](https://doi.org/10.1086/305588)
+"""
 const KENNICUTT98_INTERCEPT = 2.5e-4 * (UnitfulAstro.Msun / UnitfulAstro.yr / UnitfulAstro.kpc^2)
+
+"""
+Unit of area density for the Kennicutt-Schmidt law.
+
+R. C. Kennicutt (1998). *The Global Schmidt Law in Star-forming Galaxies.* The Astrophysical 
+Journal, **498(2)**, 541-552. [https://doi.org/10.1086/305588](https://doi.org/10.1086/305588)
+"""
 const KENNICUTT98_RHO_UNIT = 1.0 * UnitfulAstro.Msun / UnitfulAstro.pc^2
+
+############################################################################################
+# Functions. 
+############################################################################################
 
 include("auxiliary.jl")
 include("data_acquisition.jl")

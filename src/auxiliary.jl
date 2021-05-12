@@ -11,15 +11,18 @@
         <keyword arguments>
     )::Union{NTuple{2, Float64}, NTuple{3, Float64}}
     
-Give the absolute coordinates within a Plot, given the relative ones.
+Give the absolute coordinates within a plot, from the relative ones.
+
+If any of the axes are in a logarithmic scale, you should set `log` appropriately to get 
+correct results.
 
 # Arguments 
 - `p::Plots.Plot`: Plot for which the absolute coordinates will be calculated.
-- `rx::Float64`: relative x coordinate, rx ∈ [0, 1].
-- `ry::Float64`: relative y coordinate, ry ∈ [0, 1].
-- `rz::Union{Float64,Nothing} = nothing`: relative z coordinate, rz ∈ [0, 1].
-- `log::Union{NTuple{2, Bool}, NTuple{3, Bool}} = (false, false, false)` = If the x, y or
-  z axis will be in a logarithmic scale.
+- `rx::Float64`: relative x coordinate, `rx` ∈ [0, 1].
+- `ry::Float64`: relative y coordinate, `ry` ∈ [0, 1].
+- `rz::Union{Float64,Nothing} = nothing`: relative z coordinate, `rz` ∈ [0, 1].
+- `log::Union{NTuple{2, Bool}, NTuple{3, Bool}} = (false, false, false)`: If the x, y or z 
+  axes are in a logarithmic scale.
 
 # Returns
 - A Tuple with the absolute coordinates: (x, y) or (x, y, z).
@@ -31,6 +34,7 @@ julia> GADGETPlotting.relative(plot(rand(100)), 0.5, 0.5)
 
 julia> GADGETPlotting.relative(surface(rand(100, 100)), 0.5, 0.5, 0.5)
 (50.5, 50.5, 0.5000284432744244)
+```
 """
 function relative(
     p::Plots.Plot,
@@ -89,14 +93,14 @@ end
         frame_rate::Int64,
     )::Nothing
 	
-Make a MP4 video from a series of images. 
+Make an MP4 video from a series of images. 
 
-The H.264 codec is used with no compression and the source images can be in
-any format available in ImageIO.jl, e.g. ".png", ".svg", ".jpeg", etc.
+The H.264 codec with no compression is used and the source images can be in
+any format available in [ImageIO.jl](https://github.com/JuliaIO/ImageIO.jl).
 
 # Arguments
 - `source_path::String`: Path to the directory containing the images.	
-- `source_format::String`: File format of the source images. 
+- `source_format::String`: File format of the source images, e.g. ".png", ".svg", etc.
 - `output_path::String`: Path to the directory where the resulting video will be saved.
 - `output_filename::String`: Name of the video to be generated without extension.	
 - `frame_rate::Int64`: Frame rate of the video to be generated.
@@ -136,17 +140,17 @@ end
         bins::Int64,
     )::NTuple{2, Vector{Float64}}
 
-Separate the range of values of `x_data` in `bins` contiguous windows, and replaces 
-every x and y value within the window with the mean in order to smooth out the data. 
+Separate the values in `x_data` in `bins` contiguous windows, and replaces every x and y 
+value within the window with the corresponding mean to smooth out the data. 
 
 # Arguments
-- `x_data::Vector{<:Real}`: Data used to create the windows.
-- `y_data::Vector{<:Real}`: Data to be smoothed out.
+- `x_data::Vector{<:Real}`: x-axis data.
+- `y_data::Vector{<:Real}`: y-axis data.
 - `bins::Int64`: Number of windows to be used in the smoothing.
-- `log::Bool = false`: If the x axis will be divided using logarithmic bins.
+- `log::Bool = false`: If the x-axis data will be separated using logarithmic bins.
 
 # Returns
-- The smooth data.
+- A Tuple with two arrays containing the smoothed out x and y data.
 """
 function smooth_window(
     x_data::Vector{<:Real},
@@ -211,14 +215,17 @@ end
 	
 Compute a density profile up to a radius `max_radius`. 
 
-It divides the sphere of radious `max_radius`, centered at (0, 0, 0), in `bins` spherical 
-shells of equal width `max_radius / bins`. This results in a density for the j-th shell of
+It divides a sphere of radius `max_radius`, centered at (0, 0, 0), in `bins` spherical 
+shells of equal width `max_radius` / `bins`. This results in a volume for the ``n``-th shell of
 
-``\rho = \frac{M}{\frac{4}{3}\,\pi\,\mathrm{width}^3\,(3\,j^2 - 3\,j + 1)}``
+```math
+V_n = \frac{4}{3}\,\pi\,\mathrm{width}^3\,(3\,n^2 - 3\,n + 1) \, .
+```
 
-where ``M`` is the total mass within each shell.
+So, the assigned density for that shell is ``\rho_n = M_n / V_n`` where ``M_n`` is the total 
+mass within the shell.
 
-`max_radius` and `distance_data` must be in the same units.
+`max_radius` and `distance_data` must be in the same length units.
 
 # Arguments
 - `mass_data::Vector{Float64}`: Masses of the particles.
@@ -227,8 +234,8 @@ where ``M`` is the total mass within each shell.
 - `bins::Int64`: Number of subdivisions of [0, `max_radius`] to be used for the profile.
 
 # Returns
-- A Tuple of two Arrays. 
-  The first with the radial distances and the second with the densities.
+- A Tuple with two arrays. 
+  The first with the radial distances and the second with the densities, of each shell.
 """
 function density_profile(
     mass_data::Vector{Float64},
@@ -280,19 +287,20 @@ end
         bins::Int64,
     )::NTuple{2, Vector{Float64}}
 	
-Compute a metallicity profile up to a radius `max_radius`, and normalize it to the 
-solar metallicity.
+Compute a metallicity profile up to a radius `max_radius` (normalized to solar metallicity).
 
-It divides the sphere of radious `max_radius`, centered at (0, 0, 0), in `bins` spherical 
+It divides a sphere of radius `max_radius`, centered at (0, 0, 0), in `bins` spherical 
 shells of equal width `max_radius / bins`. This results in a relative metallicity for 
-the j-th shell of
+the ``n``-th shell of
 
-``\rho = \frac{z}{M\,Z_\odot}``
+```math
+\rho_n = \dfrac{z_n}{M_n\,Z_\odot} \, ,
+```
 
-where ``M`` is the total mass and ``z`` the total content of metals, within each shell.
+where ``M_n`` is the total mass and ``z_n`` the total content of metals, within the shell.
 
-`max_radius` and `distance_data` must be in the same units.
-`z_data` and `mass_data` must be in the same units.
+`max_radius` and `distance_data` must be in the same length units, 
+and `z_data` and `mass_data` must be in the same mass units.
 
 # Arguments
 - `mass_data::Vector{Float64}`: Masses of the particles.
@@ -302,8 +310,8 @@ where ``M`` is the total mass and ``z`` the total content of metals, within each
 - `bins::Int64`: Number of subdivisions of [0, `max_radius`] to be used for the profile.
 
 # Returns
-- A Tuple of two Arrays.
-  The first with the radial distances and the second with the metallicities.
+- A Tuple of two arrays.
+  The first with the radial distances and the second with the metallicities, of each shell.
 """
 function metallicity_profile(
     mass_data::Vector{Float64},
@@ -355,17 +363,19 @@ end
         bins::Int64,
     )::NTuple{2, Vector{Float64}}
 	
-Compute an accumulated mass profile up to a radius `max_radius`. 
+Compute an cumulative mass profile up to a radius `max_radius`. 
 
-It divides the sphere of radious `max_radius`, centered at (0, 0, 0), in `bins` spherical 
-shells of equal width `max_radius / bins`. This results in a accumulated mass for 
-the j-th shell of
+It divides a sphere of radius `max_radius`, centered at (0, 0, 0), in `bins` spherical 
+shells of equal width `max_radius / bins`. This results in a cumulative mass for 
+the ``n``-th shell of
 
-``M = \sum_{i = 1}^j m_i``
+```math
+M_n = \sum_{i = 1}^n m_i \, ,
+```
 
-where ``m_i`` is the total mass within the i-th shell.
+where ``m_i`` is the total mass within the ``i``-th shell.
 
-`max_radius` and `distance_data` must be in the same units.
+`max_radius` and `distance_data` must be in the same length units.
 
 # Arguments
 - `mass_data::Vector{Float64}`: Masses of the particles.
@@ -374,8 +384,9 @@ where ``m_i`` is the total mass within the i-th shell.
 - `bins::Int64`: Number of subdivisions of [0, `max_radius`] to be used for the profile.
 
 # Returns
-- A Tuple of two Arrays.
-  The first with the radial distances and the second with the accumulated masses.
+- A Tuple of two arrays.
+  The first with the radial distances and the second with the accumulated masses, 
+  of each shell.
 """
 function mass_profile(
     mass_data::Vector{Float64},
@@ -424,32 +435,37 @@ end
         <keyword arguments>
     )::NTuple{2, Vector{Float64}}
 	
-Compute the cumulative metallicity distribution function up to a metallicity `max_Z`. 
+Compute the cumulative metallicity distribution function up to a metallicity of `max_Z`. 
 
-The CMDF is calculated separating the stellar metallicity in `bins` windows from 0 to 
-`max_Z` metallicity. Within the j-th window the CMDF is
+The CMDF is calculated separating in `bins` windows the stellar metallicity, within the 
+range [0, `max_Z`]. For the ``n``-th window the CMDF is
 
-``\sum_{i = 1}^j \frac{m_i}{M_T}`` vs. ``\bar{Z}_j``
+```math
+\sum_{i = 1}^n \dfrac{m_i}{M_T} \quad \mathrm{vs.} \quad \bar{Z}_n \, ,
+```
 
 or, for `x_norm = true`, 
 
-``\sum_{i = 1}^j \frac{m_i}{M_T}`` vs. ``\bar{Z}_j / max(\bar{Z}_j)``
+```math
+\sum_{i = 1}^n \dfrac{m_i}{M_T} \quad \mathrm{vs.} \quad \dfrac{\bar{Z}_n}{\mathrm{max}(\bar{Z}_n)} \, ,
+```
 
-where ``M_T`` is the total stellar mass, ``m_i`` the stellar mass of the i-th window and
-``\bar{Z}_j`` the mean stellar metallicity of the j-th window.
+where ``M_T`` is the total stellar mass, ``m_i`` the stellar mass of the ``i``-th window and
+``\bar{Z}_n`` the mean stellar metallicity of the ``n``-th window.
 
-`mass_data` and `metallicity_data` must be in the same units.
+`mass_data` and `metallicity_data` must be in the same mass units.
 
 # Arguments
 - `mass_data::Vector{Float64}`: Masses of the particles.
 - `metallicity_data::Vector{Float64}`: Metallicities of the particles. 
-- `max_Z::Float64`: Maximum metallicity up to which the profile will be calculated.
-- `bins::Int64`: Number of subdivisions of [0, `max_Z`] to construct the plot.
+- `max_Z::Float64`: Maximum metallicity up to which the CMDF will be calculated.
+- `bins::Int64`: Number of subdivisions of [0, `max_Z`] to be used for the CMDF.
 - `x_norm::Bool = false`: If the x axis will be normalized to its maximum value. 
 
 # Returns
 - A Tuple of two Arrays.
-  The first with the metallicities and the second with the accumulated masses.
+  The first with the metallicities and the second with the accumulated masses, 
+  of each window.
 """
 function compute_cmdf(
     mass_data::Vector{Float64},
@@ -503,7 +519,7 @@ function compute_cmdf(
 	return x_data, cumsum(y_data)
 end
 
-"""
+@doc raw"""
     kennicutt_schmidt_law(
         gas_mass_data::Vector{Float64},
         gas_distance_data::Vector{Float64},
@@ -517,31 +533,55 @@ end
         <keyword arguments>
     )::Union{Nothing, Dict{String, Any}}
 	
-Compute mass area density and the SFR area density for the Kennicutt-Schmidt law. 
+Compute the mass area density and the SFR area density for the [Kennicutt-Schmidt law](https://en.wikipedia.org/wiki/Kennicutt%E2%80%93Schmidt_law). 
 
-`temp_filter` and `temperature_data` must be in the same units, and `age_filter` and 
-`age_data` must be in the same units too.
+The area densities are calculated by projecting the positions of the stars and of the 
+particles of gas to the x-y plane. Then the space is subdivided in `bins` concentric 
+rings from 0 to `max_r`, each of equal width `max_r` / `bins`. This results in an area 
+for the ``n``-th ring of
+
+```math
+A_n = π \, \mathrm{width}^2 \, (2 \, n - 1) \, .
+```
+
+So, the assigned SFR for that ring is 
+
+```math
+\Sigma_\mathrm{SFR}^n = \frac{M_*^n}{\mathrm{age\_filter}\,A_n} \, ,
+```
+
+where ``M_*^n`` is the total mass of stars younger than `age_filter` within the ring.
+
+Equivalently, the mass area density of the gas is given by
+
+```math
+\Sigma_\rho^n = \frac{M_\rho^n}{A_n} \, ,
+```
+
+where ``M_\rho^n`` is the total mass of gas colder than `temp_filter` within the ring.
+
+`temp_filter` and `temperature_data` must be in the same temperature units, 
+and `age_filter` and `age_data` must be in the same time units.
 
 # Arguments
 - `gas_mass_data::Vector{Float64}`: Masses of the gas particles.
-- `gas_distance_data::Vector{Float64}`: 2D distances of the gas particles. 
+- `gas_distance_data::Vector{Float64}`: 2D radial distances of the gas particles. 
 - `temperature_data::Vector{Float64}`: Temperatures of the gas particles.
 - `star_mass_data::Vector{Float64}`: Masses of the stars.
-- `star_distance_data::Vector{Float64}`: 2D distances of the stars.
+- `star_distance_data::Vector{Float64}`: 2D radial distances of the stars.
 - `age_data::Vector{Float64}`: Ages of the stars.
 - `temp_filter::Float64`: Maximum temperature allowed for the gas particles.
-- `age_filter::Unitful.Quantity`: Maximum star age allowed for the calculation of the SFR. 
-  It should be approximately equal to the time step of the snapshots.
+- `age_filter::Unitful.Quantity`: Maximum age allowed for the stars.
 - `max_r::Float64`: Maximum distance up to which the parameters will be calculated.
-- `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. 
-  It has to be at least 5.
+- `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. It has to be at 
+  least 5.
 
 # Returns
 - A dictionary with three entries.
   - Key "RHO" => Logarithm of the area mass densities.
   - Key "SFR" => Logarithm of the SFR area densities.
-  - Key "LM" => Linear model given by GLM.jl.
-- Or `nothing` if there are less than 5 data point in the end result.
+  - Key "LM" => Linear model given by [GLM.jl](https://github.com/JuliaStats/GLM.jl).
+- Or `nothing` if there are less than 5 data points in the end result.
 """
 function kennicutt_schmidt_law(
     gas_mass_data::Vector{Float64},
@@ -620,7 +660,8 @@ Format the mean and error values.
 
 It follows the traditional rules for error presentation. The error has only one significant  
 digit, unless such digit is a one, in which case, two significant digits are used.  
-The mean will have a number of digits such as to match the error. 
+The mean will have a number of digits such as to match the last significant position 
+of the error. 
 
 # Arguments 
 - `mean::Float64`: Mean value.
@@ -688,17 +729,17 @@ end
 """
     pass_all(snap_file::String, type::String)::Vector{Int64}
 
-Default filter function for `read_blocks_over_all_files`.
+Default filter function for the [read\\_blocks\\_over\\_all\\_files](https://ludwigboess.github.io/GadgetIO.jl/stable/api/#GadgetIO.read_blocks_over_all_files-Tuple{String,%20Array{String,%20N}%20where%20N}) function.
 
 It does not filter out any particles, allowing the data acquisition functions to gather 
-all data. 
+all the data. 
 
 # Arguments 
 - `snap_file::String`: Snapshot file path.
 - `type::String`: Particle type.
-  "gas" -> Gas particle. 
-  "dark_matter" -> Dark matter particle.
-  "stars" -> Star particle.
+    * "gas" -> Gas particle. 
+    * "dark_matter" -> Dark matter particle.
+    * "stars" -> Star particle.
 
 # Returns
 - A Vector with the indices of the allowed particles.
@@ -727,16 +768,25 @@ end
 
 Give the integrand of the scale factor to physical time function
 
-``\frac{1}{H\,\sqrt{\epsilon}}``, 
+```math
+\frac{1}{H\,\sqrt{\epsilon}} \, ,
+``` 
 
-where ``H = H_0 \, a`` and ``\epsilon = \Omega_\lambda + (1 - \Omega_\lambda - \Omega_0) / a^2 + \Omega_0 / a^3``.
+where 
+
+```math
+\epsilon = \Omega_\lambda + \frac{1 - \Omega_\lambda - \Omega_0}{a^2} + \frac{\Omega_0}{a^3} \, , 
+```
+```math
+H = H_0 \, a \, .
+```
 
 # Arguments 
 - `header::GadgetIO.SnapshotHeader`: Header of the relevant snapshot file.
 - `a::Float64`: Dimensionless scale factor.
 
 # Returns
-- The integrand evaluated in `a` in Gyr.
+- The integrand in Gyr evaluated in `a` .
 """
 function energy_integrand(header::GadgetIO.SnapshotHeader, a::Float64)::Float64
 
@@ -763,16 +813,18 @@ Give the numerical integral of `func` between `inf_val` and `sup_val`.
 
 The result is given by
 
-``\int_\mathrm{inf\_lim}^\mathrm{sup\_lim} f(x) \mathrm{dx} \approx \sum_{i = 1}^\mathrm{steps} f(\mathrm{inf\_lim} + \mathrm{width}\,i ) \, ,``
+```math
+\int_\mathrm{inf\_lim}^\mathrm{sup\_lim} f(x) \mathrm{dx} \approx \sum_{i = 1}^\mathrm{steps} f(\mathrm{inf\_lim} + \mathrm{width}\,i ) \, ,
+```
 
 where ``\mathrm{width} = (\mathrm{sup\_lim} - \mathrm{inf\_lim}) / \mathrm{steps}``.
 
 # Arguments 
 - `func::Function`: 1D function to be integrated.
-- `inf_lim::Float64`: Inferior limit of the integral.
-- `sup_lim::Float64`: Superior limit if the integral.
+- `inf_lim::Float64`: Lower limit of the integral.
+- `sup_lim::Float64`: Upper limit if the integral.
 - `steps::Int64`: Number of subdivisions to be used for the discretization of 
-  the `sup_lim` - `inf_lim` region.
+  the [`inf_lim`, `sup_lim`] region.
 
 # Returns
 - The value of the integral.
@@ -811,16 +863,18 @@ end
         mass_data::Vector{<:Real},
     )::NTuple{3, Float64}
 
-Calculate the center of mass as
+Compute the center of mass as
 
-``R_c = \frac{1}{M} \sum_i m_i \, r_i \, ,``
+```math
+R_c = \frac{1}{M} \sum_n m_n \, r_n \, ,
+```
 
-where ``M = \sum_i m_i`` and ``m_i`` and ``r_i`` are the mass and distance 
-from the origin of the i-th particle.
+where ``M = \sum_n m_n`` and ``m_n`` and ``r_n`` are the mass and distance 
+from the origin of the ``n``-th particle.
 
 # Arguments
-- `position_data::Matrix{<:Real}`: The positions of the particles.
-- `mass_data::Vector{<:Real}`: The masses of the particles.
+- `position_data::Matrix{<:Real}`: Positions of the particles.
+- `mass_data::Vector{<:Real}`: Masses of the particles.
 
 # Returns
 - The center of mass in the unis of `position_data`.
@@ -850,7 +904,7 @@ end
         rtol::Float64 = 1e-5,
     )::Bool
 
-Determines is two numbers, numeric arrays or numeric tuples are approximately equal.
+Determine if two numbers, numeric arrays, or numeric tuples are approximately equal.
 
 # Arguments
 - `x::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}`: First element to be compared.
@@ -859,7 +913,7 @@ Determines is two numbers, numeric arrays or numeric tuples are approximately eq
 - `rtol::Float64 = 1e-5`: Relative tolerance.
 
 # Returns
-- Return `true` if every pair of elements (X, Y) in (x, y) pass
+- Return `true` if every pair of elements (X, Y) in (`x`, `y`) pass
   ```julia
   norm(X - Y) <= max(atol, rtol * max(norm(X), norm(Y)))
   ````
@@ -878,7 +932,7 @@ end
 """
     comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
 
-Determines is two elements are equal.
+Determine if two elements are equal, as per the [isequal](https://docs.julialang.org/en/v1/base/base/#Base.isequal) function.
 
 # Arguments
 - `x`: First element to be compared.
@@ -887,7 +941,7 @@ Determines is two elements are equal.
 - `rtol::Float64 = 1e-5`: Relative tolerance (for compatibility).
 
 # Returns
-- Return `true` if `x == y`.
+- Returns `isequal(x, y)`.
 """
 function comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
 
@@ -903,9 +957,10 @@ end
         rtol::Float64 = 1e-5,
     )::Bool
 
-Determines is two dictionaries are approximately equal.
+Determine if two dictionaries are approximately equal.
 
-Numeric elements are compared with `comparison()`, everything else with `isequal()`.
+Numeric elements are compared with the [`comparison`](@ref) function, everything else with 
+the [isequal](https://docs.julialang.org/en/v1/base/base/#Base.isequal) function.
 
 # Arguments
 - `x::Dict`: First dictionary to be compared.
@@ -914,7 +969,7 @@ Numeric elements are compared with `comparison()`, everything else with `isequal
 - `rtol::Float64 = 1e-5`: Relative tolerance for numeric elements.
 
 # Returns
-- Return `true` if every pair of elements pass the equality tests.
+- Return `true` if every pair of elements within the dictionaries pass the equality tests.
 """
 function deep_comparison(
     x::Dict, 
@@ -939,9 +994,10 @@ end
         rtol::Float64 = 1e-5,
     )::Bool
 
-Determines is two arrays or tuples are approximately equal.
+Determines if two arrays or tuples are approximately equal.
 
-Numeric elements are compared with `comparison()`, everything else with `isequal()`.
+Numeric elements are compared with the [`comparison`](@ref) function, everything else with 
+the [isequal](https://docs.julialang.org/en/v1/base/base/#Base.isequal) function.
 
 # Arguments
 - `x::Union{AbstractArray, Tuple}`: First array to be compared.

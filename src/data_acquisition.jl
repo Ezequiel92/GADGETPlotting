@@ -84,18 +84,18 @@ The parameters are:
   foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
-  all available mass units in Unitful.jl and UnitfulAstro.jl can be used.
+  all available mass units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
-  all available time units in Unitful.jl and UnitfulAstro.jl can be used.
+  all available time units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr`: Unit of mass/time to 
-  be used in the output, all available time and mass units in Unitful.jl and UnitfulAstro.jl 
+  be used in the output, all available time and mass units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) 
   can be used.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
-  in the output, all available length units in Unitful.jl and UnitfulAstro.jl 
+  in the output, all available length units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) 
   can be used.
 - `density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3`: Unit of 
-  density to be used in the output, all available density units in Unitful.jl and 
-  UnitfulAstro.jl can be used.
+  density to be used in the output, all available density units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and 
+  [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 
 # Returns
 - A dictionary.
@@ -407,7 +407,7 @@ Get the coordinates of the particles at a specific time step.
   vacuum boundary conditions were used. It has to have units but they don't have to be 
   the same as `length_unit`.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
-  in the output, all available length units in Unitful.jl and UnitfulAstro.jl 
+  in the output, all available length units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) 
   can be used.
 
 # Returns
@@ -612,8 +612,8 @@ Get the densities of the gas particles at a specific time step.
   foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3`: Unit of 
-  density to be used in the output, all available density units in Unitful.jl and 
-  UnitfulAstro.jl can be used.
+  density to be used in the output, all available density units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and 
+  [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 
 # Returns
 - A dictionary with two entries.
@@ -691,7 +691,7 @@ Get the smoothing lengths of the gas particles at a specific time step.
   foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
-  in the output, all available length units in Unitful.jl and UnitfulAstro.jl 
+  in the output, all available length units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) 
   can be used.
 
 # Returns
@@ -774,7 +774,7 @@ Get the mass of the particles at a specific time step.
   foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
-  all available mass units in Unitful.jl and UnitfulAstro.jl can be used.
+  all available mass units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 
 # Returns
 - A dictionary with three entries.
@@ -869,7 +869,7 @@ Get the metallicity (as mass content of metals) of the particles at a specific t
   foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
-  all available mass units in Unitful.jl and UnitfulAstro.jl can be used.
+  all available mass units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 
 # Returns
 - A dictionary with two entries.
@@ -967,7 +967,7 @@ Get the temperature of the gas particles at a specific time step.
   foo(snap\\_file::String, type::String)::Vector{Int64}. See pass_all() in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `temp_unit::Unitful.FreeUnits = Unitful.K`: Unit of temperature to be used in the output, 
-  all available temperature units in Unitful.jl and UnitfulAstro.jl can be used.
+  all available temperature units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 
 # Returns
 - A dictionary with two entries.
@@ -1088,7 +1088,7 @@ Get the ages of the stars at a specific time step.
 # Arguments
 - `snapshot::String`: Path to a given snapshot.
 - `time::Unitful.Quantity`: Clock time of `snapshot`, with units. All available time units 
-  in Unitful.jl and UnitfulAstro.jl can be used.
+  in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable ComovingIntegrationOn: 
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
@@ -1204,7 +1204,7 @@ Get the birth location of the stars in a given snapshot.
   foo(snap\\_file::String, type::String)::Vector{Int64}. See `pass_all` in `src/auxiliary.jl` 
   for an example. By default no particles are filtered.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
-  in the output, all available length units in Unitful.jl and UnitfulAstro.jl 
+  in the output, all available length units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) 
   can be used.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time of `time_stamps`.
 
@@ -1381,11 +1381,11 @@ GADGET3. GADGET4 produces a sfr.txt, but it is not compatible with this function
   0 -> Newtonian simulation (static universe).
   1 -> Cosmological simulation (expanding universe).
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
-  all available mass units in Unitful.jl and UnitfulAstro.jl can be used.
+  all available mass units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
-  all available time units in Unitful.jl and UnitfulAstro.jl can be used.
+  all available time units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr`: Unit of mass/time to 
-  be used in the output, all available time and mass units in Unitful.jl and UnitfulAstro.jl 
+  be used in the output, all available time and mass units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) 
   can be used.
 
 # Returns

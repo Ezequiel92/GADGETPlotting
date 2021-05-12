@@ -2,26 +2,30 @@ push!(LOAD_PATH, "./src/")
 using Documenter, GADGETPlotting
 using DocumenterTools: Themes
 
+# True if being deployed, false if being compile locally
 CI = get(ENV, "CI", nothing) == "true" || get(ENV, "GITHUB_TOKEN", nothing) !== nothing
 
-# Themes.compile(joinpath(@__DIR__,"src/assets/geostats-light.scss"), joinpath(@__DIR__,"src/assets/themes/documenter-light.css"))
-# Themes.compile(joinpath(@__DIR__,"src/assets/geostats-dark.scss"), joinpath(@__DIR__,"src/assets/themes/documenter-dark.css"))
+# Compile themes
+Themes.compile(
+    joinpath(@__DIR__, "src/assets/geostats-light.scss"), 
+    joinpath(@__DIR__, "src/assets/themes/documenter-light.css"),
+)
+Themes.compile(
+    joinpath(@__DIR__, "src/assets/geostats-dark.scss"), 
+    joinpath(@__DIR__, "src/assets/themes/documenter-dark.css"),
+)
 
-# for file in ("geostats-light.scss", "geostats-dark.scss")
-#     download("https://raw.githubusercontent.com/JuliaEarth/GeoStats.jl/master/docs/src/assets/$file", joinpath(@__DIR__, "src/assets/$file"))
-# end
-
-# compile the themes
-Themes.compile(joinpath(@__DIR__, "src/assets/geostats-light.scss"), joinpath(@__DIR__, "src/assets/themes/documenter-light.css"))
-Themes.compile(joinpath(@__DIR__, "src/assets/geostats-dark.scss"), joinpath(@__DIR__, "src/assets/themes/documenter-dark.css"))
-
-#isdir(datadir()) && rm(datadir(); force = true, recursive = true)
-
+# Compile documentation
 makedocs(
     sitename="GADGETPlotting.jl",
     authors = "Ezequiel Lozano",
     format = Documenter.HTML(
-        assets=[asset("https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&display=swap", class=:css)],
+        assets=[
+            asset(
+                "https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&display=swap", 
+                class=:css,
+            )
+        ],
         prettyurls = CI,
         edit_link = "main",
     ),
@@ -36,6 +40,7 @@ makedocs(
     ],
 )
 
+# Deploy documentation to GitHub pages
 if CI
     deploydocs(
         repo = "github.com/Ezequiel92/GADGETPlotting.git",
@@ -43,5 +48,3 @@ if CI
         versions = ["dev" => "dev"],
     ) 
 end
-
-

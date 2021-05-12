@@ -1006,11 +1006,11 @@ One column per simulation, one row per sanpshot.
   be used in the output, all available time and mass units in Unitful and UnitfulAstro 
   can be used, e.g. UnitfulAstro.Msun/UnitfulAstro.yr.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used 
-  in the output, all available length units in Unitful.jl and UnitfulAstro.jl 
+  in the output, all available length units in [UnitfulAstro.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) 
   can be used.
 - `density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3`: Unit of 
-  density to be used in the output, all available density units in Unitful.jl and 
-  UnitfulAstro.jl can be used.
+  density to be used in the output, all available density units in [UnitfulAstro.jl](https://github.com/PainterQubits/Unitful.jl) and 
+  [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
   pgfplotsx backend can be used, namely ".pdf", ".tex", ".svg" and ".png".  
 """
