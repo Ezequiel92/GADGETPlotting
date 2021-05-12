@@ -3,7 +3,7 @@ using Documenter, GADGETPlotting
 
 const formats = Any[
     Documenter.HTML(
-        edit_branch = "main",
+        edit_link = "main",
     ),
 ]
 
@@ -16,5 +16,5 @@ makedocs(
 deploydocs(
     repo = "github.com/Ezequiel92/GADGETPlotting.git",
     devbranch = "main",
-	devurl = "stable",
+    versions = ["stable" => "stable", devurl => devurl],
 )
