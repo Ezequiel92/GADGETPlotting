@@ -113,7 +113,7 @@ function make_video(
     frame_rate::Int64,
 )::Nothing
 
-    # Loads the target images.
+    # Loads the target images
     imagestack = [load(image) for image in glob("*" * source_format, source_path)]
 
     (
@@ -121,7 +121,7 @@ function make_video(
         error("I couldn't find any '$source_format' images in '$source_path'.")
     )
 
-    # Creates the video with the specified frame rate and filename.
+    # Creates the video with the specified frame rate and filename
     VideoIO.save(
         joinpath(output_path, output_filename * ".mp4"),
         imagestack,
@@ -159,21 +159,21 @@ function smooth_window(
     log::Bool = false,
 )::NTuple{2, Vector{Float64}}
 
-    # Dimension consistency check.
+    # Dimension consistency check
     (
         length(x_data) == length(y_data) ||
         throw(DimensionMismatch("The input vectors should have the same length."))
     )
 
     if log 
-        # First positive value of the x axis.
+        # First positive value of the x axis
         start = log10(minimum(x -> x <= 0.0 ? Inf : x, x_data))
-        # Logarithmic widths of the smoothing windows.
+        # Logarithmic widths of the smoothing windows
         width = (log10(maximum(x_data)) - start) / bins
     else
-        # First value of the x axis.
+        # First value of the x axis
         start = minimum(x_data)
-        # Linear widths of the smoothing windows.
+        # Linear widths of the smoothing windows
         width = (maximum(x_data) - start) / bins
     end
 
@@ -183,7 +183,7 @@ function smooth_window(
 
     @inbounds for i in eachindex(smooth_x_data, smooth_y_data)
 
-        # Find the indices of `x_data` which fall within window `i`.
+        # Find the indices of `x_data` which fall within window `i`
         if log
             idx = findall(
                 x -> 10.0^(start + width * (i - 1)) <= x < 10.0^(start + width * i), 
@@ -196,7 +196,7 @@ function smooth_window(
 		if isempty(idx)
 			error("Using $bins bins is too high for the data, lower it.")
 		else
-			# Store mean values in output arrays.
+			# Store mean values in output arrays
 			smooth_x_data[i] = sum(x_data[idx]) / length(idx)
 			smooth_y_data[i] = sum(y_data[idx]) / length(idx)
 		end
@@ -244,21 +244,21 @@ function density_profile(
     bins::Int64,
 )::NTuple{2, Vector{Float64}}
 
-    # Dimension consistency check.
+    # Dimension consistency check
     (
         length(mass_data) == length(distance_data) ||
         throw(DimensionMismatch("The input vectors should have the same length."))
     )
 
-    # Width of each spherical shell used to calculate the density.
+    # Width of each spherical shell used to calculate the density
     width = max_radius / bins
 
-    # Initialize output arrays.
+    # Initialize output arrays
     x_data = Vector{Float64}(undef, bins)
     y_data = Vector{Float64}(undef, bins)
 
     @inbounds for i in eachindex(x_data, y_data)
-        # Find the indices of `distance_data` which fall within window `i`.
+        # Find the indices of `distance_data` which fall within window `i`
         idx = findall(x -> width * (i - 1) <= x < width * i, distance_data)
 
         if isempty(idx)
@@ -268,9 +268,9 @@ function density_profile(
             total_mass = sum(mass_data[idx])
             volume = 4.0 / 3.0 * π * width^3.0 * (3.0 * i * i - 3.0 * i + 1.0)
 
-            # Mean distance for window i.
+            # Mean distance for window i
             x_data[i] = sum(distance_data[idx]) / length(idx)
-            # Density for window i.
+            # Density for window i
             y_data[i] = total_mass / volume
         end
     end
@@ -321,21 +321,21 @@ function metallicity_profile(
     bins::Int64,
 )::NTuple{2, Vector{Float64}}
 
-    # Dimension consistency check.
+    # Dimension consistency check
     (
         length(mass_data) == length(distance_data) == length(z_data) ||
         throw(DimensionMismatch("The input vectors should have the same length."))
     )
 
-    # Width of each spherical shell used to calculate the metallicity.
+    # Width of each spherical shell used to calculate the metallicity
     width = max_radius / bins
 
-    # Initialize output arrays.
+    # Initialize output arrays
     x_data = Vector{Float64}(undef, bins)
     y_data = Vector{Float64}(undef, bins)
 
     @inbounds for i in eachindex(x_data, y_data)
-        # Find the indices of `distance_data` which fall within window `i`.
+        # Find the indices of `distance_data` which fall within window `i`
         idx = findall(x -> width * (i - 1) <= x < width * i, distance_data)
 
         if isempty(idx)
@@ -345,9 +345,9 @@ function metallicity_profile(
             total_mass = sum(mass_data[idx])
             total_z = sum(z_data[idx])
 
-            # Mean distance for window i.
+            # Mean distance for window i
             x_data[i] = sum(distance_data[idx]) / length(idx)
-            # Metallicity for window i.
+            # Metallicity for window i
             y_data[i] = (total_z / total_mass) / SOLAR_METALLICITY
         end
     end
@@ -395,31 +395,31 @@ function mass_profile(
     bins::Int64,
 )::NTuple{2, Vector{Float64}}
 
-    # Dimension consistency check.
+    # Dimension consistency check
     (
         length(mass_data) == length(distance_data) ||
         throw(DimensionMismatch("The input vectors should have the same length."))
     )
 
-    # Width of each spherical shell used to calculate the mass.
+    # Width of each spherical shell used to calculate the mass
     width = max_radius / bins
 
-    # Initialize output arrays.
+    # Initialize output arrays
     x_data = Vector{Float64}(undef, bins)
     y_data = Vector{Float64}(undef, bins)
 
     @inbounds for i in eachindex(x_data, y_data)
-        # Indices of `distance_data` within window i.
+        # Indices of `distance_data` within window i
         idx = findall(x -> width * (i - 1) <= x < width * i, distance_data)
 		
 		if isempty(idx)
             x_data[i] = width * (i - 0.5)
         else
-			# Mean distance for window i.
+			# Mean distance for window i
 			x_data[i] = sum(distance_data[idx]) / length(idx)
 		end
 		
-		# Mass for window i.
+		# Mass for window i
 		y_data[i] = sum(mass_data[idx])
     end
 
@@ -475,29 +475,29 @@ function compute_cmdf(
     x_norm::Bool = false,
 )::NTuple{2, Vector{Float64}}
 
-    # Dimension consistency check.
+    # Dimension consistency check
     (
         length(mass_data) == length(metallicity_data) ||
         throw(DimensionMismatch("The input vectors should have the same length."))
     )
 	
-	# Dimensionless metallicity.
+	# Dimensionless metallicity
 	Z = metallicity_data ./ mass_data
 
-    # If required, normalize the x axis.
+    # If required, normalize the x axis
     if x_norm
         Z = Z ./ max_Z
-        # Width of the metallicity bins.
+        # Width of the metallicity bins
         width = 1.0 / bins
     else
-        # Width of the metallicity bins.
+        # Width of the metallicity bins
 	    width = max_Z / bins  
     end
 	
-	# Total star mass.
+	# Total star mass
 	total_m = sum(mass_data)
 	
-	# Initialize output arrays.
+	# Initialize output arrays
     x_data = Vector{Float64}(undef, bins)
     y_data = Vector{Float64}(undef, bins)
 
@@ -507,11 +507,11 @@ function compute_cmdf(
 		if isempty(idx)
             x_data[i] = width * (i - 0.5)
         else
-			# Mean metallicity for window i.
+			# Mean metallicity for window i
 			x_data[i] = sum(Z[idx]) / length(idx)
 		end
 		
-		# Mass fraction for window i.
+		# Mass fraction for window i
 		y_data[i] = sum(mass_data[idx]) / total_m			
 		
 	end
@@ -596,22 +596,22 @@ function kennicutt_schmidt_law(
     bins::Int64 = 50,
 )::Union{Nothing, Dict{String, Any}}
 
-    # Bin size check.
+    # Bin size check
     if bins < 5
         error("You have to use at least 5 bins.")
     end
 
-    # Filter out hot gas particles.
+    # Filter out hot gas particles
     cold_gas_mass = deleteat!(copy(gas_mass_data), temperature_data .> temp_filter)
     cold_gas_distance = deleteat!(copy(gas_distance_data), temperature_data .> temp_filter)
 
-    # Filter out old stars.
+    # Filter out old stars
     young_star_mass = deleteat!(copy(star_mass_data), age_data .> age_filter)
     young_star_distance = deleteat!(copy(star_distance_data), age_data .> age_filter)
 
     r_width = max_r / bins
 
-    # Initialize output arrays.
+    # Initialize output arrays
     x_data = Vector{Float64}(undef, bins)
     y_data = Vector{Float64}(undef, bins)
 
@@ -620,24 +620,24 @@ function kennicutt_schmidt_law(
         # Gas.
 		idx_gas = findall(x ->  r_width * (i - 1) <= x < r_width * i, cold_gas_distance)
         gas_mass = sum(cold_gas_mass[idx_gas])
-		# Gas area density for window i.
+		# Gas area density for window i
 		x_data[i] = gas_mass / (π * r_width * r_width * (2.0 * i - 1.0))
 
         # Stars.
         idx_star = findall(x ->  r_width * (i - 1) <= x < r_width * i, young_star_distance)
         sfr = sum(young_star_mass[idx_star]) / age_filter 
-        # SFR area density for window i.
+        # SFR area density for window i
         y_data[i] = sfr / (π * r_width * r_width * (2.0 * i - 1.0))		
 		
 	end
 
-    # Filter out zeros.
+    # Filter out zeros
     deleteat!(y_data, x_data .<= 0.0)
     filter!(x -> x > 0.0, x_data)
     deleteat!(x_data, y_data .<= 0.0)
     filter!(y -> y > 0.0, y_data)
 
-    # Set logarithmic scaling.
+    # Set logarithmic scaling
     x_data = log10.(x_data)
     y_data = log10.(y_data)
 
@@ -646,7 +646,7 @@ function kennicutt_schmidt_law(
         return nothing
     end
 
-    # Compute linear fit.
+    # Compute linear fit
     X = [ones(length(x_data)) x_data]
     linear_model = lm(X, y_data)
 
@@ -687,7 +687,7 @@ julia> format_error(69.42069, 73.4)
 """
 function format_error(mean::Float64, error::Float64)::NTuple{2, Float64}
 
-    # Positive error check.
+    # Positive error check
     error >= 0.0 || error("The error must be a positive number.")
 
     if error == 0.0
@@ -746,7 +746,7 @@ all the data.
 """
 function pass_all(snap_file::String, type::String)::Vector{Int64}
 
-    # Select type of particle.
+    # Select type of particle
     if type == "gas"
         type_num = 1
     elseif type == "dark_matter"
@@ -792,12 +792,12 @@ function energy_integrand(header::GadgetIO.SnapshotHeader, a::Float64)::Float64
 
     # Ω_K (curvature)
     omega_K = 1.0 - header.omega_0 - header.omega_l
-    # Energy function.
+    # Energy function
     E = header.omega_0 / (a * a * a) + omega_K / (a * a) + header.omega_l
-    # Hubble constant in 1 / Gyr.
+    # Hubble constant in 1 / Gyr
     H = header.h0 * HUBBLE_CONST * a
 
-    # Integrand of the time integral in Gyr. 
+    # Integrand of the time integral in Gyr
     return 1.0 / (H * sqrt(E))
 end
 
@@ -848,12 +848,12 @@ function num_integrate(
     steps::Int64 = 200,
 )::Float64
     
-    # Width of a single subinterval.
+    # Width of a single subinterval
     width = (sup_lim - inf_lim) / steps
-    # Integrand evaluated at the rightmost value of each subinterval.
+    # Integrand evaluated at the rightmost value of each subinterval
     integrand = func.([inf_lim + width * i for i in 1:steps])
 
-    # Final result of the numerical integration.
+    # Final result of the numerical integration
     return sum(width .* integrand)
 end
 

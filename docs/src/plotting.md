@@ -1,4 +1,4 @@
-# Plotting
+# Plotting functions
 
 ```@autodocs
 Modules = [GADGETPlotting]

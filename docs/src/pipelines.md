@@ -1,4 +1,4 @@
-# Pipelines
+# Pipeline functions
 
 ```@autodocs
 Modules = [GADGETPlotting]
