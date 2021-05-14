@@ -1,4 +1,4 @@
-# Data acquisition functions
+# Data Acquisition Functions
 
 ```@autodocs
 Modules = [GADGETPlotting]

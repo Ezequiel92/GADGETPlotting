@@ -712,7 +712,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the birth_histogram_plot function as one image per snapshot, if there are 
+Save the results of the birth\\_histogram\\_plot function as one image per snapshot, if there are 
 stars present, and then generate a GIF and a video animating the images. 
 
 # Arguments
@@ -2156,7 +2156,7 @@ GADGET3. GADGET4 produces a sfr.txt, but it is not compatible with this function
 - `labels::Union{Nothing, Array{String, 2}} = nothing`: Labels for the different 
   simulations. Only relevant if `comparison_type = 1`.
 - `bins::Int64 = 0`: Number of subdivisions for the smoothing of the data. 
-  The default is 0, i.e. no smoothing. It will apply equally to every figure produced.
+  The default is no smoothing. It will apply equally to every figure produced.
 - `scale::NTuple{2, Symbol} = (:identity, :identity)`: Scaling to be used for the x and y 
   axes. It will apply equally to every figure produced.
   The options are:

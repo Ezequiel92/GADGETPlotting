@@ -1,4 +1,4 @@
-# Auxiliary functions
+# Auxiliary Functions
 
 ```@autodocs
 Modules = [GADGETPlotting]
