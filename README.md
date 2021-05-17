@@ -6,7 +6,7 @@
 
 [![Codecov](https://img.shields.io/codecov/c/github/Ezequiel92/GADGETPlotting?style=flat&logo=Codecov&labelColor=2B2D2F)](https://codecov.io/github/Ezequiel92/BiblographyFormatter?branch=main) [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Ezequiel92/GADGETPlotting/Continuous%20integration?style=flat&logo=GitHub&labelColor=2B2D2F)](https://github.com/Ezequiel92/GADGETPlotting/actions) [![Documentation](https://img.shields.io/badge/docs-dev-blue.svg?style=flat&logo=GitBook&labelColor=2B2D2F)](https://Ezequiel92.github.io/GADGETPlotting/dev)
 
-[![GitHub](https://img.shields.io/github/license/Ezequiel92/GADGETPlotting?style=flat&logo=GNU&labelColor=2B2D2F)](https://github.com/Ezequiel92/GADGETPlotting/blob/main/LICENSE) [![Maintenance](https://img.shields.io/maintenance/yes/2021?style=flat&labelColor=2B2D2F)](mailto:lozano.ez@gmail.com)
+[![GitHub](https://img.shields.io/github/license/Ezequiel92/GADGETPlotting?style=flat&logo=GNU&labelColor=2B2D2F)](https://github.com/Ezequiel92/GADGETPlotting/blob/main/LICENSE) [![Maintenance](https://img.shields.io/maintenance/yes/2021?style=flat&labelColor=2B2D2F)](mailto:elozano@df.uba.ar)
 
 Julia module for creating plots, GIFs, and videos from the data produced by GAGET2/3/4 simulations.
 
@@ -69,12 +69,6 @@ I make extensive use of [Ludwig Boess](https://github.com/LudwigBoess/) packages
 [pynbody/tangos](https://pynbody.github.io/) (in Python)
 
 [pygad](https://bitbucket.org/broett/pygad/src/master/) (in Python)
-
-## 📣 Contact
-
-[![image](https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:lozano.ez@gmail.com)
-
-[![image](https://img.shields.io/badge/Microsoft_Outlook-0078D4?style=for-the-badge&logo=microsoft-outlook&logoColor=white)](mailto:lozano.ez@outlook.com)
 
 ## ⚠️ Warnings
 
