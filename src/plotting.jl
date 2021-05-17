@@ -1485,7 +1485,7 @@ can be any magnitude used in the [`get_time_evolution`](@ref) function, namely:
   the corresponding axis will be scaled by ``10^{10}``. The default is no scaling.
 - `y_factor::Int64 = 0`: Numerical exponent to scale the `y_quantity`, e.g. if `y_factor` = 10 
   the corresponding axis will be scaled by ``10^{10}``. The default is no scaling.
-- `scale::Vector{Symbol} = [:identity, :identity],`: Scaling to be used for the x 
+- `scale::NTuple{2, Symbol} = (:identity, :identity)`: Scaling to be used for the x 
   and y axes. The two options are:
   * `:identity` ⟹ no scaling.
   * `:log10` ⟹ logarithmic scaling.
@@ -1506,7 +1506,7 @@ function compare_simulations_plot(
     title::String = "",
     x_factor::Int64 = 0,
     y_factor::Int64 = 0,
-    scale::Vector{Symbol} = [:identity, :identity],
+    scale::NTuple{2, Symbol} = (:identity, :identity),
     smooth_data::Bool = false,
     bins::Int64 = 50,
     legend_pos::Symbol = :best,
@@ -1529,32 +1529,55 @@ function compare_simulations_plot(
         y_data = [y[2] for y in smooth_data]
     end
 
+    xscale = scale[1]
+    yscale = scale[2]
+
+    # Data filtering for y axis logarithmic plotting
     if scale[2] == :log10
-        length_short_cases = minimum(length.(findall.(x -> x > 0, y_data)))
+        length_short_cases = minimum(length.(findall.(z -> z > 0.0,y_data)))
         if length_short_cases >= 2
 
             # If every dataset has at least two data points, filter  
             # values <= 0, to allow logarithmic plotting
             @inbounds for i in eachindex(x_data, y_data)
-                deleteat!(x_data[i], y_data[i] .<= 0)
-                filter!(x -> x > 0, y_data[i])
-            end
-
-            # Fill the datasets with NaN so all have the same length
-            max_length = maximum(length.(x_data))
-            for (i, l_x) in enumerate(length.(x_data))
-                if l_x < max_length
-                    @inbounds for _ in 1:(max_length - l_x)
-                        push!(x_data[i], NaN)
-                        push!(y_data[i], NaN)
-                    end
-                end
+                deleteat!(x_data[i], y_data[i] .<= 0.0)
+                filter!(z -> z > 0.0, y_data[i])
             end
 
         else
             # If at least one dataset has less than two values, 
             # go back to linear scale
-            scale[2] = :identity
+            yscale = :identity
+        end
+    end
+
+    # Data filtering for x axis logarithmic plotting
+    if scale[1] == :log10
+        length_short_cases = minimum(length.(findall.(z -> z > 0.0, x_data)))
+        if length_short_cases >= 2
+
+            # If every dataset has at least two data points, filter  
+            # values <= 0, to allow logarithmic plotting
+            @inbounds for i in eachindex(x_data, y_data)
+                deleteat!(y_data[i], x_data[i] .<= 0.0)
+                filter!(z -> z > 0.0, x_data[i])
+            end
+            
+        else
+            # If at least one dataset has less than two values, 
+            # go back to linear scale
+            xscale = :identity
+        end
+    end
+
+    # Fill the datasets with NaN so all have the same length
+    max_length = maximum(length.(x_data))
+    for (i, l_r) in enumerate(length.(x_data))
+        if l_r < max_length
+            @inbounds for _ in 1:(max_length - l_r)
+                push!(x_data[i], NaN)
+                push!(y_data[i], NaN)
+            end
         end
     end
 
@@ -1686,17 +1709,13 @@ function compare_simulations_plot(
         ylabel *= L"\ / \, 10^{%$y_factor}"
     end
 
-    for (i, data) in enumerate(y_data)
-        dat = filter(!isnan, data)
-    end
-
     return plot(
         hcat(x_data...),
         hcat(y_data...);
         xlabel,
         ylabel,
-        xscale = scale[1],
-        yscale = scale[2],
+        xscale = xscale,
+        yscale = yscale,
         title,
         label = labels,
         legend = legend_pos,

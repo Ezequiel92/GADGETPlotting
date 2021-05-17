@@ -62,7 +62,7 @@
         ["sim1" "sim2"];
         title = "SFMS relation",
         x_factor = 10,
-        scale = [:identity, :log10],
+        scale = (:identity, :log10),
     )
     # Base.invokelatest(savefig, fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "compare_simulations_plot.png") load(temp_img)

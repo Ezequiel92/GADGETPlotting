@@ -44,7 +44,7 @@ figure = compare_simulations_plot(
     ["sim1" "sim2"];
     title = "SFMS relation",
     x_factor = 10,
-    scale = [:identity, :log10],
+    scale = (:identity, :log10),
 )
 Base.invokelatest(
     savefig, 
