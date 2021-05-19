@@ -54,6 +54,8 @@ birth_pos = GADGETPlotting.get_birth_place(
 
 sfr_txt_data = GADGETPlotting.get_sfr_txt(BASE_SRC_PATH, FIRST_SNAP; sim_cosmo)
 
+cpu_txt_data = GADGETPlotting.get_cpu_txt(BASE_SRC_PATH, ["i/o", "hotngbs", "density"])
+
 ##############
 ## Testing 
 ##############
@@ -76,10 +78,11 @@ sfr_txt_data = GADGETPlotting.get_sfr_txt(BASE_SRC_PATH, FIRST_SNAP; sim_cosmo)
             @test deep_comparison(file["age_data"], age_data)
             @test deep_comparison(file["birth_pos"], birth_pos)
             @test deep_comparison(file["sfr_txt_data"], sfr_txt_data)
+            @test deep_comparison(file["cpu_txt_data"], cpu_txt_data)
         end
     else
 
-        # No `pos` and two filesfor cosmological simulations, 
+        # No `pos` and two files for cosmological simulations, 
         # because of the GitHub 100MB limit per file
         
         jldopen(joinpath(BASE_DATA_PATH, "data_acquisition_01.jld2"), "r") do file

@@ -994,10 +994,10 @@ One column per simulation, one row per sanpshot.
   the corresponding axis will be scaled by ``10^{10}``. The default is no scaling.
 - `y_factor::Int64 = 0`: Numerical exponent to scale the `y_quantity`, e.g. if `y_factor` = 10 
   the corresponding axis will be scaled by ``10^{10}``. The default is no scaling.
-- `scale::Vector{Symbol} = [:identity, :identity]`: Scaling to be used for the x 
+- `scale::NTuple{2, Symbol} = (:identity, :identity)`: Scaling to be used for the x 
   and y axes. The two options are:
-  * `:identity` ⟶ no scaling.
-  * `:log10` ⟶ logarithmic scaling.
+  * `:identity` ⟹ no scaling.
+  * `:log10` ⟹ logarithmic scaling.
 - `smooth_data::Bool = false`: If true a smoothing window with no weighs is applied to 
   the y data. If false (the default) no transformation occurs.
 - `bins::Int64 = 0`: Number of subdivisions for the smoothing of the data, only relevant if
@@ -1039,7 +1039,7 @@ function compare_simulations_pipeline(
     title::String = "",
     x_factor::Int64 = 0,
     y_factor::Int64 = 0,
-    scale::Vector{Symbol} = [:identity, :identity],
+    scale::NTuple{2, Symbol} = (:identity, :identity),
     smooth_data::Bool = false, 
     bins::Int64 = 50,
     legend_pos::Symbol = :bottomright,

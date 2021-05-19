@@ -1404,7 +1404,7 @@ GADGET3. GADGET4 produces a sfr.txt, but it is not compatible with this function
 - `source_path::String`: Path to the directory containing the sfr.txt file.
 - `snapshot::String`: Path to a particular snapshot file, to use its header.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable `ComovingIntegrationOn`: 
-   * 0 ⟶ Newtonian simulation (static universe).
+  * 0 ⟶ Newtonian simulation (static universe).
   * 1 ⟶ Cosmological simulation (expanding universe).
 - `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
   all available mass units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
@@ -1487,4 +1487,66 @@ function get_sfr_txt(
         6 => column_6,
         "units" => Dict("mass" => mass_unit, "time" => time_unit, "sfr" => sfr_unit),
     )
+end
+
+"""
+    get_cpu_txt(
+        source_path::String, 
+        targets::Vector{String},
+    )::Dict{String, Vector{Float64}}
+
+Get the data from the cpu.txt file.
+
+For each target row in `targets` a vector with all the CPU usage data (as percentages of 
+total CPU time) is returned.
+
+# Arguments
+- `source_path::String`: Path to the directory containing the cpu.txt file.
+- `targets::Vector{String}`: Target rows.
+
+# Returns
+- A dictionary with as many entries as strings in `targets`.
+"""
+function get_cpu_txt(
+    source_path::String, 
+    targets::Vector{String},
+)::Dict{String, Vector{Float64}}
+
+    # Get the data from the cpu.txt file
+    file = readdlm(joinpath(source_path, "cpu.txt"))
+
+    # Get the number of lines of each data block (= a CPU step) within the file
+    n_lines = 1
+    first_block = 0
+    for line in file[:, 1]
+
+        if line == "Step"
+            if first_block == 0
+                first_block = 1
+                continue
+            else
+                break
+            end
+        end
+        
+        n_lines += first_block 
+        
+    end
+
+    # Number of data blacks (= number of CPU steps)
+    n_blocks = Int(size(file, 1) / n_lines)
+    # Output dictionary
+    data = Dict(target => Float64[] for target in targets)
+
+    # Save the percentages of CPU usage of the targets
+    for block in 1:n_blocks
+        for i in 3:n_lines
+            line = file[(block - 1) *  n_lines + i, :]
+            if line[1] in targets
+                push!(data[line[1]], parse(Float64, line[3][1:end-1]))
+            end
+        end
+    end
+
+    return data
 end

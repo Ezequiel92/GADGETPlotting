@@ -54,11 +54,17 @@ birth_pos = GADGETPlotting.get_birth_place(
 
 sfr_txt_data = GADGETPlotting.get_sfr_txt(BASE_SRC_PATH, FIRST_SNAP; sim_cosmo)
 
+# The cpu.txt of cosmological simulations is too heavy for GitHub, and `get_cpu_txt`
+# doesn't distinguish among different types of simulations.
+if SIM_COSMO == 0
+    cpu_txt_data = GADGETPlotting.get_cpu_txt(BASE_SRC_PATH, ["i/o", "hotngbs", "density"])
+end
+
 ##############
 ## Testing 
 ##############
 
-# No `pos` and two filesfor cosmological simulations, 
+# No `pos` and two files for cosmological simulations, 
 # because of the GitHub 100MB limit per file
 
 if SIM_COSMO == 0
@@ -68,6 +74,7 @@ if SIM_COSMO == 0
         snaps, time_series, pos, density, hsml, 
         gas_mass, dm_mass, star_mass, gas_z, star_z, 
         temp_data, age_data, birth_pos, sfr_txt_data,
+        cpu_txt_data,
     )
 
 else
