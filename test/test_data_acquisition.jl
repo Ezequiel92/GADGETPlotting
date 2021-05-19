@@ -54,7 +54,11 @@ birth_pos = GADGETPlotting.get_birth_place(
 
 sfr_txt_data = GADGETPlotting.get_sfr_txt(BASE_SRC_PATH, FIRST_SNAP; sim_cosmo)
 
-cpu_txt_data = GADGETPlotting.get_cpu_txt(BASE_SRC_PATH, ["i/o", "hotngbs", "density"])
+# The cpu.txt of cosmological simulations is too heavy for GitHub, and `get_cpu_txt`
+# doesn't distinguish among different types of simulations.
+if sim_cosmo == 0
+	cpu_txt_data = GADGETPlotting.get_cpu_txt(BASE_SRC_PATH, ["i/o", "hotngbs", "density"])
+end
 
 ##############
 ## Testing 
