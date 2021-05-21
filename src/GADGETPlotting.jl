@@ -83,7 +83,8 @@ export
     sfr_txt_plot,
     temperature_histogram_plot,
     rho_temp_plot,
-    kennicutt_schmidt_plot,               
+    kennicutt_schmidt_plot,  
+    cpu_txt_plot,             
     # Pipeline functions ###################################################################           
     scatter_grid_pipeline,                
     density_map_pipeline,

@@ -186,6 +186,18 @@
     )
     # Base.invokelatest(savefig, fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "kennicutt_schmidt_plot.png") load(temp_img)
+
+    # The cpu.txt of cosmological simulations is too heavy for GitHub, and `get_cpu_txt`
+    # doesn't distinguish among different types of simulations.
+    if SIM_COSMO == 0
+        @test_nowarn figure = cpu_txt_plot(cpu_txt_data)
+        # Base.invokelatest(savefig, fig, temp_img)
+        # @test_reference joinpath(BASE_DATA_PATH, "cpu_txt_plot.png") load(temp_img)
+
+        @test_nowarn figure = cpu_txt_plot([cpu_txt_data, cpu_txt_data], ["sim_1" "sim_2"])
+        # Base.invokelatest(savefig, fig, temp_img)
+        # @test_reference joinpath(BASE_DATA_PATH, "compare_cpu_txt_plot.png") load(temp_img)
+    end
     
     # @test_nowarn rm(temp_img)
 

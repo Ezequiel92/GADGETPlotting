@@ -1502,51 +1502,66 @@ total CPU time) is returned.
 
 # Arguments
 - `source_path::String`: Path to the directory containing the cpu.txt file.
-- `targets::Vector{String}`: Target rows.
+- `targets::Vector{String}`: Target processes.
 
 # Returns
 - A dictionary with as many entries as strings in `targets`.
+  - process ⟹ Vector with CPU usage, as percentages.   
 """
 function get_cpu_txt(
     source_path::String, 
     targets::Vector{String},
 )::Dict{String, Vector{Float64}}
 
-    # Get the data from the cpu.txt file
-    file = readdlm(joinpath(source_path, "cpu.txt"))
+    # Load the data from the cpu.txt file
+    file = eachline(joinpath(source_path, "cpu.txt"))
 
-    # Get the number of lines of each data block (= a CPU step) within the file
-    n_lines = 1
-    first_block = 0
-    for line in file[:, 1]
-
-        if line == "Step"
-            if first_block == 0
-                first_block = 1
-                continue
-            else
-                break
-            end
-        end
-        
-        n_lines += first_block 
-        
-    end
-
-    # Number of data blacks (= number of CPU steps)
-    n_blocks = Int(size(file, 1) / n_lines)
     # Output dictionary
     data = Dict(target => Float64[] for target in targets)
 
-    # Save the percentages of CPU usage of the targets
-    for block in 1:n_blocks
-        for i in 3:n_lines
-            line = file[(block - 1) *  n_lines + i, :]
-            if line[1] in targets
-                push!(data[line[1]], parse(Float64, line[3][1:end-1]))
-            end
+    # Save the percentages of CPU usage for the target processes
+    for line in file
+
+        # Ignore empty lines
+        !isempty(line) || continue
+
+        # Ignore title lines
+        columns = split(line)
+        !(columns[1] == "Step") || continue
+
+        if columns[1] in targets
+            push!(data[columns[1]], parse(Float64, columns[3][1:end-1]))
         end
+
     end
 
     return data
+end
+
+"""
+    get_cpu_txt(
+        source_path::String, 
+        target::String,
+    )::Dict{String, Vector{Float64}}
+
+Get the data from the cpu.txt file.
+
+For the row in `target` a vector with all the CPU usage data (as percentages of 
+total CPU time) is returned.
+
+# Arguments
+- `source_path::String`: Path to the directory containing the cpu.txt file.
+- `target::String`: Target process.
+
+# Returns
+- A dictionary with one entry.
+  - process ⟹ Vector with CPU usage, as percentages.   
+"""
+function get_cpu_txt(
+    source_path::String, 
+    target::String,
+)::Dict{String, Vector{Float64}}
+
+    return get_cpu_txt(source_path, [target,])
+
 end

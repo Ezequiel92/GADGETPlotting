@@ -195,3 +195,13 @@ figure = kennicutt_schmidt_plot(
     error_formating = "conf_interval",
 )
 Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "kennicutt_schmidt_plot.png"))
+
+# The cpu.txt of cosmological simulations is too heavy for GitHub, and `get_cpu_txt`
+# doesn't distinguish among different types of simulations.
+if SIM_COSMO == 0
+    figure = cpu_txt_plot(cpu_txt_data)
+    Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "cpu_txt_plot.png"))
+
+    figure = cpu_txt_plot([cpu_txt_data, cpu_txt_data], ["sim_1" "sim_2"])
+    Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "compare_cpu_txt_plot.png"))
+end
