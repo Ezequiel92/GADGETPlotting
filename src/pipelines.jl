@@ -73,7 +73,7 @@ function scatter_grid_pipeline(
         barglyphs = BarGlyphs("|#  |"),
     )
 
-    # Generate and store the plots                  
+    # Generate and save the plots                  
     animation = @animate for (number, snapshot) in zip(snap_numbers, snap_files)
 
         positions = get_position(
@@ -181,7 +181,7 @@ function density_map_pipeline(
     # Create a directory to save the plots, if it doesn't exist
     img_path = mkpath(joinpath(output_path, "images"))
 
-    # Generate and store the plots                  
+    # Generate and save the plots                  
     animation = @animate for (number, snapshot) in zip(snap_numbers, snap_files)
 
         pos = get_position(snapshot; sim_cosmo, filter_function, box_size, length_unit)
@@ -300,7 +300,7 @@ function star_map_pipeline(
         barglyphs = BarGlyphs("|#  |"),
     )
 
-    # Generate and store the plots                   
+    # Generate and save the plots                   
     animation = @animate for (number, snapshot) in zip(snap_numbers, snap_files)
 
         pos = get_position(snapshot; sim_cosmo, filter_function, box_size, length_unit)
@@ -418,7 +418,7 @@ function gas_star_evolution_pipeline(
         barglyphs = BarGlyphs("|#  |"),
     )
 
-    # Generate and store the plots 
+    # Generate and save the plots 
     data_iter = enumerate(zip(snap_numbers, snap_files))                 
     animation = @animate for (i, (number, snapshot)) in data_iter
 
@@ -537,7 +537,7 @@ function cmdf_pipeline(
         barglyphs = BarGlyphs("|#  |"),
     )
 
-    # Generate and store the plots.
+    # Generate and save the plots.
     data_iter = zip(times, snap_numbers, snap_files)
     # animation = @animate          
     for (t, number, snapshot) in data_iter
@@ -663,7 +663,7 @@ function cmdf_pipeline(
         barglyphs = BarGlyphs("|#  |"),
     )
 
-    # Generate and store the plots
+    # Generate and save the plots
     data_iter = enumerate(zip(times, snap_files))
     # animation = @animate 
     for (i, (t, snapshots)) in data_iter
@@ -779,7 +779,7 @@ function birth_histogram_pipeline(
         barglyphs = BarGlyphs("|#  |"),
     )
 
-    # Generate and store the plots
+    # Generate and save the plots
     data_iter = enumerate(zip(snap_numbers, snap_files))
     # animation = @animate          
     for (i, (number, snapshot)) in data_iter
@@ -1204,7 +1204,7 @@ function density_histogram_pipeline(
         barglyphs = BarGlyphs("|#  |"),
     )
 
-    # Generate and store the plots 
+    # Generate and save the plots 
     data_iter = zip(times, snap_numbers, snap_files)
     # animation = @animate 
     for (t, number, snapshot) in data_iter
@@ -1336,7 +1336,7 @@ function density_profile_pipeline(
         barglyphs = BarGlyphs("|#  |"),
     )
 
-    # Generate and store the plots
+    # Generate and save the plots
     data_iter = zip(times, snap_numbers, snap_files)
     # animation = @animate          
     for (t, number, snapshot) in data_iter
@@ -1493,7 +1493,7 @@ function density_profile_pipeline(
         barglyphs = BarGlyphs("|#  |"),
     )
 
-    # Generate and store the plots
+    # Generate and save the plots
     data_iter = enumerate(zip(times, snap_files))
     # animation = @animate 
     for (i, (t, snapshots)) in data_iter
@@ -1631,7 +1631,7 @@ function metallicity_profile_pipeline(
         barglyphs = BarGlyphs("|#  |"),
     )
 
-    # Generate and store the plots
+    # Generate and save the plots
     data_iter = zip(times, snap_numbers, snap_files)
     # animation = @animate          
     for (t, number, snapshot) in data_iter
@@ -1783,7 +1783,7 @@ function metallicity_profile_pipeline(
         barglyphs = BarGlyphs("|#  |"),
     )
 
-    # Generate and store the plots
+    # Generate and save the plots
     data_iter = enumerate(zip(times, snap_files))
     # animation = @animate 
     for (i, (t, snapshots)) in data_iter
@@ -1932,7 +1932,7 @@ function mass_profile_pipeline(
         barglyphs = BarGlyphs("|#  |"),
     )
 
-    # Generate and store the plots
+    # Generate and save the plots
     data_iter = zip(times, snap_numbers, snap_files)
     # animation = @animate          
     for (t, number, snapshot) in data_iter
@@ -2089,7 +2089,7 @@ function mass_profile_pipeline(
         barglyphs = BarGlyphs("|#  |"),
     )
 
-    # Generate and store the plots
+    # Generate and save the plots
     data_iter = enumerate(zip(times, snap_files))
     # animation = @animate 
     for (i, (t, snapshots)) in data_iter
@@ -2168,7 +2168,7 @@ per column depending on `comparison_type`.
   will be compared:
   * `0` ⟶ Different columns are compared, for a single simulation (one plot per simulation).
   * `1` ⟶ Different simulations are compared, using the same column (one plot per column).
-- `title::Vector{String} = String[]`: Titles for the figures. If an empty string is given,
+- `titles::Vector{String} = String[]`: Titles for the figures. If an empty string is given,
   no title is printed.
 - `names::Vector{String} = String[]`: Names for the files. If an empty string is given, the 
   images will be assigned a number given by the order of `source_path`.
@@ -2207,7 +2207,7 @@ function sfr_txt_pipeline(
     output_path::String = "sfr_txt",
     sim_cosmo::Int64 = 0,
     comparison_type::Int64 = 0,
-    title::Vector{String} = String[],
+    titles::Vector{String} = String[],
     names::Vector{String} = String[],
     labels::Union{Nothing, Array{String, 2}} = nothing,
     bins::Int64 = 0,
@@ -2220,15 +2220,19 @@ function sfr_txt_pipeline(
     sfr_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.yr,
     format::String = ".png",
 )::Nothing
-
+ 
     # By default every figure has no title
-    if isempty(title)
-        title = ["" for _ in eachindex(source_path)]
+    if length(titles) < length(source_path)
+        for _ in 1:(length(source_path) - length(titles))
+            push!(titles, "")
+        end
     end
 
     # By default every figure has a number as its name
-    if isempty(names)
-        names = [string(i - 1) for i in eachindex(source_path)]
+    if length(names) < length(source_path)
+        for i in 1:(length(source_path) - length(names))
+            push!(names, string(i - 1))
+        end
     end
 
     # Create a directory to save the plots, if it doesn't exist
@@ -2240,13 +2244,13 @@ function sfr_txt_pipeline(
     ]
 
     if comparison_type == 0
-        @inbounds for i in eachindex(source_path)
+        for (data, t, name) in zip(sfr_data, title, names)
 
             figure = sfr_txt_plot(
-                sfr_data[i], 
+                data, 
                 x_axis, 
                 y_axis;
-                title = title[i], 
+                title = t, 
                 bins, 
                 scale,
                 x_factor, 
@@ -2257,19 +2261,19 @@ function sfr_txt_pipeline(
             Base.invokelatest(
                 savefig, 
                 figure, 
-                joinpath(output_path, names[i] * format),
+                joinpath(output_path, name * format),
             )
 
         end
     else 
-        @inbounds for (i, column) in enumerate(y_axis)
+        @inbounds for (column, t, name) in zip(y_axis, title, names)
 
             figure = sfr_txt_plot(
                 sfr_data, 
                 x_axis, 
                 column,
                 labels;
-                title = title[i], 
+                title = t, 
                 bins, 
                 scale,
                 x_factor, 
@@ -2280,7 +2284,7 @@ function sfr_txt_pipeline(
             Base.invokelatest(
                 savefig, 
                 figure, 
-                joinpath(output_path, names[i] * format),
+                joinpath(output_path, name * format),
             )
 
         end
@@ -2359,7 +2363,7 @@ function temperature_histogram_pipeline(
         barglyphs = BarGlyphs("|#  |"),
     )
 
-    # Generate and store the plots
+    # Generate and save the plots
     data_iter = zip(times, snap_numbers, snap_files)
     # animation = @animate          
     for (t, number, snapshot) in data_iter
@@ -2466,7 +2470,7 @@ function rho_temp_pipeline(
         barglyphs = BarGlyphs("|#  |"),
     )
 
-    # Generate and store the plots
+    # Generate and save the plots
     data_iter = zip(times, snap_numbers, snap_files)
     # animation = @animate          
     for (t, number, snapshot) in data_iter
@@ -2587,7 +2591,7 @@ function kennicutt_schmidt_pipeline(
         barglyphs = BarGlyphs("|#  |"),
     )
 
-    # Generate and store the plots
+    # Generate and save the plots
     data_iter = zip(times, snap_numbers, snap_files)   
     # Initial snapshot
     snap_0 = first(snap_files)     
@@ -2657,6 +2661,117 @@ function kennicutt_schmidt_pipeline(
         next!(prog_bar)
 
     end
+
+    return nothing
+end
+
+"""
+    cpu_txt_pipeline(
+        source_path::Vector{String},
+        targets::Vector{String}; 
+        <keyword arguments>
+    )::Nothing
+
+Save the result of the [`cpu_txt_plot`](@ref) function as one image per simulation.
+
+# Arguments
+- `source_path::Vector{String}`: Paths to the directories containing the cpu.txt files, 
+  set in the GADGET variable `OutputDir`.
+- `targets::Vector{String}`: Target processes to be plotted for each simulation.
+- `output_path::String = "cpu_txt"`: Path to the output directory.
+- `title::Vector{String} = String[]`: Titles for the figures. If an empty string is given 
+  no title is printed, which is the default.
+- `names::Vector{String} = String[]`: Names for the files. If an empty string is given, the 
+  images will be assigned a number, starting from 0.
+- `format::String = ".png"`: File format of the output figure. All formats supported by the
+  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+"""
+function cpu_txt_pipeline(
+    source_path::Vector{String},
+    targets::Vector{String};
+    output_path::String = "cpu_txt",
+    titles::Vector{String} = String[],
+    names::Vector{String} = String[],
+    format::String = ".png",
+)::Nothing
+
+    # By default every figure has no title
+    if length(titles) < length(source_path)
+        for _ in 1:(length(source_path) - length(titles))
+            push!(titles, "")
+        end
+    end
+
+    # By default every figure has a number as its name
+    if length(names) < length(source_path)
+        for i in 1:(length(source_path) - length(names))
+            push!(names, string(i - 1))
+        end
+    end
+
+    # Create a directory to save the plots, if it doesn't exist
+    mkpath(output_path)
+
+    # Generate and save the plots
+    for (source, title, name) in zip(source_path, titles, names)
+
+        figure = cpu_txt_plot(get_cpu_txt(source, targets) , title)
+
+        Base.invokelatest(
+            savefig, 
+            figure, 
+            joinpath(output_path, name * format),
+        )
+
+    end
+
+    return nothing
+end
+
+"""
+    cpu_txt_pipeline(
+        source_path::Vector{String},
+        target::String,
+        labels::Array{String, 2}; 
+        <keyword arguments>
+    )::Nothing
+
+Save the result of the [`cpu_txt_plot`](@ref) function, comparing the CPU usage of one 
+process among several simulations. 
+
+# Arguments
+- `source_path::Vector{String}`: Paths to the directories containing the cpu.txt files, 
+  set in the GADGET variable `OutputDir`.
+- `target::String`: Target process.
+- `labels::Array{String, 2}`: Labels for the different simulations.
+- `output_path::String = "cpu_txt"`: Path to the output directory.
+- `title::String = ""`: Title for the figure. If an empty string is given no title is 
+  printed, which is the default.
+- `format::String = ".png"`: File format of the output figure. All formats supported by the
+  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+"""
+function cpu_txt_pipeline(
+    source_path::Vector{String},
+    target::String,
+    labels::Array{String, 2};
+    output_path::String = "cpu_txt",
+    title::String = "",
+    format::String = ".png",
+)::Nothing
+
+    # Create a directory to save the plots, if it doesn't exist
+    mkpath(output_path)
+    
+    data = [get_cpu_txt(source, target) for source in source_path]
+
+    # Generate and save the plots
+    figure = cpu_txt_plot(data, labels, title)
+
+    Base.invokelatest(
+        savefig, 
+        figure, 
+        joinpath(output_path, "compare_cpu_txt" * format),
+    )
 
     return nothing
 end

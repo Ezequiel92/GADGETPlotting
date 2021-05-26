@@ -101,7 +101,8 @@ export
     sfr_txt_pipeline,
     temperature_histogram_pipeline,
     rho_temp_pipeline,
-    kennicutt_schmidt_pipeline,           
+    kennicutt_schmidt_pipeline,   
+    cpu_txt_pipeline,        
     # Auxiliary functions ##################################################################
     comparison,                     
     deep_comparison

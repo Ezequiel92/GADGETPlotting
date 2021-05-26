@@ -205,7 +205,7 @@ sfr_txt_pipeline(
     [4, 6],
     output_path = joinpath(BASE_OUT_PATH, "sfr_txt_column_compare"),
     sim_cosmo = SIM_COSMO,
-    title = ["sim_1", "sim_2"],
+    titles = ["sim_1", "sim_2"],
     bins = 50,
     scale = (:identity, :log10),
 )
@@ -252,3 +252,23 @@ kennicutt_schmidt_pipeline(
     error_formating = "conf_interval",
     time_unit = UnitfulAstro.yr,
 )
+
+# The cpu.txt of cosmological simulations is too heavy for GitHub, and `get_cpu_txt`
+# doesn't distinguish among different types of simulations.
+if SIM_COSMO == 0
+    cpu_txt_pipeline(
+        [BASE_SRC_PATH, BASE_SRC_PATH],
+        ["i/o", "hotngbs", "density"];
+        output_path = joinpath(BASE_OUT_PATH, "cpu_txt"),
+        titles = ["title_1",],
+        names = ["sim_1",],
+    )
+
+    cpu_txt_pipeline(
+        [BASE_SRC_PATH, BASE_SRC_PATH],
+        "density",
+        ["sim_1" "sim_2"];
+        output_path = joinpath(BASE_OUT_PATH, "compare_cpu_txt"),
+        title = "title",
+    )
+end
