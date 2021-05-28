@@ -2244,13 +2244,13 @@ function sfr_txt_pipeline(
     ]
 
     if comparison_type == 0
-        for (data, t, name) in zip(sfr_data, title, names)
+        for (data, title, name) in zip(sfr_data, titles, names)
 
             figure = sfr_txt_plot(
                 data, 
                 x_axis, 
                 y_axis;
-                title = t, 
+                title, 
                 bins, 
                 scale,
                 x_factor, 
@@ -2266,14 +2266,14 @@ function sfr_txt_pipeline(
 
         end
     else 
-        @inbounds for (column, t, name) in zip(y_axis, title, names)
+        @inbounds for (column, title, name) in zip(y_axis, titles, names)
 
             figure = sfr_txt_plot(
                 sfr_data, 
                 x_axis, 
                 column,
                 labels;
-                title = t, 
+                title, 
                 bins, 
                 scale,
                 x_factor, 
