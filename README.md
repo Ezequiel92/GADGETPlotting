@@ -1,8 +1,6 @@
 # 🌌 GADGET Plotting
 
-[![ForTheBadge built-with-science](http://forthebadge.com/images/badges/built-with-science.svg)](https://GitHub.com/Ezequiel92/) 
-
-[![ForTheBadge made-with-julia](https://forthebadge.com/images/badges/made-with-julia.svg)](https://julialang.org)
+[![ForTheBadge built-with-science](http://forthebadge.com/images/badges/built-with-science.svg)](https://GitHub.com/Ezequiel92/) [![ForTheBadge made-with-julia](https://forthebadge.com/images/badges/made-with-julia.svg)](https://julialang.org)
 
 [![Codecov](https://img.shields.io/codecov/c/github/Ezequiel92/GADGETPlotting?style=flat&logo=Codecov&labelColor=2B2D2F)](https://codecov.io/github/Ezequiel92/BiblographyFormatter?branch=main) [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Ezequiel92/GADGETPlotting/Continuous%20integration?style=flat&logo=GitHub&labelColor=2B2D2F)](https://github.com/Ezequiel92/GADGETPlotting/actions) [![Documentation](https://img.shields.io/badge/docs-dev-blue.svg?style=flat&logo=GitBook&labelColor=2B2D2F)](https://Ezequiel92.github.io/GADGETPlotting/dev)
 
