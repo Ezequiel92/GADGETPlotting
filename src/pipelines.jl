@@ -673,8 +673,8 @@ function cmdf_pipeline(
 
         if all(num_stars .!= 0)
     
-            masses = massData.(snapshots, "stars"; sim_cosmo, filter_function)
-            metallicities = zData.(snapshots, "stars"; sim_cosmo, filter_function) 
+            masses = get_mass.(snapshots, "stars"; sim_cosmo, filter_function)
+            metallicities = get_metallicity.(snapshots, "stars"; sim_cosmo, filter_function) 
 
             figure = cmdf_plot(
                 masses, 
@@ -1498,14 +1498,14 @@ function density_profile_pipeline(
     # animation = @animate 
     for (i, (t, snapshots)) in data_iter
 
-        positions = positionData.(
+        positions = get_position.(
             snapshots; 
             sim_cosmo, 
             filter_function, 
             box_size, 
             length_unit,
         )
-        masses = massData.(snapshots, type; sim_cosmo, filter_function, mass_unit)
+        masses = get_mass.(snapshots, type; sim_cosmo, filter_function, mass_unit)
 
         figure = density_profile_plot(
             positions,
@@ -1788,15 +1788,15 @@ function metallicity_profile_pipeline(
     # animation = @animate 
     for (i, (t, snapshots)) in data_iter
 
-        positions = positionData.(
+        positions = get_position.(
             snapshots; 
             sim_cosmo, 
             filter_function, 
             box_size, 
             length_unit,
         )
-        masses = massData.(snapshots, type; sim_cosmo, filter_function)
-        metallicities = zData.(snapshots, type; sim_cosmo, filter_function)
+        masses = get_mass.(snapshots, type; sim_cosmo, filter_function)
+        metallicities = get_metallicity.(snapshots, type; sim_cosmo, filter_function)
 
         figure = metallicity_profile_plot(
             positions,
@@ -2094,14 +2094,14 @@ function mass_profile_pipeline(
     # animation = @animate 
     for (i, (t, snapshots)) in data_iter
 
-        positions = positionData.(
+        positions = get_position.(
             snapshots; 
             sim_cosmo, 
             filter_function, 
             box_size, 
             length_unit,
         )
-        masses = massData.(snapshots, type; sim_cosmo, filter_function)
+        masses = get_mass.(snapshots, type; sim_cosmo, filter_function)
 
         figure = mass_profile_plot(
             positions,
