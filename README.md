@@ -39,7 +39,7 @@ Refer to `examples/` for how to use the functions. Note that the scripts there e
     ├── src
     │    ├── GADGETPlotting.jl 
     │    └── ...
-    ├── examples   
+    ├── example  
     │    ├── example_data
     │    │    └── ...
     │    ├── run_examples.jl
