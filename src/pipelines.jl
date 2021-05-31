@@ -1140,6 +1140,9 @@ end
 Save the results of the [`density_histogram_plot`](@ref) function as one image per snapshot, 
 and then generate a GIF and a video animating the images. 
 
+Vertical lines with personalized positions and ticks can be added to the plot. By default
+none are drawn.
+
 # Arguments
 - `base_name::String`: Base names of the snapshot files, set in the GADGET 
   variable `SnapshotFileBase`.
@@ -1158,6 +1161,10 @@ and then generate a GIF and a video animating the images.
   `foo(snap_file::String, type::String)::Vector{Int64}`
   
   See the function [`pass_all`](@ref) for an example. By default, no particles are filtered.
+- `flags::Union{Tuple{Vector{Float64}, Vector{String}}, Nothing} = nothing`: The first 
+  vector in the Tuple has the positions of the vetical lines. The second has the 
+  corresponding ticks.
+- `vline_color::Symbol = :red`: Color of the vertical lines.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. By default all snapshots will be plotted.
 - `factor::Int64 = 0`: Numerical exponent to scale the density, e.g. if `factor` = 10 
   the y axis will be scaled by ``10^{10}``. The default is no scaling.
@@ -1177,6 +1184,8 @@ function density_histogram_pipeline(
     output_path::String = "density_histogram",
     sim_cosmo::Int64 = 0,
     filter_function::Function = pass_all,
+    flags::Union{Tuple{Vector{Float64}, Vector{String}}, Nothing} = nothing,
+    vline_color::Symbol = :red,
     step::Int64 = 1,
     factor::Int64 = 0,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
@@ -1211,7 +1220,11 @@ function density_histogram_pipeline(
 
         ρ = get_density(snapshot; sim_cosmo, filter_function, density_unit)
 
-        figure = density_histogram_plot(ρ, t * time_unit; factor)
+        figure = set_vertical_flags(
+            flags, 
+            density_histogram_plot(ρ, t * time_unit; factor), 
+            vline_color,
+        )
 
         Base.invokelatest(
             savefig, 

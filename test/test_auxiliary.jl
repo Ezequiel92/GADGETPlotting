@@ -81,6 +81,15 @@ rc = GADGETPlotting.center_of_mass(pos_gas, m_gas)
 
 @testset "Auxiliary functions" begin
 
+    temp_img = joinpath(@__DIR__, "test_img.png")
+    gr()
+    
+    vline_plot = @test_nowarn GADGETPlotting.set_vertical_flags(
+        ([4.0, 6.0], ["test_1", "test_2"]), 
+        plot(1:10),
+    )
+    Base.invokelatest(savefig, vline_plot, temp_img)
+
     jldopen(joinpath(BASE_DATA_PATH, "data_auxiliary.jld2"), "r") do file
         @test comparison(file["relative_2D"], relative_2D, rtol = 0.1)
         @test comparison(file["relative_3D"], relative_3D, rtol = 0.01)
@@ -112,6 +121,9 @@ rc = GADGETPlotting.center_of_mass(pos_gas, m_gas)
         @test deep_comparison(arr1, arr1)
         @test !deep_comparison(dict1, dict2)
         @test deep_comparison(dict1, dict1)
+        @test_reference joinpath(BASE_DATA_PATH, "vline_plot.png") load(temp_img)
     end
+
+    @test_nowarn rm(temp_img)
 	
 end

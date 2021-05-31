@@ -1022,3 +1022,52 @@ function deep_comparison(
     return all([comparison(X, Y; atol, rtol) for (X, Y) in zip(x, y)])
     
 end
+
+"""
+    set_vertical_flags(
+        flags::Union{Tuple{Vector{Float64}, Vector{String}}, Nothing}, 
+        plot::Plots.Plot; 
+        <keyword arguments>
+    )::Plots.Plot
+
+Draw vertical lines at specified positions and with given ticks.
+
+# Arguments
+- `flags::Union{Tuple{Vector{Float64}, Vector{String}}, Nothing} = nothing`: The first 
+  vector in the Tuple has the positions of the vetical lines. The second has the 
+  corresponding ticks.
+- `plot::Plots.Plot`: Plot to which the vertical lines will be added.
+- `color::Symbol = :red`: Color of the vertical lines.
+
+# Returns
+- New plot with the vertical lines added.
+"""
+function set_vertical_flags(
+    flags::Union{Tuple{Vector{Float64}, Vector{String}}, Nothing}, 
+    plot::Plots.Plot,
+    color::Symbol = :red,
+)::Plots.Plot
+
+    if flags === nothing
+        return plot
+    end
+
+    # Draw vertical lines
+    pl_out = deepcopy(plot)
+    vline!(flags[1], line = (1, color), legend = false)
+
+    # Save original x ticks
+    old_xticks = xticks(plot[1])
+    
+    # Find original ticks no present in `flags`
+    keep_indices = findall(x -> all(x .≠ flags[1]), old_xticks[1])
+
+    # New ticks: original x ticks ∪ `flags`
+    merged_xticks = (
+        old_xticks[1][keep_indices] ∪ flags[1], 
+        old_xticks[2][keep_indices] ∪ flags[2]
+    )
+    xticks!(merged_xticks)
+
+    return pl_out
+end

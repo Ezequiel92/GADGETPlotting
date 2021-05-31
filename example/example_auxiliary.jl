@@ -78,6 +78,12 @@ num_int_4 = GADGETPlotting.num_integrate(x -> sqrt(sqrt(1 / (x + 1))), 0, 1)
 
 rc = GADGETPlotting.center_of_mass(pos_gas, m_gas)
 
+figure = GADGETPlotting.set_vertical_flags(
+    ([4.0, 6.0], ["test_1", "test_2"]), 
+    plot(1:10),
+)
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "vline_plot.png"))
+
 ##############
 ## Testing 
 ##############
