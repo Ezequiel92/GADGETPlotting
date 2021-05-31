@@ -1037,7 +1037,6 @@ Draw vertical lines at specified positions and with given ticks.
   vector in the Tuple has the positions of the vetical lines. The second has the 
   corresponding ticks.
 - `plot::Plots.Plot`: Plot to which the vertical lines will be added.
-- `color::Symbol = :red`: Color of the vertical lines.
 
 # Returns
 - New plot with the vertical lines added.
@@ -1045,29 +1044,36 @@ Draw vertical lines at specified positions and with given ticks.
 function set_vertical_flags(
     flags::Union{Tuple{Vector{Float64}, Vector{String}}, Nothing}, 
     plot::Plots.Plot,
-    color::Symbol = :red,
 )::Plots.Plot
 
     if flags === nothing
         return plot
     end
 
-    # Draw vertical lines
+    # Copy input data
     pl_out = deepcopy(plot)
-    vline!(flags[1], line = (1, color), legend = false)
+    v_lines = copy(flags[1])
+    line_labels = copy(flags[2])
 
-    # Save original x ticks
-    old_xticks = xticks(plot[1])
+    # Filter out values larger than the maximum of the original plot
+	xlims = Plots.xlims(pl_out)
+    deleteat!(line_labels, v_lines .> xlims[2])
+    filter!(x -> x <= xlims[2], v_lines)
+
+    if isempty(v_lines)
+        return pl_out
+    end
     
-    # Find original ticks no present in `flags`
-    keep_indices = findall(x -> all(x .≠ flags[1]), old_xticks[1])
+    # Draw vertical lines
+    for (v_line, line_label) in zip(v_lines, line_labels)
+		vline!(pl_out, [v_line], line = 2, label = line_label) 
+	end
 
-    # New ticks: original x ticks ∪ `flags`
-    merged_xticks = (
-        old_xticks[1][keep_indices] ∪ flags[1], 
-        old_xticks[2][keep_indices] ∪ flags[2]
+    plot!(
+        pl_out,
+        legend = :topright,
+        legendfontsize = 22,
     )
-    xticks!(merged_xticks)
 
     return pl_out
 end

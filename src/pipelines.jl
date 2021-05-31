@@ -1164,7 +1164,6 @@ none are drawn.
 - `flags::Union{Tuple{Vector{Float64}, Vector{String}}, Nothing} = nothing`: The first 
   vector in the Tuple has the positions of the vetical lines. The second has the 
   corresponding ticks.
-- `vline_color::Symbol = :red`: Color of the vertical lines.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. By default all snapshots will be plotted.
 - `factor::Int64 = 0`: Numerical exponent to scale the density, e.g. if `factor` = 10 
   the y axis will be scaled by ``10^{10}``. The default is no scaling.
@@ -1185,7 +1184,6 @@ function density_histogram_pipeline(
     sim_cosmo::Int64 = 0,
     filter_function::Function = pass_all,
     flags::Union{Tuple{Vector{Float64}, Vector{String}}, Nothing} = nothing,
-    vline_color::Symbol = :red,
     step::Int64 = 1,
     factor::Int64 = 0,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
@@ -1222,8 +1220,7 @@ function density_histogram_pipeline(
 
         figure = set_vertical_flags(
             flags, 
-            density_histogram_plot(ρ, t * time_unit; factor), 
-            vline_color,
+            density_histogram_plot(ρ, t * time_unit; factor),
         )
 
         Base.invokelatest(

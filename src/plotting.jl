@@ -1797,7 +1797,7 @@ function density_histogram_plot(
         normalize = :probability,
         size = (1000, 800),
         framestyle = :box,
-        legend = false,
+        label = "",
         xtickfontsize = 28,
         ytickfontsize = 28,
         xguidefontsize = 30,
