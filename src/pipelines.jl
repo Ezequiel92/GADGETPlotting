@@ -1161,9 +1161,10 @@ none are drawn.
   `foo(snap_file::String, type::String)::Vector{Int64}`
   
   See the function [`pass_all`](@ref) for an example. By default, no particles are filtered.
-- `flags::Union{Tuple{Vector{Float64}, Vector{String}}, Nothing} = nothing`: The first 
+- `flags::Union{Tuple{Vector{<:Real}, Vector{<:AbstractString}}, Nothing} = nothing`: The first 
   vector in the Tuple has the positions of the vetical lines. The second has the 
-  corresponding ticks.
+  corresponding labels. The positions should be in the correct units of density and take 
+  into account `factor`.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. By default all snapshots will be plotted.
 - `factor::Int64 = 0`: Numerical exponent to scale the density, e.g. if `factor` = 10 
   the y axis will be scaled by ``10^{10}``. The default is no scaling.
@@ -1183,7 +1184,7 @@ function density_histogram_pipeline(
     output_path::String = "density_histogram",
     sim_cosmo::Int64 = 0,
     filter_function::Function = pass_all,
-    flags::Union{Tuple{Vector{Float64}, Vector{String}}, Nothing} = nothing,
+    flags::Union{Tuple{Vector{<:Real}, Vector{<:AbstractString}}, Nothing} = nothing,
     step::Int64 = 1,
     factor::Int64 = 0,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,

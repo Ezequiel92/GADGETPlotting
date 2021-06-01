@@ -1,3 +1,4 @@
+using Base: warn_color
 ############################################################################################
 # Data acquisition functions
 ############################################################################################
@@ -1533,6 +1534,10 @@ function get_cpu_txt(
             push!(data[columns[1]], parse(Float64, columns[3][1:end-1]))
         end
 
+    end
+
+    if any(isempty.(values(data)))
+        @warn "I cound't find some/all of the target rows. Check the spelling!"
     end
 
     return data

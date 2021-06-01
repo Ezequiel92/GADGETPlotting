@@ -1025,24 +1025,26 @@ end
 
 """
     set_vertical_flags(
-        flags::Union{Tuple{Vector{Float64}, Vector{String}}, Nothing}, 
+        flags::Union{Tuple{Vector{<:Real}, Vector{<:AbstractString}}, Nothing}, 
         plot::Plots.Plot; 
         <keyword arguments>
     )::Plots.Plot
 
-Draw vertical lines at specified positions and with given ticks.
+Draw vertical lines at specified positions.
+
+If you only want labels for the vertical lines, the original plot should have `label = ""`.
 
 # Arguments
-- `flags::Union{Tuple{Vector{Float64}, Vector{String}}, Nothing} = nothing`: The first 
+- `flags::Union{Tuple{Vector{<:Real}, Vector{<:AbstractString}}, Nothing} = nothing`: The first 
   vector in the Tuple has the positions of the vetical lines. The second has the 
-  corresponding ticks.
+  corresponding labels.
 - `plot::Plots.Plot`: Plot to which the vertical lines will be added.
 
 # Returns
 - New plot with the vertical lines added.
 """
 function set_vertical_flags(
-    flags::Union{Tuple{Vector{Float64}, Vector{String}}, Nothing}, 
+    flags::Union{Tuple{Vector{<:Real}, Vector{<:AbstractString}}, Nothing}, 
     plot::Plots.Plot,
 )::Plots.Plot
 
