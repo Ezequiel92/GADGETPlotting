@@ -1167,7 +1167,11 @@ none are drawn.
   into account `factor`.
 - `step::Int64 = 1`: Step used to traverse the list of snapshots. By default all snapshots will be plotted.
 - `factor::Int64 = 0`: Numerical exponent to scale the density, e.g. if `factor` = 10 
-  the y axis will be scaled by ``10^{10}``. The default is no scaling.
+  the x axis will be scaled by ``10^{10}``. The default is no scaling.
+- `y_scale::Symbol = :identity`: Scaling to be used for the y axis.
+  The two options are:
+  * `:identity` ⟶ no scaling.
+  * `:log10` ⟶ logarithmic scaling.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
   all available time units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3`: Unit of 
@@ -1187,6 +1191,7 @@ function density_histogram_pipeline(
     flags::Union{Tuple{Vector{<:Real}, Vector{<:AbstractString}}, Nothing} = nothing,
     step::Int64 = 1,
     factor::Int64 = 0,
+    y_scale::Symbol = :identity,
     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
     density_unit::Unitful.FreeUnits = UnitfulAstro.Msun / UnitfulAstro.kpc^3,
     format::String = ".png",
@@ -1221,7 +1226,7 @@ function density_histogram_pipeline(
 
         figure = set_vertical_flags(
             flags, 
-            density_histogram_plot(ρ, t * time_unit; factor),
+            density_histogram_plot(ρ, t * time_unit; factor, y_scale),
         )
 
         Base.invokelatest(
@@ -2786,3 +2791,128 @@ function cpu_txt_pipeline(
 
     return nothing
 end
+
+# @doc raw"""
+#     number_density_histogram_pipeline(
+#         base_name::String,
+#         source_path::String,
+#         anim_name::String,
+#         frame_rate::Int64; 
+#         <keyword arguments>
+#     )::Nothing
+
+# Save the results of the [`number_density_histogram_plot`](@ref) function as one image per snapshot, 
+# and then generate a GIF and a video animating the images. 
+
+# Vertical lines with personalized positions and ticks can be added to the plot. By default
+# none are drawn.
+
+# # Arguments
+# - `base_name::String`: Base names of the snapshot files, set in the GADGET 
+#   variable `SnapshotFileBase`.
+# - `source_path::String`: Paths to the directories containing the snapshot files, 
+#   set in the GADGET variable `OutputDir`.
+# - `anim_name::String`: File name of the generated video and GIF, without the extension.
+# - `frame_rate::Int64`: Frame rate of the output video and GIF.
+# - `output_path::String = "density_histogram"`: Path to the output directory. The images 
+#   will be stored in `output_path`/images/ and will be named `base_name`\_XXX`format` where 
+#   XXX is the number of the snapshot. The GIF and the video will be stored in `output_path`.
+# - `sim_cosmo::Int64 = 0`: Value of the GADGET variable `ComovingIntegrationOn`: 
+#   * `0` ⟶ Newtonian simulation (static universe).
+#   * `1` ⟶ Cosmological simulation (expanding universe).
+# - `filter_function::Function = pass_all`: A function with the signature: 
+
+#   `foo(snap_file::String, type::String)::Vector{Int64}`
+  
+#   See the function [`pass_all`](@ref) for an example. By default, no particles are filtered.
+# - `flags::Union{Tuple{Vector{<:Real}, Vector{<:AbstractString}}, Nothing} = nothing`: The first 
+#   vector in the Tuple has the positions of the vetical lines. The second has the 
+#   corresponding labels. The positions should be in the correct units of density and take 
+#   into account `factor`.
+# - `step::Int64 = 1`: Step used to traverse the list of snapshots. By default all snapshots will be plotted.
+# - `factor::Int64 = 0`: Numerical exponent to scale the number density, e.g. if `factor` = 10 
+#   the x axis will be scaled by ``10^{10}``. The default is no scaling.
+# - `y_scale::Symbol = :identity`: Scaling to be used for the y axis.
+#   The two options are:
+#   * `:identity` ⟶ no scaling.
+#   * `:log10` ⟶ logarithmic scaling.
+# - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
+#   all available time units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
+# - `nh_unit::Unitful.FreeUnits = 1 / Unitful.cm^3`: Unit of number density to be used in the 
+#   output, all available length units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and 
+#   [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
+# - `format::String = ".png"`: File format of the output figure. All formats supported by the
+#   PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+# """
+# function density_histogram_pipeline(
+#     base_name::String,
+#     source_path::String,
+#     anim_name::String,
+#     frame_rate::Int64;
+#     output_path::String = "density_histogram",
+#     sim_cosmo::Int64 = 0,
+#     filter_function::Function = pass_all,
+#     flags::Union{Tuple{Vector{<:Real}, Vector{<:AbstractString}}, Nothing} = nothing,
+#     step::Int64 = 1,
+#     factor::Int64 = 0,
+#     y_scale::Symbol = :identity,
+#     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
+#     nh_unit::Unitful.FreeUnits = 1 / UnitfulAstro.cm^3,
+#     format::String = ".png",
+# )::Nothing
+
+#     # Get the simulation data
+#     sim = get_snapshot_path(base_name, source_path)
+#     time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
+
+#     snap_files = @view sim["snap_files"][1:step:end]
+#     snap_numbers = @view sim["numbers"][1:step:end]
+#     times = @view time_data["clock_time"][1:step:end]
+
+#     # Create a directory to save the plots, if it doesn't exist
+#     img_path = mkpath(joinpath(output_path, "images"))
+
+#     # Progress bar
+#     prog_bar = Progress(
+#         length(snap_files), 
+#         dt = 0.5, 
+#         desc = "Computing the density histograms... ",
+#         color = :blue,
+#         barglyphs = BarGlyphs("|#  |"),
+#     )
+
+#     # Generate and save the plots 
+#     data_iter = zip(times, snap_numbers, snap_files)
+#     # animation = @animate 
+#     for (t, number, snapshot) in data_iter
+
+#         nh = get_number_density(snapshot; sim_cosmo, filter_function, nh_unit)
+
+#         figure = set_vertical_flags(
+#             flags, 
+#             number_density_histogram_plot(nh, t * time_unit; factor, y_scale),
+#         )
+
+#         Base.invokelatest(
+#             savefig, 
+#             figure, 
+#             joinpath(img_path, base_name * "_" * number * format),
+#         )
+
+#         next!(prog_bar)
+
+#     end
+
+#     # Make the GIF
+#     # gif(
+#     #     animation, 
+#     #     joinpath(output_path, anim_name * ".gif"), 
+#     #     fps = frame_rate, 
+#     #     show_msg = false,
+#     # )
+
+#     # Make the video
+#     # make_video(img_path, format, output_path, anim_name, frame_rate)
+
+#     return nothing
+# end
