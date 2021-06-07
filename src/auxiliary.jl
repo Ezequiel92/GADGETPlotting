@@ -922,7 +922,7 @@ each column is a position.
 """
 @inline function max_length(data::Matrix{<:Real})::Float64
 
-    return maximum([norm(col) for col in eachcol(position_data)])
+    return maximum([norm(col) for col in eachcol(data)])
 
 end
 

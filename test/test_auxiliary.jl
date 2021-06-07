@@ -14,7 +14,7 @@ dist_gas_2D = sqrt.(pos_gas[1, :] .^ 2 + pos_gas[2, :] .^ 2)
 dist_stars = sqrt.(pos_stars[1, :] .^ 2 + pos_stars[2, :] .^ 2)
 box_size = ustrip(Float64, pos["unit"], BOX_SIZE)
 max_z = findmax(star_z["Z"])
-max_Z = max_z[1] / star_mass["mass"][max_z[2]]
+max_Z = max_z[1] / star_mass["mass"][max_z[2]] 
 # To test comparison() and deep_comparison()
 arr1 = [1.5, 9.6, 6.4]
 arr2 = [1.5, 9.6, 6.9]
@@ -75,6 +75,8 @@ num_int_4 = GADGETPlotting.num_integrate(x -> sqrt(sqrt(1 / (x + 1))), 0, 1)
 
 rc = GADGETPlotting.center_of_mass(pos_gas, m_gas)
 
+max_gas_dist = GADGETPlotting.max_length(pos_gas)
+
 ##############
 # Testing 
 ##############
@@ -115,6 +117,7 @@ rc = GADGETPlotting.center_of_mass(pos_gas, m_gas)
         @test file["num_int_3"] ≈ num_int_3
         @test file["num_int_4"] ≈ num_int_4
         @test comparison(file["rc"], rc)
+        @test file["max_gas_dist"] ≈ max_gas_dist
         @test !comparison("test1", "test2")
         @test comparison(arr1, arr1)
         @test !deep_comparison(arr1, arr2)
