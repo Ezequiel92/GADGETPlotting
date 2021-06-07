@@ -2694,6 +2694,8 @@ Save the result of the [`cpu_txt_plot`](@ref) function as one image per simulati
 - `source_path::Vector{String}`: Paths to the directories containing the cpu.txt files, 
   set in the GADGET variable `OutputDir`.
 - `targets::Vector{String}`: Target processes to be plotted for each simulation.
+- `step::Int64 = 1`: Step used to traverse the CPU cycles, i.e. one every `step` cycles is 
+  used for the output plot.
 - `output_path::String = "cpu_txt"`: Path to the output directory.
 - `title::Vector{String} = String[]`: Titles for the figures. If an empty string is given 
   no title is printed, which is the default.
@@ -2705,6 +2707,7 @@ Save the result of the [`cpu_txt_plot`](@ref) function as one image per simulati
 function cpu_txt_pipeline(
     source_path::Vector{String},
     targets::Vector{String};
+    step::Int64 = 1,
     output_path::String = "cpu_txt",
     titles::Vector{String} = String[],
     names::Vector{String} = String[],
@@ -2731,7 +2734,7 @@ function cpu_txt_pipeline(
     # Generate and save the plots
     for (source, title, name) in zip(source_path, titles, names)
 
-        figure = cpu_txt_plot(get_cpu_txt(source, targets) , title)
+        figure = cpu_txt_plot(get_cpu_txt(source, targets; step) , title)
 
         Base.invokelatest(
             savefig, 
@@ -2760,6 +2763,8 @@ process among several simulations.
   set in the GADGET variable `OutputDir`.
 - `target::String`: Target process.
 - `labels::Array{String, 2}`: Labels for the different simulations.
+- `step::Int64 = 1`: Step used to traverse the CPU cycles, i.e. one every `step` cycles is 
+  used for the output plot.
 - `output_path::String = "cpu_txt"`: Path to the output directory.
 - `title::String = ""`: Title for the figure. If an empty string is given no title is 
   printed, which is the default.
@@ -2770,6 +2775,7 @@ function cpu_txt_pipeline(
     source_path::Vector{String},
     target::String,
     labels::Array{String, 2};
+    step::Int64 = 1,
     output_path::String = "cpu_txt",
     title::String = "",
     format::String = ".png",
@@ -2778,7 +2784,7 @@ function cpu_txt_pipeline(
     # Create a directory to save the plots, if it doesn't exist
     mkpath(output_path)
     
-    data = [get_cpu_txt(source, target) for source in source_path]
+    data = [get_cpu_txt(source, target; step) for source in source_path]
 
     # Generate and save the plots
     figure = cpu_txt_plot(data, labels, title)

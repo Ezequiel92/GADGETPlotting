@@ -8,7 +8,7 @@ module GADGETPlotting
 using GadgetIO, GadgetUnits, SPHtoGrid, SPHKernels
 using Unitful, UnitfulAstro
 using Plots, LaTeXStrings, StatsPlots.PlotMeasures, AverageShiftedHistograms, GLM
-using Glob, FileIO, VideoIO, DelimitedFiles, Accessors, ProgressMeter
+using Glob, FileIO, VideoIO, DelimitedFiles, Accessors, ProgressMeter, LinearAlgebra
 
 if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@optlevel"))
     @eval Base.Experimental.@optlevel 3

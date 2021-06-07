@@ -1,3 +1,4 @@
+using Base: func_for_method_checked, Float64
 ############################################################################################
 # Auxiliary functions
 ############################################################################################
@@ -861,7 +862,7 @@ end
     center_of_mass(
         position_data::Matrix{<:Real},
         mass_data::Vector{<:Real},
-    )::NTuple{3, Float64}
+    )::Union{NTuple{3, Float64}, Nothing}
 
 Compute the center of mass as
 
@@ -871,6 +872,9 @@ R_c = \frac{1}{M} \sum_n m_n \, r_n \, ,
 
 where ``M = \sum_n m_n`` and ``m_n`` and ``r_n`` are the mass and distance 
 from the origin of the ``n``-th particle.
+
+If the length of ``R`` is less than ``10^-3`` the length of the larger position vector in
+`position_data`, nothing is returned.
 
 # Arguments
 - `position_data::Matrix{<:Real}`: Positions of the particles.
@@ -882,7 +886,7 @@ from the origin of the ``n``-th particle.
 function center_of_mass(
     position_data::Matrix{<:Real},
     mass_data::Vector{<:Real},
-)::NTuple{3, Float64}
+)::Union{NTuple{3, Float64}, Nothing}
 
     # Total mass
     M = sum(mass_data)
@@ -892,7 +896,33 @@ function center_of_mass(
         R .+= col .* mass
     end
 
-    return R[1] / M, R[2] / M, R[3] / M
+    center_of_mass = (R[1] / M, R[2] / M, R[3] / M)
+
+    if norm(center_of_mass) < max_length(position_data) * 10^3
+        return nothing
+    else
+        return center_of_mass
+    end
+
+end
+
+"""
+    max_length(data::Matrix{<:Real})::Float64
+
+Maximum norm of the positions in `data`.
+
+`data` must be a matrix with three rows (x, y, and z coordinates respectively) and where 
+each column is a position.
+
+# Arguments
+- `data::Matrix{<:Real}`: Positions of the particles.
+
+# Returns
+- The maximum norm of the position vectors in `data`.
+"""
+@inline function max_length(data::Matrix{<:Real})::Float64
+
+    return maximum([norm(col) for col in eachcol(position_data)])
 
 end
 

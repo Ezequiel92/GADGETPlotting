@@ -3,7 +3,7 @@
 ############################################################################################
 
 ##############
-## Data
+# Data
 ##############
 
 pos_gas = pos["gas"]
@@ -17,7 +17,7 @@ max_z = findmax(star_z["Z"])
 max_Z = max_z[1] / star_mass["mass"][max_z[2]]
 
 ##############
-## Functions
+# Functions
 ##############
 
 relative_2D = GADGETPlotting.relative(plot(rand(100)), 0.5, 0.5)
@@ -85,7 +85,7 @@ figure = GADGETPlotting.set_vertical_flags(
 Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "vline_plot.png"))
 
 ##############
-## Testing 
+# Testing 
 ##############
 
 jldsave(

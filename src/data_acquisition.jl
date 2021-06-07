@@ -402,6 +402,11 @@ Get the coordinates of all the particles at a specific time step.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable `ComovingIntegrationOn`: 
   * 0 ⟶ Newtonian simulation (static universe).
   * 1 ⟶ Cosmological simulation (expanding universe).
+- `center::Union{String, Nothing} = nothing`: How to adjust the center of mass.
+  * nothing: No adjustments to the center of mass are made.
+  * "local": Each type of particle gets its center of mass to (0, 0, 0) independently.
+  * "baryon": Baryons and dark matter get their centers of mass to (0, 0, 0) independently.
+  * "global": The center of mass of the whole system gets to (0, 0, 0).
 - `filter_function::Function = pass_all`: A function with the signature: 
 
   `foo(snap_file::String, type::String)::Vector{Int64}`
@@ -430,6 +435,7 @@ Get the coordinates of all the particles at a specific time step.
 function get_position(
     snapshot::String;
     sim_cosmo::Int64 = 0,
+    center::Union{String, Nothing} = nothing,
     filter_function::Function = pass_all,
     box_size::Unitful.Quantity = 1000.0UnitfulAstro.kpc,
     length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
@@ -533,17 +539,11 @@ function get_position(
             verbose = false
         )["MASS"]
 
-        # Set the center of mass the the dark matter at (0, 0, 0)
-        R = center_of_mass(dm_pos, dm_masses)
-
-        dm_pos[1, :] .-= R[1]
-        dm_pos[2, :] .-= R[2]
-        dm_pos[3, :] .-= R[3]
-
     else
 
         # In the case that there are no dark matter particles
         dm_pos = Array{Float64}(undef, 3, 0)
+        dm_masses = Float64[]
 
     end
 
@@ -577,18 +577,84 @@ function get_position(
 
     end
 
-    # Set the center of mass of the baryons at (0, 0, 0)
-    baryon_pos = hcat(gas_pos, star_pos) 
-    baryon_mass = [gas_masses; star_masses]
-    R = center_of_mass(baryon_pos, baryon_mass)
+    # Adjustment of the center of mass
+    if center == "local"
 
-    gas_pos[1, :] .-= R[1]
-    gas_pos[2, :] .-= R[2]
-    gas_pos[3, :] .-= R[3]
+        # Set the center of mass of the gas particles to (0, 0, 0)
+        R = center_of_mass(gas_pos, gas_masses)
 
-    star_pos[1, :] .-= R[1]
-    star_pos[2, :] .-= R[2]
-    star_pos[3, :] .-= R[3]
+        if R !== nothing
+            gas_pos[1, :] .-= R[1]
+            gas_pos[2, :] .-= R[2]
+            gas_pos[3, :] .-= R[3]
+        end
+
+        # Set the center of mass of the stars to (0, 0, 0)
+        R = center_of_mass(star_pos, star_masses)
+
+        if R !== nothing
+            star_pos[1, :] .-= R[1]
+            star_pos[2, :] .-= R[2]
+            star_pos[3, :] .-= R[3]
+        end
+
+        # Set the center of mass of the dark matter particles to (0, 0, 0)
+        R = center_of_mass(dm_pos, dm_masses)
+
+        if R !== nothing
+            dm_pos[1, :] .-= R[1]
+            dm_pos[2, :] .-= R[2]
+            dm_pos[3, :] .-= R[3]
+        end
+
+    elseif center == "baryon"
+
+        # Set the center of mass of the baryons to (0, 0, 0)
+        baryon_pos = hcat(gas_pos, star_pos) 
+        baryon_mass = [gas_masses; star_masses]
+        R = center_of_mass(baryon_pos, baryon_mass)
+        
+        if R !== nothing
+            gas_pos[1, :] .-= R[1]
+            gas_pos[2, :] .-= R[2]
+            gas_pos[3, :] .-= R[3]
+
+            star_pos[1, :] .-= R[1]
+            star_pos[2, :] .-= R[2]
+            star_pos[3, :] .-= R[3]
+        end
+
+        # Set the center of mass of the dark matter particles to (0, 0, 0)
+        R = center_of_mass(dm_pos, dm_masses)
+
+        if R !== nothing
+            dm_pos[1, :] .-= R[1]
+            dm_pos[2, :] .-= R[2]
+            dm_pos[3, :] .-= R[3]
+        end
+
+    elseif center == "global"
+
+        # Set the center of mass of the whole system of particles to (0, 0, 0)
+        global_pos = hcat(gas_pos, star_pos, dm_pos) 
+        global_mass = [gas_masses; star_masses; dm_masses]
+        R = center_of_mass(global_pos, global_mass)
+
+        if R !== nothing
+            gas_pos[1, :] .-= R[1]
+            gas_pos[2, :] .-= R[2]
+            gas_pos[3, :] .-= R[3]
+
+            star_pos[1, :] .-= R[1]
+            star_pos[2, :] .-= R[2]
+            star_pos[3, :] .-= R[3]
+
+            dm_pos[1, :] .-= R[1]
+            dm_pos[2, :] .-= R[2]
+            dm_pos[3, :] .-= R[3]
+        end
+
+    end
 
     return Dict(
         "gas" => gas_pos,
@@ -1574,32 +1640,39 @@ end
 """
     get_cpu_txt(
         source_path::String, 
-        targets::Vector{String},
-    )::Dict{String, Vector{Float64}}
+        targets::Vector{String}; 
+        <keyword arguments>
+    )::Dict{String, Matrix{Float64}}
 
 Get the data from the cpu.txt file.
 
-For each target row in `targets` a vector with all the CPU usage data (as percentages of 
+For each target row in `targets` a matrix with all the CPU usage data (as percentages of 
 total CPU time) is returned.
 
 # Arguments
 - `source_path::String`: Path to the directory containing the cpu.txt file.
 - `targets::Vector{String}`: Target processes.
+- `step::Int64 = 1`: Step used to traverse the CPU cycles, i.e. one every `step` cycles is 
+  returned.
 
 # Returns
 - A dictionary with as many entries as strings in `targets`.
-  - process ⟹ Vector with CPU usage, as percentages.   
+  - process ⟹ Matrix with CPU cycles as its first column, and CPU usage (in percentage) as 
+    its second column.   
 """
 function get_cpu_txt(
     source_path::String, 
-    targets::Vector{String},
-)::Dict{String, Vector{Float64}}
+    targets::Vector{String};
+    step::Int64 = 1,
+)::Dict{String, Matrix{Float64}}
 
     # Load the data from the cpu.txt file
     file = eachline(joinpath(source_path, "cpu.txt"))
 
-    # Output dictionary
+    # Auxiliary dictionary
     data = Dict(target => Float64[] for target in targets)
+    # Output dictionary
+    data_out = Dict(target => Array{Float64}(undef, 0, 2) for target in targets)
 
     # Save the percentages of CPU usage for the target processes
     for line in file
@@ -1607,8 +1680,9 @@ function get_cpu_txt(
         # Ignore empty lines
         !isempty(line) || continue
 
-        # Ignore title lines
         columns = split(line)
+
+        # Ignore title lines
         !(columns[1] == "Step") || continue
 
         if columns[1] in targets
@@ -1621,33 +1695,50 @@ function get_cpu_txt(
         @warn "I cound't find some/all of the target rows. Check the spelling!"
     end
 
-    return data
+    # Data reduction
+    if step > 1
+        for (key, entry) in data
+            l_e = length(entry)
+            if step < l_e
+                data_out[key] = hcat(1:step:l_e, entry[1:step:end])
+            else
+                @warn "In some/all cases step is bigger than the amount of CPU cycles. Make it smaller!"
+            end
+        end
+    end
+
+    return data_out
 end
 
 """
     get_cpu_txt(
         source_path::String, 
-        target::String,
-    )::Dict{String, Vector{Float64}}
+        target::String; 
+        <keyword arguments>
+    )::Dict{String, Matrix{Float64}}
 
 Get the data from the cpu.txt file.
 
-For the row in `target` a vector with all the CPU usage data (as percentages of 
+For the row in `target` a matrix with all the CPU usage data (as percentages of 
 total CPU time) is returned.
 
 # Arguments
 - `source_path::String`: Path to the directory containing the cpu.txt file.
 - `target::String`: Target process.
+- `step::Int64 = 1`: Step used to traverse the CPU cycles, i.e. one every `step` cycles is 
+  returned.
 
 # Returns
 - A dictionary with one entry.
-  - process ⟹ Vector with CPU usage, as percentages.   
+  - process ⟹ Matrix with CPU cycles as its first column, and CPU usage (in percentage) as 
+    its second column.   
 """
 function get_cpu_txt(
     source_path::String, 
-    target::String,
-)::Dict{String, Vector{Float64}}
+    target::String;
+    step::Int64 = 1,
+)::Dict{String, Matrix{Float64}}
 
-    return get_cpu_txt(source_path, [target,])
+    return get_cpu_txt(source_path, [target,]; step)
 
 end

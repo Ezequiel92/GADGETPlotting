@@ -3,7 +3,7 @@
 ############################################################################################
 
 ##############
-## Functions
+# Functions
 ##############
 
 snaps = GADGETPlotting.get_snapshot_path(SNAP_NAME, BASE_SRC_PATH)
@@ -61,7 +61,7 @@ if sim_cosmo == 0
 end
 
 ##############
-## Testing 
+# Testing 
 ##############
 
 @testset "Data acquisition functions" begin 

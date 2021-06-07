@@ -3,7 +3,7 @@
 ############################################################################################
 
 ##############
-## Functions
+# Functions
 ##############
 
 snaps = GADGETPlotting.get_snapshot_path(SNAP_NAME, BASE_SRC_PATH)
@@ -61,7 +61,7 @@ if SIM_COSMO == 0
 end
 
 ##############
-## Testing 
+# Testing 
 ##############
 
 # No `pos` and two files for cosmological simulations, 

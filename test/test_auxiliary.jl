@@ -3,7 +3,7 @@
 ############################################################################################
 
 ##############
-## Data
+# Data
 ##############
 
 pos_gas = pos["gas"]
@@ -22,7 +22,7 @@ dict1 = Dict("a" => arr1, "b" => arr1)
 dict2 = Dict("a" => arr1, "b" => arr2)
 
 ##############
-## Functions
+# Functions
 ##############
 
 relative_2D = GADGETPlotting.relative(plot(rand(100)), 0.5, 0.5)
@@ -76,7 +76,7 @@ num_int_4 = GADGETPlotting.num_integrate(x -> sqrt(sqrt(1 / (x + 1))), 0, 1)
 rc = GADGETPlotting.center_of_mass(pos_gas, m_gas)
 
 ##############
-## Testing 
+# Testing 
 ##############
 
 @testset "Auxiliary functions" begin
