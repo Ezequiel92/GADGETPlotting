@@ -141,13 +141,15 @@ function scatter_grid_plot(position_data::Dict{String, Any})::Plots.Plot
         stars_y,
         stars_z,
         title = "Stars - yz plane",
-        xlabel = "y / $unit",
-        ylabel = "z / $unit",
+        xlabel = L"\textrm{y} / %$unit",
+        ylabel = L"\textrm{z} / %$unit",
         markercolor = :darkorange2,
         xlims = (-stars_size, stars_size),
         ylims = (-stars_size, stars_size),
         right_margin = 25px,
     )
+
+    scalefontsizes(1.3)
 
     # Final figure containing the nine plots
     return scatter(
@@ -170,11 +172,11 @@ function scatter_grid_plot(position_data::Dict{String, Any})::Plots.Plot
         markerstrokewidth = 0,
         legend = false,
         fontfamily = "Computer Modern",
-        titlefontsize = 24,
-        xtickfontsize = 20,
-        ytickfontsize = 20,
-        xguidefontsize = 22,
-        yguidefontsize = 22,
+        # titlefontsize = 24,
+        # xtickfontsize = 20,
+        # ytickfontsize = 20,
+        # xguidefontsize = 22,
+        # yguidefontsize = 22,
     )
 end
 
