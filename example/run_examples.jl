@@ -42,8 +42,8 @@ mkpath(BASE_OUT_PATH)
 
 include("example_data_acquisition.jl")
 include("example_plotting.jl")
-# include("example_pipeline.jl")
-# include("example_auxiliary.jl")
+include("example_pipeline.jl")
+include("example_auxiliary.jl")
 
 ############################################################################################
 # Examples (cosmological)
@@ -58,9 +58,9 @@ SNAP_N = 2
 
 mkpath(BASE_OUT_PATH)
 
-# include("example_data_acquisition.jl")
-# include("example_plotting.jl")
-# include("example_pipeline.jl")
-# include("example_auxiliary.jl")
+include("example_data_acquisition.jl")
+include("example_plotting.jl")
+include("example_pipeline.jl")
+include("example_auxiliary.jl")
 
 println("Everything worked just fine!!")

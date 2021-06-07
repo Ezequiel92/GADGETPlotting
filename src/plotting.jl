@@ -55,8 +55,8 @@ function scatter_grid_plot(position_data::Dict{String, Any})::Plots.Plot
         gas_x,
         gas_y,
         title = "Gas - xy plane",
-        xlabel = "x / $unit",
-        ylabel = "y / $unit",
+        xlabel = L"\textrm{x} \, / \, \mathrm{%$unit}",
+        ylabel = L"\textrm{y} \, / \, \mathrm{%$unit}",
         markercolor = :blueviolet,
         xlims = (-gas_size, gas_size),
         ylims = (-gas_size, gas_size),
@@ -65,8 +65,8 @@ function scatter_grid_plot(position_data::Dict{String, Any})::Plots.Plot
         dm_x,
         dm_y,
         title = "Dark matter - xy plane",
-        xlabel = "x / $unit",
-        ylabel = "y / $unit",
+        xlabel = L"\textrm{x} \, / \, \mathrm{%$unit}",
+        ylabel = L"\textrm{y} \, / \, \mathrm{%$unit}",
         markercolor = :darkgrey,
         xlims = (-dm_size, dm_size),
         ylims = (-dm_size, dm_size),
@@ -75,8 +75,8 @@ function scatter_grid_plot(position_data::Dict{String, Any})::Plots.Plot
         stars_x,
         stars_y,
         title = "Stars - xy plane",
-        xlabel = "x / $unit",
-        ylabel = "y / $unit",
+        xlabel = L"\textrm{x} \, / \, \mathrm{%$unit}",
+        ylabel = L"\textrm{y} \, / \, \mathrm{%$unit}",
         markercolor = :darkorange2,
         xlims = (-stars_size, stars_size),
         ylims = (-stars_size, stars_size),
@@ -87,8 +87,8 @@ function scatter_grid_plot(position_data::Dict{String, Any})::Plots.Plot
         gas_x,
         gas_z,
         title = "Gas - xz plane",
-        xlabel = "x / $unit",
-        ylabel = "z / $unit",
+        xlabel = L"\textrm{x} \, / \, \mathrm{%$unit}",
+        ylabel = L"\textrm{z} \, / \, \mathrm{%$unit}",
         markercolor = :blueviolet,
         xlims = (-gas_size, gas_size),
         ylims = (-gas_size, gas_size),
@@ -97,8 +97,8 @@ function scatter_grid_plot(position_data::Dict{String, Any})::Plots.Plot
         dm_x,
         dm_z,
         title = "Dark matter - xz plane",
-        xlabel = "x / $unit",
-        ylabel = "z / $unit",
+        xlabel = L"\textrm{x} \, / \, \mathrm{%$unit}",
+        ylabel = L"\textrm{z} \, / \, \mathrm{%$unit}",
         markercolor = :darkgrey,
         xlims = (-dm_size, dm_size),
         ylims = (-dm_size, dm_size),
@@ -107,8 +107,8 @@ function scatter_grid_plot(position_data::Dict{String, Any})::Plots.Plot
         stars_x,
         stars_z,
         title = "Stars - xz plane",
-        xlabel = "x / $unit",
-        ylabel = "z / $unit",
+        xlabel = L"\textrm{x} \, / \, \mathrm{%$unit}",
+        ylabel = L"\textrm{z} \, / \, \mathrm{%$unit}",
         markercolor = :darkorange2,
         xlims = (-stars_size, stars_size),
         ylims = (-stars_size, stars_size),
@@ -119,8 +119,8 @@ function scatter_grid_plot(position_data::Dict{String, Any})::Plots.Plot
         gas_y,
         gas_z,
         title = "Gas - yz plane",
-        xlabel = "y / $unit",
-        ylabel = "z / $unit",
+        xlabel = L"\textrm{y} \, / \, \mathrm{%$unit}",
+        ylabel = L"\textrm{z} \, / \, \mathrm{%$unit}",
         markercolor = :blueviolet,
         xlims = (-gas_size, gas_size),
         ylims = (-gas_size, gas_size),
@@ -130,8 +130,8 @@ function scatter_grid_plot(position_data::Dict{String, Any})::Plots.Plot
         dm_y,
         dm_z,
         title = "Dark matter - yz plane",
-        xlabel = "y / $unit",
-        ylabel = "z / $unit",
+        xlabel = L"\textrm{y} \, / \, \mathrm{%$unit}",
+        ylabel = L"\textrm{z} \, / \, \mathrm{%$unit}",
         markercolor = :darkgrey,
         xlims = (-dm_size, dm_size),
         ylims = (-dm_size, dm_size),
@@ -141,15 +141,13 @@ function scatter_grid_plot(position_data::Dict{String, Any})::Plots.Plot
         stars_y,
         stars_z,
         title = "Stars - yz plane",
-        xlabel = L"\textrm{y} / %$unit",
-        ylabel = L"\textrm{z} / %$unit",
+        xlabel = L"\textrm{y} \, / \, \mathrm{%$unit}",
+        ylabel = L"\textrm{z} \, / \, \mathrm{%$unit}",
         markercolor = :darkorange2,
         xlims = (-stars_size, stars_size),
         ylims = (-stars_size, stars_size),
         right_margin = 25px,
     )
-
-    scalefontsizes(1.3)
 
     # Final figure containing the nine plots
     return scatter(
@@ -172,11 +170,11 @@ function scatter_grid_plot(position_data::Dict{String, Any})::Plots.Plot
         markerstrokewidth = 0,
         legend = false,
         fontfamily = "Computer Modern",
-        # titlefontsize = 24,
-        # xtickfontsize = 20,
-        # ytickfontsize = 20,
-        # xguidefontsize = 22,
-        # yguidefontsize = 22,
+        titlefontsize = 24,
+        xtickfontsize = 20,
+        ytickfontsize = 20,
+        xguidefontsize = 22,
+        yguidefontsize = 22,
     )
 end
 
@@ -307,8 +305,8 @@ function density_map_plot(
             left_margin = 20px,
             right_margin = 20px,
             framestyle = :box,
-            xlabel = "x / $length_unit",
-            ylabel = "y / $length_unit",
+            xlabel = L"\textrm{x} \, / \, \mathrm{%$length_unit}",
+            ylabel = L"\textrm{y} \, / \, \mathrm{%$length_unit}",
             title = "XY plane",
             fontfamily = "Computer Modern",
             xtickfontsize = 30,
@@ -355,8 +353,8 @@ function density_map_plot(
             left_margin = 20px,
             right_margin = 20px,
             framestyle = :box,
-            xlabel = "x / $length_unit",
-            ylabel = "z / $length_unit",
+            xlabel = L"\textrm{x} \, / \, \mathrm{%$length_unit}",
+            ylabel = L"\textrm{z} \, / \, \mathrm{%$length_unit}",
             title = "XZ plane",
             fontfamily = "Computer Modern",
             xtickfontsize = 30,
@@ -403,8 +401,8 @@ function density_map_plot(
             left_margin = 20px,
             right_margin = 20px,
             framestyle = :box,
-            xlabel = "y / $length_unit",
-            ylabel = "z / $length_unit",
+            xlabel = L"\textrm{y} \, / \, \mathrm{%$length_unit}",
+            ylabel = L"\textrm{z} \, / \, \mathrm{%$length_unit}",
             title = "YZ plane",
             fontfamily = "Computer Modern",
             xtickfontsize = 30,
@@ -537,8 +535,8 @@ function star_map_plot(
             left_margin = 20px,
             right_margin = 30px,
             framestyle = :box,
-            xlabel = "x / $length_unit",
-            ylabel = "y / $length_unit",
+            xlabel = L"\textrm{x} \, / \, \mathrm{%$length_unit}",
+            ylabel = L"\textrm{y} \, / \, \mathrm{%$length_unit}",
             title = "XY plane",
             fontfamily = "Computer Modern",
             xtickfontsize = 30,
@@ -573,8 +571,8 @@ function star_map_plot(
             left_margin = 20px,
             right_margin = 30px,
             framestyle = :box,
-            xlabel = "x / $length_unit",
-            ylabel = "z / $length_unit",
+            xlabel = L"\textrm{x} \, / \, \mathrm{%$length_unit}",
+            ylabel = L"\textrm{z} \, / \, \mathrm{%$length_unit}",
             title = "XZ plane",
             fontfamily = "Computer Modern",
             xtickfontsize = 30,
@@ -609,8 +607,8 @@ function star_map_plot(
             left_margin = 20px,
             right_margin = 30px,
             framestyle = :box,
-            xlabel = "y / $length_unit",
-            ylabel = "z / $length_unit",
+            xlabel = L"\textrm{y} \, / \, \mathrm{%$length_unit}",
+            ylabel = L"\textrm{z} \, / \, \mathrm{%$length_unit}",
             title = "YZ plane",
             fontfamily = "Computer Modern",
             xtickfontsize = 30,
@@ -647,6 +645,15 @@ function star_map_plot(
         error("'$plane' is not an option for a plane.")
     end
 end
+
+
+
+
+
+
+
+
+
 
 """
     gas_star_evolution_plot(
