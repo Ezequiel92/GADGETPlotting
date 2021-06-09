@@ -15,7 +15,7 @@ figure = gas_star_evolution_plot(SNAP_N, time_series, pos)
 Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "gas_star_evolution_plot.png"))
 
 figure = cmdf_plot(star_mass, star_z, 1UnitfulAstro.Myr)
-Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "cmdf_plot.png"))
+Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "cmdf_plot_2.png"))
 
 figure = cmdf_plot(
     [star_mass, star_mass], 
