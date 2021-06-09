@@ -569,15 +569,15 @@ function cmdf_pipeline(
     end
 
     # Make the GIF.
-    # gif(
-    #     animation, 
-    #     joinpath(output_path, anim_name * ".gif"), 
-    #     fps = frame_rate, 
-    #     show_msg = false,
-    # )
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
 
     # Make the video.
-    # make_video(img_path, format, output_path, anim_name, frame_rate)
+    make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -698,15 +698,15 @@ function cmdf_pipeline(
     end
 
     # Make the GIF
-    # gif(
-    #     animation, 
-    #     joinpath(output_path, anim_name * ".gif"), 
-    #     fps = frame_rate, 
-    #     show_msg = false,
-    # )
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
 
     # Make the video
-    # make_video(img_path, format, output_path, anim_name, frame_rate)
+    make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -811,15 +811,15 @@ function birth_histogram_pipeline(
     end
 
     # Make the GIF
-    # gif(
-    #     animation, 
-    #     joinpath(output_path, anim_name * ".gif"), 
-    #     fps = frame_rate, 
-    #     show_msg = false,
-    # )
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
 
     # Make the video
-    # make_video(img_path, format, output_path, anim_name, frame_rate)
+    make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -1240,15 +1240,15 @@ function density_histogram_pipeline(
     end
 
     # Make the GIF
-    # gif(
-    #     animation, 
-    #     joinpath(output_path, anim_name * ".gif"), 
-    #     fps = frame_rate, 
-    #     show_msg = false,
-    # )
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
 
     # Make the video
-    # make_video(img_path, format, output_path, anim_name, frame_rate)
+    make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -1387,15 +1387,15 @@ function density_profile_pipeline(
     end
 
     # Make the GIF
-    # gif(
-    #     animation, 
-    #     joinpath(output_path, anim_name * ".gif"), 
-    #     fps = frame_rate, 
-    #     show_msg = false,
-    # )
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
 
     # Make the video
-    # make_video(img_path, format, output_path * type, anim_name, frame_rate)
+    make_video(img_path, format, output_path * type, anim_name, frame_rate)
 
     return nothing
 end
@@ -1545,15 +1545,15 @@ function density_profile_pipeline(
     end
 
     # Make the GIF
-    # gif(
-    #     animation, 
-    #     joinpath(output_path, anim_name * ".gif"), 
-    #     fps = frame_rate, 
-    #     show_msg = false,
-    # )
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
 
     # Make the video
-    # make_video(img_path, format, output_path, anim_name, frame_rate)
+    make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -1683,15 +1683,15 @@ function metallicity_profile_pipeline(
     end
 
     # Make the GIF
-    # gif(
-    #     animation, 
-    #     joinpath(output_path, anim_name * ".gif"), 
-    #     fps = frame_rate, 
-    #     show_msg = false,
-    # )
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
 
     # Make the video
-    # make_video(img_path, format, output_path, anim_name, frame_rate)
+    make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -1836,15 +1836,15 @@ function metallicity_profile_pipeline(
     end
 
     # Make the GIF
-    # gif(
-    #     animation, 
-    #     joinpath(output_path, anim_name * ".gif"), 
-    #     fps = frame_rate, 
-    #     show_msg = false,
-    # )
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
 
     # Make the video
-    # make_video(img_path, format, output_path, anim_name, frame_rate)
+    make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -1983,15 +1983,15 @@ function mass_profile_pipeline(
     end
 
     # Make the GIF
-    # gif(
-    #     animation, 
-    #     joinpath(output_path, anim_name * ".gif"), 
-    #     fps = frame_rate, 
-    #     show_msg = false,
-    # )
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
 
     # Make the video
-    # make_video(img_path, format, output_path, anim_name, frame_rate)
+    make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -2141,15 +2141,15 @@ function mass_profile_pipeline(
     end
 
     # Make the GIF
-    # gif(
-    #     animation, 
-    #     joinpath(output_path, anim_name * ".gif"), 
-    #     fps = frame_rate, 
-    #     show_msg = false,
-    # )
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
 
     # Make the video
-    # make_video(img_path, format, output_path, anim_name, frame_rate)
+    make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end

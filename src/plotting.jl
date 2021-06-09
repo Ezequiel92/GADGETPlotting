@@ -741,7 +741,7 @@ function gas_star_evolution_plot(
         reduced_time,
         reduced_sfr,
         xlabel = L"\mathrm{t} \, / \, \mathrm{%$time_unit}",
-        ylabel = L"\mathrm{SFR} \ / \, %$sfr_unit",
+        ylabel = L"\mathrm{SFR} \, / \, %$sfr_unit",
         legend = false,
         lw = 4,
         xlims = (-t_end * 0.025, t_end),
@@ -873,7 +873,7 @@ function cmdf_plot(
         legend = false,
         framestyle = :box,
         size = (1200, 900),
-        lw = 2,
+        lw = 3,
         left_margin = 20px,
         bottom_margin = 20px,
         fontfamily = "Computer Modern",
@@ -889,14 +889,6 @@ function cmdf_plot(
 
     return figure 
 end
-
-
-
-
-
-
-
-
 
 """
     cmdf_plot(
@@ -933,7 +925,7 @@ function cmdf_plot(
     x_norm::Bool = false,
 )::Plots.Plot
 
-    pgfplotsx()
+    gr()
 
     # Check unit consistency
     mass_units = get.(m_data, "unit", 0)
@@ -970,7 +962,7 @@ function cmdf_plot(
 
     # x axis label
     if x_norm
-        xlabel = L"Z \, / \, Z_{\mathrm{max}}"
+        xlabel = L"\mathrm{Z \, / \, Z_{max}}"
     else
         xlabel = "Z"
     end
@@ -979,29 +971,35 @@ function cmdf_plot(
     clock = round(ustrip(time), sigdigits = 4)
     time_unit = unit(time)
 
-    return plot(
+    figure = plot(
         hcat(Z...),
         hcat(m...),
         xlabel = xlabel,
-        ylabel = L"M_{\star}(< Z) \, / \, M_{\star}",
+        ylabel = L"\mathrm{M_{\star}(\!< Z) \, / \, M_{\star}}",
         label = labels,
         framestyle = :box,
         size = (1200, 900),
         legend = :bottomright,
-        lw = 2,
+        lw = 3,
         linestyle = :auto,
         palette = :Set1_9,
         foreground_color_legend = nothing,
         background_color_legend = nothing,
-        xtickfontsize = 25,
-        ytickfontsize = 25,
-        xguidefontsize = 30,
-        yguidefontsize = 30,
-        legendfontsize = 25,
-        ticklabel_shift = ".1cm",
-        add = "\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.05) {$clock\$\\,\$$time_unit};",
-        extra_kwargs = :subplot,
+        left_margin = 20px,
+        bottom_margin = 20px,
+        fontfamily = "Computer Modern",
+        xtickfontsize = 22,
+        ytickfontsize = 22,
+        xguidefontsize = 25,
+        yguidefontsize = 25,
+        legendfontsize = 22,
     )
+    annotate!(
+        relative(figure, 0.5, 0.05)...,
+        text("$clock $time_unit", "Courier", 22, :center),
+    )
+
+    return figure 
 end
 
 """
@@ -1018,7 +1016,7 @@ Make a histogram of the number of stars born at a certain radial distance.
 """
 function birth_histogram_plot(birth_data::Dict{String, Any}; bins::Int64 = 50)::Plots.Plot
 
-    pgfplotsx()
+    gr()
 
     pos = birth_data["birth_place"]
     length_unit = birth_data["unit"]
@@ -1027,17 +1025,16 @@ function birth_histogram_plot(birth_data::Dict{String, Any}; bins::Int64 = 50)::
     return histogram(
         distances;
         bins = range(0, stop = maximum(distances), length = bins),
-        xlabel = "r / $length_unit",
+        xlabel = L"\mathrm{r} \, / \, \mathrm{%$length_unit}",
         normalize = :probability,
         size = (1000, 800),
         framestyle = :box,
         legend = false,
-        xtickfontsize = 28,
-        ytickfontsize = 28,
-        xguidefontsize = 30,
-        yguidefontsize = 30,
-        ticklabel_shift = ".1cm",
-        extra_kwargs = :subplot,
+        fontfamily = "Computer Modern",
+        xtickfontsize = 22,
+        ytickfontsize = 22,
+        xguidefontsize = 25,
+        yguidefontsize = 25,
     )
 end
 
@@ -1065,7 +1062,7 @@ function time_series_plot(
     number_factor::Int64 = 0,
 )::Plots.Plot
 
-    pgfplotsx()
+    gr()
 
     # Formatting for the axes' labels
     time_unit = time_series["units"]["time"]
@@ -1073,23 +1070,24 @@ function time_series_plot(
     mass_unit = string(time_series["units"]["mass"])
 
     sfr_unit = replace(
-        replace(sfr_unit, "M⊙" => L"$\, / \ \left(\mathrm{M_{\odot} \,"),
-        "^-1" => L"^{-1}}\right)$",
+        replace(sfr_unit, "M⊙" => "\\left(\\mathrm{M}_{\\odot} \\, \\mathrm{"),
+        "^-1" => "^{-1}}\\right)",
     )
 
     if mass_factor != 0
         mass_unit = replace(
             mass_unit,
-            "M⊙" => L"\, / \ \left(10^{%$mass_factor} \, \mathrm{M}_{\odot}\right)",
+            "M⊙" => "\\left(10^{$mass_factor} \\, \\mathrm{M}_{\\odot}\\right)",
         )
     else
-        mass_unit = replace(mass_unit, "M⊙" => L"\, / \ \mathrm{M}_{\odot}")
+        mass_unit = replace(mass_unit, "M⊙" => "\\mathrm{M}_{\\odot}")
     end
 
     # Y axis label formatting, for the plot of the number of particles
-    ylabel_num = "Number of particles"
     if number_factor != 0
-        ylabel_num *= L"\ \, / \ 10^{%$number_factor}"
+        ylabel_num = L"\mathrm{Number \ of \ particles} \, / \, 10^{%$number_factor}"
+    else
+        ylabel_num = "Number of particles"
     end
 
     # Data to be plotted
@@ -1103,7 +1101,7 @@ function time_series_plot(
     pl_number = plot(
         t,
         number,
-        xlabel = "t / $time_unit",
+        xlabel = L"\mathrm{t} \, / \, \mathrm{%$time_unit}",
         ylabel = ylabel_num,
         label = ["Gas" "Stars"],
         linestyle = [:solid :dash],
@@ -1111,31 +1109,27 @@ function time_series_plot(
         color = [:blueviolet :darkorange2],
         foreground_color_legend = nothing,
         background_color_legend = nothing,
-        ticklabel_shift = ".1cm",
-        extra_kwargs = :subplot,
     )
 
     # Mass of stars and gas vs. time
     pl_mass = plot(
         t,
         mass,
-        xlabel = "t / $time_unit",
-        ylabel = L"Total mass %$mass_unit",
+        xlabel = L"\mathrm{t} \, / \, \mathrm{%$time_unit}",
+        ylabel = L"\mathrm{Total \ mass} \, / \, %$mass_unit",
         label = ["Gas" "Stars"],
         linestyle = [:solid :dash],
         legend = :bottomright,
         color = [:blueviolet :darkorange2],
         foreground_color_legend = nothing,
         background_color_legend = nothing,
-        ticklabel_shift = ".1cm",
-        extra_kwargs = :subplot,
     )
 
     # Baryonic fraction of stars and gas vs. time
     pl_frac = plot(
         t,
         baryonic_frac,
-        xlabel = "t / $time_unit",
+        xlabel = L"\mathrm{t} \, / \, \mathrm{%$time_unit}",
         ylabel = "Fractional baryonic mass",
         label = ["Gas" "Stars"],
         linestyle = [:solid :dash],
@@ -1143,20 +1137,16 @@ function time_series_plot(
         color = [:blueviolet :darkorange2],
         foreground_color_legend = nothing,
         background_color_legend = nothing,
-        ticklabel_shift = ".1cm",
-        extra_kwargs = :subplot,
     )
 
     # SFR vs. time
     pl_sfr = plot(
         t,
         sfr,
-        xlabel = "t / $time_unit",
-        ylabel = L"SFR %$sfr_unit",
+        xlabel = L"\mathrm{t} \, / \, \mathrm{%$time_unit}",
+        ylabel = L"\mathrm{SFR} \, / \, %$sfr_unit",
         legend = false,
         linecolor = :darkorange2,
-        ticklabel_shift = ".1cm",
-        extra_kwargs = :subplot,
     )
 
     # Final figure containing the four plots
@@ -1166,16 +1156,19 @@ function time_series_plot(
         pl_frac,
         pl_sfr,
         layout = (2, 2),
-        left_margin = 130px,
-        top_margin = 35px,
+        right_margin = 25px,
+        left_margin = 60px,
+        top_margin = 20px,
+        bottom_margin = 35px,
         framestyle = :box,
         size = (2000, 1200),
         lw = 4,
+        fontfamily = "Computer Modern",
         xtickfontsize = 22,
         ytickfontsize = 22,
         xguidefontsize = 25,
         yguidefontsize = 25,
-        legendfontsize = 30,
+        legendfontsize = 28,
     )
 end
 
@@ -1203,30 +1196,31 @@ function scale_factor_series_plot(
     number_factor::Int64 = 0,
 )::Plots.Plot
 
-    pgfplotsx()
+    gr()
 
     # Formatting for the axes' labels
     sfr_unit = string(time_series["units"]["sfr"])
     mass_unit = string(time_series["units"]["mass"])
 
     sfr_unit = replace(
-        replace(sfr_unit, "M⊙" => L"$\, / \ \left(\mathrm{M_{\odot} \,"),
-        "^-1" => L"^{-1}}\right)$",
+        replace(sfr_unit, "M⊙" => "\\left(\\mathrm{M}_{\\odot} \\, \\mathrm{"),
+        "^-1" => "^{-1}}\\right)",
     )
 
     if mass_factor != 0
         mass_unit = replace(
             mass_unit,
-            "M⊙" => L"\, / \ \left(10^{%$mass_factor} \, \mathrm{M}_{\odot}\right)",
+            "M⊙" => "\\left(10^{$mass_factor} \\, \\mathrm{M}_{\\odot}\\right)",
         )
     else
-        mass_unit = replace(mass_unit, "M⊙" => L"\, / \ \mathrm{M}_{\odot}")
+        mass_unit = replace(mass_unit, "M⊙" => "\\mathrm{M}_{\\odot}")
     end
 
     # Y axis label formatting, for the plot of the number of particles
-    ylabel_num = "Number of particles"
     if number_factor != 0
-        ylabel_num *= L"\ \, / \ 10^{%$number_factor}"
+        ylabel_num = L"\mathrm{Number \ of \ particles} \, / \, 10^{%$number_factor}"
+    else
+        ylabel_num = "Number of particles"
     end
 
     # Data to be plotted
@@ -1248,8 +1242,6 @@ function scale_factor_series_plot(
         color = [:blueviolet :darkorange2],
         foreground_color_legend = nothing,
         background_color_legend = nothing,
-        ticklabel_shift = ".1cm",
-        extra_kwargs = :subplot,
     )
 
     # Mass of stars and gas vs. scale factor
@@ -1257,15 +1249,13 @@ function scale_factor_series_plot(
         a,
         mass,
         xlabel = "Scale factor",
-        ylabel = L"Total mass %$mass_unit",
+        ylabel = L"\mathrm{Total \ mass} \, / \, %$mass_unit",
         label = ["Gas" "Stars"],
         linestyle = [:solid :dash],
         legend = :bottomright,
         color = [:blueviolet :darkorange2],
         foreground_color_legend = nothing,
         background_color_legend = nothing,
-        ticklabel_shift = ".1cm",
-        extra_kwargs = :subplot,
     )
 
     # Baryonic fraction of stars and gas vs. scale factor
@@ -1280,8 +1270,6 @@ function scale_factor_series_plot(
         color = [:blueviolet :darkorange2],
         foreground_color_legend = nothing,
         background_color_legend = nothing,
-        ticklabel_shift = ".1cm",
-        extra_kwargs = :subplot,
     )
 
     # SFR vs. scale factor
@@ -1289,11 +1277,9 @@ function scale_factor_series_plot(
         a,
         sfr,
         xlabel = "Scale factor",
-        ylabel = L"SFR %$sfr_unit",
+        ylabel = L"\mathrm{SFR} \, / \, %$sfr_unit",
         legend = false,
         linecolor = :darkorange2,
-        ticklabel_shift = ".1cm",
-        extra_kwargs = :subplot,
     )
 
     # Final figure containing the four plots
@@ -1303,16 +1289,19 @@ function scale_factor_series_plot(
         pl_frac,
         pl_sfr,
         layout = (2, 2),
-        left_margin = 130px,
-        top_margin = 35px,
+        right_margin = 25px,
+        left_margin = 60px,
+        top_margin = 20px,
+        bottom_margin = 35px,
         framestyle = :box,
         size = (2000, 1200),
         lw = 4,
+        fontfamily = "Computer Modern",
         xtickfontsize = 22,
         ytickfontsize = 22,
         xguidefontsize = 25,
         yguidefontsize = 25,
-        legendfontsize = 30,
+        legendfontsize = 28,
     )
 end
 
@@ -1340,30 +1329,31 @@ function redshift_series_plot(
     number_factor::Int64 = 0,
 )::Plots.Plot
 
-    pgfplotsx()
+    gr()
 
     # Formatting for the axes' labels
     sfr_unit = string(time_series["units"]["sfr"])
     mass_unit = string(time_series["units"]["mass"])
 
     sfr_unit = replace(
-        replace(sfr_unit, "M⊙" => L"$\, / \ \left(\mathrm{M_{\odot} \,"),
-        "^-1" => L"^{-1}}\right)$",
+        replace(sfr_unit, "M⊙" => "\\left(\\mathrm{M}_{\\odot} \\, \\mathrm{"),
+        "^-1" => "^{-1}}\\right)",
     )
 
     if mass_factor != 0
         mass_unit = replace(
             mass_unit,
-            "M⊙" => L"\, / \ \left(10^{%$mass_factor} \, \mathrm{M}_{\odot}\right)",
+            "M⊙" => "\\left(10^{$mass_factor} \\, \\mathrm{M}_{\\odot}\\right)",
         )
     else
-        mass_unit = replace(mass_unit, "M⊙" => L"\, / \ \mathrm{M}_{\odot}")
+        mass_unit = replace(mass_unit, "M⊙" => "\\mathrm{M}_{\\odot}")
     end
 
     # Y axis label formatting, for the plot of the number of particles
-    ylabel_num = "Number of particles"
     if number_factor != 0
-        ylabel_num *= L"\ \, / \ 10^{%$number_factor}"
+        ylabel_num = L"\mathrm{Number \ of \ particles} \, / \, 10^{%$number_factor}"
+    else
+        ylabel_num = "Number of particles"
     end
 
     # Data to be plotted
@@ -1385,8 +1375,6 @@ function redshift_series_plot(
         color = [:blueviolet :darkorange2],
         foreground_color_legend = nothing,
         background_color_legend = nothing,
-        ticklabel_shift = ".1cm",
-        extra_kwargs = :subplot,
     )
 
     # Mass of stars and gas vs. redshift
@@ -1394,15 +1382,13 @@ function redshift_series_plot(
         z,
         mass,
         xlabel = "Redshift",
-        ylabel = L"Total mass %$mass_unit",
+        ylabel = L"\mathrm{Total \ mass} \, / \, %$mass_unit",
         label = ["Gas" "Stars"],
         linestyle = [:solid :dash],
         legend = :bottomright,
         color = [:blueviolet :darkorange2],
         foreground_color_legend = nothing,
         background_color_legend = nothing,
-        ticklabel_shift = ".1cm",
-        extra_kwargs = :subplot,
     )
 
     # Baryonic fraction of stars and gas vs. redshift
@@ -1417,8 +1403,6 @@ function redshift_series_plot(
         color = [:blueviolet :darkorange2],
         foreground_color_legend = nothing,
         background_color_legend = nothing,
-        ticklabel_shift = ".1cm",
-        extra_kwargs = :subplot,
     )
 
     # SFR vs. redshift
@@ -1426,11 +1410,9 @@ function redshift_series_plot(
         z,
         sfr,
         xlabel = "Redshift",
-        ylabel = L"SFR %$sfr_unit",
+        ylabel = L"\mathrm{SFR} \, / \, %$sfr_unit",
         legend = false,
         linecolor = :darkorange2,
-        ticklabel_shift = ".1cm",
-        extra_kwargs = :subplot,
     )
 
     # Final figure containing the four plots
@@ -1440,16 +1422,19 @@ function redshift_series_plot(
         pl_frac,
         pl_sfr,
         layout = (2, 2),
-        left_margin = 130px,
-        top_margin = 35px,
+        right_margin = 25px,
+        left_margin = 60px,
+        top_margin = 20px,
+        bottom_margin = 35px,
         framestyle = :box,
         size = (2000, 1200),
         lw = 4,
+        fontfamily = "Computer Modern",
         xtickfontsize = 22,
         ytickfontsize = 22,
         xguidefontsize = 25,
         yguidefontsize = 25,
-        legendfontsize = 30,
+        legendfontsize = 28,
     )
 end
 
@@ -1524,7 +1509,7 @@ function compare_simulations_plot(
     legend_pos::Symbol = :best,
 )::Plots.Plot
 
-    pgfplotsx()
+    gr()
 
     # Extract data and scale it by 10^factor
     x_data = collect(get.(data, x_quantity, 0)) ./ 10.0^x_factor
@@ -1593,139 +1578,151 @@ function compare_simulations_plot(
         end
     end
 
-    # Labels for the axes
-    ylabel = data[1]["labels"][y_quantity]
-    xlabel = data[1]["labels"][x_quantity]
-
-    # Formatting for the x axis
+    # Unit formatting for the x axis
     if x_quantity == "clock_time"
+
         unit = data[1]["units"]["time"]
 
         if x_factor != 0
-            xlabel *= L"\ / \, \left(10^{%$x_factor} \, \mathrm{%$unit}\right)"
+            x_unit = "\\left(10^{$x_factor} \\, \\mathrm{$unit}\\right)"
         else
-            xlabel *= " / $unit"
+            x_unit = unit
         end
 
     elseif x_quantity == "sfr"
+
         unit = string(data[1]["units"]["sfr"])
 
         if x_factor != 0
-            xlabel *= replace(
+            x_unit = replace(
                 replace(
-                    unit,
-                    "M⊙" => L"$\ / \, \left(10^{%$x_factor} \, \mathrm{M_{\odot} \,",
+                    unit, 
+                    "M⊙" => "\\left(10^{$x_factor} \\, \\mathrm{M}_{\\odot} \\, \\mathrm{",
                 ),
-                "^-1" => L"^{-1}}\right)$",
+                "^-1" => "^{-1}}\\right)",
             )
         else
-            xlabel *= replace(
-                replace(unit, "M⊙" => L"$\ / \, \left(\mathrm{M_{\odot} \,"),
-                "^-1" => L"^{-1}}\right)$",
+            x_unit = replace(
+                replace(unit, "M⊙" => "\\left(\\mathrm{M}_{\\odot} \\, \\mathrm{"),
+                "^-1" => "^{-1}}\\right)",
             )
         end
 
     elseif x_quantity == "gas_mass" || x_quantity == "dm_mass" || x_quantity == "star_mass"
+
         unit = string(data[1]["units"]["mass"])
 
         if x_factor != 0
-            xlabel *= replace(
+            x_unit = replace(
                 unit,
-                "M⊙" => L"\ / \, \left(10^{%$x_factor} \, \mathrm{M}_{\odot}\right)",
+                "M⊙" => "\\left(10^{$x_factor} \\, \\mathrm{M}_{\\odot} \\right)",
             )
         else
-            xlabel *= replace(unit, "M⊙" => L"\ / \, \left(\mathrm{M}_{\odot}\right)")
+            x_unit = replace(unit, "M⊙" => "\\left(\\mathrm{M}_{\\odot} \\right)")
         end
 
     elseif x_quantity == "gas_density"
+
         unit = string(data[1]["units"]["density"])
 
         if x_factor != 0
-            xlabel *= replace(
+            x_unit = replace(
                 replace(
-                    unit,
-                    "M⊙" => L"$\ / \, \left(10^{%$x_factor} \, \mathrm{M_{\odot} \,",
+                    unit, 
+                    "M⊙" => "\\left(10^{$x_factor} \\, \\mathrm{M}_{\\odot} \\, \\mathrm{",
                 ),
-                "^-3" => L"^{-3}}\right)$",
+                "^-3" => "^{-3}}\\right)",
             )
         else
-            xlabel *= replace(
-                replace(unit, "M⊙" => L"$\ / \, \left(\mathrm{M_{\odot} \,"),
-                "^-3" => L"^{-3}}\right)$",
+            x_unit = replace(
+                replace(unit, "M⊙" => "\\left(\\mathrm{M}_{\\odot} \\, \\mathrm{"),
+                "^-3" => "^{-3}}\\right)",
             )
         end
 
     elseif x_factor != 0
-        xlabel *= L"\ / \, 10^{%$x_factor}"
+
+        x_unit = "10^{$y_factor}"
+
     end
 
-    # Formatting for the y axis
+    # Unit formatting for the y axis
     if y_quantity == "clock_time"
+
         unit = data[1]["units"]["time"]
 
         if y_factor != 0
-            ylabel *= L"\ / \, \left(10^{%$y_factor} \, \mathrm{%$unit}\right)"
+            y_unit = "\\left(10^{$y_factor} \\, \\mathrm{$unit}\\right)"
         else
-            ylabel *= " / $unit"
+            y_unit = unit
         end
 
     elseif y_quantity == "sfr"
+
         unit = string(data[1]["units"]["sfr"])
 
         if y_factor != 0
-            ylabel *= replace(
+            y_unit = replace(
                 replace(
-                    unit,
-                    "M⊙" => L"$\ / \, \left(10^{%$y_factor} \, \mathrm{M_{\odot} \,",
+                    unit, 
+                    "M⊙" => "\\left(10^{$y_factor} \\, \\mathrm{M}_{\\odot} \\, \\mathrm{",
                 ),
-                "^-1" => L"^{-1}}\right)$",
+                "^-1" => "^{-1}}\\right)",
             )
         else
-            ylabel *= replace(
-                replace(unit, "M⊙" => L"$\ / \, \left(\mathrm{M_{\odot} \,"),
-                "^-1" => L"^{-1}}\right)$",
+            y_unit = replace(
+                replace(unit, "M⊙" => "\\left(\\mathrm{M}_{\\odot} \\, \\mathrm{"),
+                "^-1" => "^{-1}}\\right)",
             )
         end
 
     elseif y_quantity == "gas_mass" || y_quantity == "dm_mass" || y_quantity == "star_mass"
+
         unit = string(data[1]["units"]["mass"])
 
         if y_factor != 0
-            ylabel *= replace(
+            y_unit = replace(
                 unit,
-                "M⊙" => L"\ / \, \left(10^{%$y_factor} \, \mathrm{M}_{\odot}\right)",
+                "M⊙" => "\\left(10^{$y_factor} \\, \\mathrm{M}_{\\odot} \\right)",
             )
         else
-            ylabel *= replace(unit, "M⊙" => L"\ / \, \left(\mathrm{M}_{\odot}\right)")
+            y_unit = replace(unit, "M⊙" => "\\left(\\mathrm{M}_{\\odot} \\right)")
         end
 
     elseif y_quantity == "gas_density"
+
         unit = string(data[1]["units"]["density"])
 
         if y_factor != 0
-            ylabel *= replace(
+            y_unit = replace(
                 replace(
-                    unit,
-                    "M⊙" => L"$\ / \, \left(10^{%$y_factor} \, \mathrm{M_{\odot} \,",
+                    unit, 
+                    "M⊙" => "\\left(10^{$y_factor} \\, \\mathrm{M}_{\\odot} \\, \\mathrm{",
                 ),
-                "^-3" => L"^{-3}}\right)$",
+                "^-3" => "^{-3}}\\right)",
             )
         else
-            ylabel *= replace(
-                replace(unit, "M⊙" => L"$\ / \, \left(\mathrm{M_{\odot} \,"),
-                "^-3" => L"^{-3}}\right)$",
+            y_unit = replace(
+                replace(unit, "M⊙" => "\\left(\\mathrm{M}_{\\odot} \\, \\mathrm{"),
+                "^-3" => "^{-3}}\\right)",
             )
         end
 
     elseif y_factor != 0
-        ylabel *= L"\ / \, 10^{%$y_factor}"
+
+        y_unit = "10^{$y_factor}"
+
     end
+
+    # Labels for the axes
+    ylabel = replace(data[1]["labels"][y_quantity], " " => " \\ ")
+    xlabel = replace(data[1]["labels"][x_quantity], " " => " \\ ")
 
     return plot(
         hcat(x_data...),
         hcat(y_data...);
-        xlabel,
-        ylabel,
+        xlabel = L"\textrm{%$xlabel} \, / \, \mathrm{%$x_unit}",
+        ylabel = L"\textrm{%$ylabel} \, / \, \mathrm{%$y_unit}",
         xscale = xscale,
         yscale = yscale,
         title,
@@ -1735,17 +1732,18 @@ function compare_simulations_plot(
         size = (1200, 700),
         lw = 4,
         linestyle = :auto,
-        titlefontsize = 28,
+        bottom_margin = 30px,
+        left_margin = 30px,
+        fontfamily = "Computer Modern",
+        titlefontsize = 26,
         xtickfontsize = 22,
         ytickfontsize = 22,
         xguidefontsize = 24,
         yguidefontsize = 24,
-        legendfontsize = 25,
+        legendfontsize = 22,
         palette = :Set1_9,
         foreground_color_legend = nothing,
         background_color_legend = nothing,
-        ticklabel_shift = ".1cm",
-        extra_kwargs = :subplot,
     )
 end
 
@@ -1781,7 +1779,7 @@ function density_histogram_plot(
     y_scale::Symbol = :identity,
 )::Plots.Plot
 
-    pgfplotsx()
+    gr()
 
     # Get the density data
     ρ = density_data["density"]
@@ -1790,16 +1788,18 @@ function density_histogram_plot(
 
     # Formatting for the x axis label
     str_unit = string(density_data["unit"])
-    xlabel = L"\rho \ / \,"
     if factor != 0
-        xlabel *= replace(
-            replace(str_unit, "M⊙" => L"$\left(10^{%$factor} \, \mathrm{M_{\odot} \,"),
-            "^-3" => L"^{-3}}\right)$",
+        ρ_unit = replace(
+            replace(
+                str_unit, 
+                "M⊙" => "\\left(10^{$factor} \\, \\mathrm{M}_{\\odot} \\, \\mathrm{",
+            ),
+            "^-3" => "^{-3}}\\right)",
         )
     else
-        xlabel *= replace(
-            replace(str_unit, "M⊙" => L"$\left(\mathrm{M_{\odot} \,"),
-            "^-3" => L"^{-3}}\right)$",
+        ρ_unit = replace(
+            replace(str_unit, "M⊙" => "\\left(\\mathrm{M}_{\\odot} \\, \\mathrm{"),
+            "^-3" => "^{-3}}\\right)",
         )
     end
 
@@ -1807,23 +1807,28 @@ function density_histogram_plot(
     clock = round(ustrip(time), sigdigits = 4)
     time_unit = unit(time)
 
-    return histogram(
+    figure = histogram(
         ρ,
         bins = range(0, stop = maximum(ρ), length = bins),
-        xlabel = xlabel,
+        xlabel = L"\rho \, / \, \mathrm{%$ρ_unit}",
         yscale = y_scale,
         normalize = :probability,
         size = (1000, 800),
         framestyle = :box,
         label = "",
-        xtickfontsize = 28,
-        ytickfontsize = 28,
-        xguidefontsize = 30,
-        yguidefontsize = 30,
-        ticklabel_shift = ".1cm",
-        add = "\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$time_unit};",
-        extra_kwargs = :subplot,
+        fontfamily = "Computer Modern",
+        xtickfontsize = 22,
+        ytickfontsize = 22,
+        xguidefontsize = 25,
+        yguidefontsize = 25,
+        legendfontsize = 22,
     )
+    annotate!(
+        relative(figure, 0.5, 0.95)...,
+        text("$clock $time_unit", "Courier", 22, :center),
+    )
+
+    return figure
 end
 
 @doc raw"""
@@ -1864,7 +1869,7 @@ function density_profile_plot(
     box_factor::Float64 = 1.0,
 )::Plots.Plot
 
-    pgfplotsx()
+    gr()
 
     type = mass_data["type"]
     masses = mass_data["mass"]
@@ -1912,46 +1917,59 @@ function density_profile_plot(
     time_unit = unit(time)
 
     # Formatting for the y axis label
-    ρ_unit = string(density_unit)
     if type == "gas"
-        ylabel = L"\rho_{\mathrm{gas}} \ / \,"
+        ylabel = "\\rho_{\\textrm{gas}}"
     elseif type == "stars"
-        ylabel = L"\rho_{\mathrm{stars}} \ / \,"
+        ylabel = "\\rho_{\\textrm{stars}}"
     elseif type == "dark_matter"
-        ylabel = L"\rho_{\mathrm{dm}} \ / \,"
+        ylabel = "\\rho_{\\textrm{DM}}"
     end
+
+    # Unit formatting for the y axis label
+    ρ_unit = string(density_unit)
     if factor != 0
-        ylabel *= replace(
-            replace(ρ_unit, "M⊙" => L"$\left(10^{%$factor} \, \mathrm{M_{\odot} \,"),
-            "^-3" => L"^{-3}}\right)$",
+        y_unit = replace(
+            replace(
+                ρ_unit, 
+                "M⊙" => "\\left(10^{$factor} \\, \\mathrm{M}_{\\odot} \\, \\mathrm{",
+            ),
+            "^-3" => "^{-3}}\\right)",
         )
     else
-        ylabel *= replace(
-            replace(ρ_unit, "M⊙" => L"$\left(\mathrm{M_{\odot} \,"),
-            "^-3" => L"^{-3}}\right)$",
+        y_unit = replace(
+            replace(ρ_unit, "M⊙" => "\\left(\\mathrm{M}_{\\odot} \\, \\mathrm{"),
+            "^-3" => "^{-3}}\\right)",
         )
     end
 
-    return plot(
+    figure = plot(
         r,
         ρ,
-        xlabel = "r / $length_unit",
-        ylabel = ylabel,
+        xlabel = L"\textrm{r} \, / \, \mathrm{%$length_unit}",
+        ylabel = L"\textrm{%$ylabel} \, / \, \mathrm{%$y_unit}",
         yscale = scale,
         framestyle = :box,
         size = (1200, 800),
         legend = false,
         lw = 3,
         color = :red,
-        xtickfontsize = 28,
-        ytickfontsize = 28,
-        xguidefontsize = 30,
-        yguidefontsize = 30,
-        ticklabel_shift = ".1cm",
-        add = "\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$time_unit};",
-        extra_kwargs = :subplot,
+        bottom_margin = 30px,
+        left_margin = 30px,
+        right_margin = 30px,
+        fontfamily = "Computer Modern",
+        xtickfontsize = 22,
+        ytickfontsize = 22,
+        xguidefontsize = 25,
+        yguidefontsize = 25,
     )
+    annotate!(
+        relative(figure, 0.5, 0.95, log = (false, scale == :log10))...,
+        text("$clock $time_unit", "Courier", 22, :center),
+    )
+
+    return figure
 end
+
 @doc raw"""
     density_profile_plot(
         position_data::Vector{Dict{String, Any}},
@@ -1994,7 +2012,7 @@ function density_profile_plot(
     box_factor::Float64 = 1.0,
 )::Plots.Plot
 
-    pgfplotsx()
+    gr()
 
     # Extract data from arguments and check consistency
     types = get.(mass_data, "type", 0)
@@ -2096,32 +2114,36 @@ function density_profile_plot(
     time_unit = unit(time)
 
     # Formatting for the y axis label
+    if type == "gas"
+        ylabel = "\\rho_{\\textrm{gas}}"
+    elseif type == "stars"
+        ylabel = "\\rho_{\\textrm{stars}}"
+    elseif type == "dark_matter"
+        ylabel = "\\rho_{\\textrm{DM}}"
+    end
+
+    # Unit formatting for the y axis label
     ρ_unit = string(density_unit)
     if factor != 0
-        ρ_unit = replace(
-            replace(ρ_unit, "M⊙" => L"$\, / \ \left(10^{%$factor} \, \mathrm{M_{\odot} \,"),
-            "^-3" => L"^{-3}}\right)$",
+        y_unit = replace(
+            replace(
+                ρ_unit, 
+                "M⊙" => "\\left(10^{$factor} \\, \\mathrm{M}_{\\odot} \\, \\mathrm{",
+            ),
+            "^-3" => "^{-3}}\\right)",
         )
     else
-        ρ_unit = replace(
-            replace(ρ_unit, "M⊙" => L"$\, / \ \left(\mathrm{M_{\odot} \,"),
-            "^-3" => L"^{-3}}\right)$",
+        y_unit = replace(
+            replace(ρ_unit, "M⊙" => "\\left(\\mathrm{M}_{\\odot} \\, \\mathrm{"),
+            "^-3" => "^{-3}}\\right)",
         )
     end
 
-    if type == "gas"
-        ylabel = L"Gas density %$ρ_unit"
-    elseif type == "stars"
-        ylabel = L"Star density %$ρ_unit"
-    elseif type == "dark_matter"
-        ylabel = L"Dark matter density %$ρ_unit"
-    end
-
-    return plot(
+    figure =  plot(
         hcat(r...),
         hcat(ρ...),
-        xlabel = "r / $length_unit",
-        ylabel = ylabel,
+        xlabel = L"\textrm{r} \, / \, \mathrm{%$length_unit}",
+        ylabel = L"\textrm{%$ylabel} \, / \, \mathrm{%$y_unit}",
         label = labels,
         yscale = scale,
         framestyle = :box,
@@ -2132,15 +2154,22 @@ function density_profile_plot(
         foreground_color_legend = nothing,
         background_color_legend = nothing,
         palette = :Set1_9,
-        xtickfontsize = 28,
-        ytickfontsize = 28,
-        xguidefontsize = 30,
-        yguidefontsize = 30,
-        legendfontsize = 25,
-        ticklabel_shift = ".1cm",
-        add = "\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$time_unit};",
-        extra_kwargs = :subplot,
+        bottom_margin = 30px,
+        left_margin = 30px,
+        right_margin = 30px, 
+        fontfamily = "Computer Modern",
+        xtickfontsize = 22,
+        ytickfontsize = 22,
+        xguidefontsize = 25,
+        yguidefontsize = 25,
+        legendfontsize = 22,
     )
+    annotate!(
+        relative(figure, 0.5, 0.95, log = (false, scale == :log10))...,
+        text("$clock $time_unit", "Courier", 22, :center),
+    )
+
+    return figure 
 end
 
 """
@@ -2181,7 +2210,7 @@ function metallicity_profile_plot(
     box_factor::Float64 = 1.0,
 )::Plots.Plot
 
-    pgfplotsx()
+    gr()
 
     mass_unit = mass_data["unit"]
     z_unit = z_data["unit"]
@@ -2232,15 +2261,15 @@ function metallicity_profile_plot(
 
     # Formatting for the y axis label
     if type == "gas"
-        ylabel = L"\mathrm{Gas} \ \mathrm{Z} \ / \ \mathrm{Z_{\odot}}"
+        ylabel = L"\textrm{Gas \ Z} \, / \, \mathrm{Z}_{\odot}"
     elseif type == "stars"
-        ylabel = L"\mathrm{Star} \ \mathrm{Z} \ / \ \mathrm{Z_{\odot}}"
+        ylabel = L"\textrm{Star \ Z} \, / \, \mathrm{Z}_{\odot}"
     end
 
-    return plot(
+    figure = plot(
         r,
         z,
-        xlabel = "r / $length_unit",
+        xlabel = L"\textrm{r} \, / \, \mathrm{%$length_unit}",
         ylabel = ylabel,
         yscale = scale,
         framestyle = :box,
@@ -2248,14 +2277,21 @@ function metallicity_profile_plot(
         legend = false,
         lw = 3,
         color = :red,
-        xtickfontsize = 28,
-        ytickfontsize = 28,
-        xguidefontsize = 30,
-        yguidefontsize = 30,
-        ticklabel_shift = ".1cm",
-        add = "\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$time_unit};",
-        extra_kwargs = :subplot,
+        bottom_margin = 30px,
+        left_margin = 30px,
+        right_margin = 30px, 
+        fontfamily = "Computer Modern",
+        xtickfontsize = 22,
+        ytickfontsize = 22,
+        xguidefontsize = 25,
+        yguidefontsize = 25,
     )
+    annotate!(
+        relative(figure, 0.5, 0.95, log = (false, scale == :log10))...,
+        text("$clock $time_unit", "Courier", 22, :center),
+    )
+
+    return figure
 end
 
 """
@@ -2299,7 +2335,7 @@ function metallicity_profile_plot(
     box_factor::Float64 = 1.0,
 )::Plots.Plot
 
-    pgfplotsx()
+    gr()
 
     # Extract data from arguments and check consistency
     types = get.(mass_data, "type", 0)
@@ -2399,15 +2435,15 @@ function metallicity_profile_plot(
 
     # Formatting for the y axis label
     if type == "gas"
-        ylabel = L"\mathrm{Gas} \ \mathrm{Z} \ / \ \mathrm{Z_{\odot}}"
+        ylabel = L"\textrm{Gas \ Z} \, / \, \mathrm{Z}_{\odot}"
     elseif type == "stars"
-        ylabel = L"\mathrm{Star} \ \mathrm{Z} \ / \ \mathrm{Z_{\odot}}"
+        ylabel = L"\textrm{Star \ Z} \, / \, \mathrm{Z}_{\odot}"
     end
 
     return plot(
         hcat(r...),
         hcat(z...),
-        xlabel = "r / $length_unit",
+        xlabel = L"\textrm{r} \, / \, \mathrm{%$length_unit}",
         ylabel = ylabel,
         label = labels,
         yscale = scale,
@@ -2419,15 +2455,22 @@ function metallicity_profile_plot(
         foreground_color_legend = nothing,
         background_color_legend = nothing,
         palette = :Set1_9,
-        xtickfontsize = 28,
-        ytickfontsize = 28,
-        xguidefontsize = 30,
-        yguidefontsize = 30,
-        legendfontsize = 25,
-        ticklabel_shift = ".1cm",
-        add = "\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.5, 0.95) {$clock\$\\,\$$time_unit};",
-        extra_kwargs = :subplot,
+        bottom_margin = 30px,
+        left_margin = 30px,
+        right_margin = 30px, 
+        fontfamily = "Computer Modern",
+        xtickfontsize = 22,
+        ytickfontsize = 22,
+        xguidefontsize = 25,
+        yguidefontsize = 25,
+        legendfontsize = 22,
     )
+    annotate!(
+        relative(figure, 0.5, 0.95, log = (false, scale == :log10))...,
+        text("$clock $time_unit", "Courier", 22, :center),
+    )
+
+    return figure
 end
 
 @doc raw"""
@@ -2468,7 +2511,7 @@ function mass_profile_plot(
     box_factor::Float64 = 1.0,
 )::Plots.Plot
 
-    pgfplotsx()
+    gr()
 
     type = mass_data["type"]
     masses = mass_data["mass"]
@@ -2514,43 +2557,51 @@ function mass_profile_plot(
     time_unit = unit(time)
 
     # Formatting for the y axis label
+    if type == "gas"
+        ylabel = "Gas \\ mass"
+    elseif type == "stars"
+        ylabel = "Stellar \\ mass"
+    elseif type == "dark_matter"
+        ylabel = "Dark \\ matter \\ mass"
+    end
+
+    # Unit formatting for the y axis label
     m_unit = string(mass_unit)
     if factor != 0
-        m_unit = replace(
+        y_unit = replace(
             m_unit,
-            "M⊙" => L"\, / \ \left(10^{%$factor} \, \mathrm{M}_{\odot}\right)",
+            "M⊙" => "\\left(10^{$factor} \\, \\textrm{M}_{\\odot}\\right)",
         )
     else
-        m_unit = replace(m_unit, "M⊙" => L"\, / \ \mathrm{M}_{\odot}")
+        y_unit = replace(m_unit, "M⊙" => L"\\textrm{M}_{\\odot}")
     end
-
-    if type == "gas"
-        ylabel = L"Gas mass %$m_unit"
-    elseif type == "stars"
-        ylabel = L"Star mass %$m_unit"
-    elseif type == "dark_matter"
-        ylabel = L"Dark matter mass %$m_unit"
-    end
-
-    return plot(
+ 
+    figure =  plot(
         r,
         m,
-        xlabel = "r / $length_unit",
-        ylabel = ylabel,
+        xlabel = L"\textrm{r} \, / \, \mathrm{%$length_unit}",
+        ylabel = L"\textrm{%$ylabel} \, / \, \mathrm{%$y_unit}",
         yscale = scale,
         framestyle = :box,
         size = (1200, 800),
         legend = false,
         lw = 3,
         color = :red,
-        xtickfontsize = 28,
-        ytickfontsize = 28,
-        xguidefontsize = 30,
-        yguidefontsize = 30,
-        ticklabel_shift = ".1cm",
-        add = "\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.1, 0.95) {$clock\$\\,\$$time_unit};",
-        extra_kwargs = :subplot,
+        bottom_margin = 30px,
+        left_margin = 30px,
+        right_margin = 30px, 
+        fontfamily = "Computer Modern",
+        xtickfontsize = 22,
+        ytickfontsize = 22,
+        xguidefontsize = 25,
+        yguidefontsize = 25,
     )
+    annotate!(
+        relative(figure, 0.5, 0.05, log = (false, scale == :log10))...,
+        text("$clock $time_unit", "Courier", 22, :center),
+    )
+
+    return figure
 end
 
 @doc raw"""
@@ -2594,7 +2645,7 @@ function mass_profile_plot(
     box_factor::Float64 = 1.0,
 )::Plots.Plot
 
-    pgfplotsx()
+    gr()
 
     # Extract data from arguments and check consistency
     types = get.(mass_data, "type", 0)
@@ -2694,29 +2745,30 @@ function mass_profile_plot(
     time_unit = unit(time)
 
     # Formatting for the y axis label
+    if type == "gas"
+        ylabel = "Gas \\ mass"
+    elseif type == "stars"
+        ylabel = "Stellar \\ mass"
+    elseif type == "dark_matter"
+        ylabel = "Dark \\ matter \\ mass"
+    end
+
+    # Unit formatting for the y axis label
     m_unit = string(mass_unit)
     if factor != 0
-        m_unit = replace(
+        y_unit = replace(
             m_unit,
-            "M⊙" => L"\, / \ \left(10^{%$factor} \, \mathrm{M}_{\odot}\right)",
+            "M⊙" => "\\left(10^{$factor} \\, \\textrm{M}_{\\odot}\\right)",
         )
     else
-        m_unit = replace(m_unit, "M⊙" => L"\, / \ \mathrm{M}_{\odot}")
+        y_unit = replace(m_unit, "M⊙" => L"\\textrm{M}_{\\odot}")
     end
 
-    if type == "gas"
-        ylabel = L"Gas mass %$m_unit"
-    elseif type == "stars"
-        ylabel = L"Star mass %$m_unit"
-    elseif type == "dark_matter"
-        ylabel = L"Dark matter mass %$m_unit"
-    end
-
-    return plot(
+    figure =  plot(
         hcat(r...),
         hcat(m...),
-        xlabel = "r / $length_unit",
-        ylabel = ylabel,
+        xlabel = L"\textrm{r} \, / \, \mathrm{%$length_unit}",
+        ylabel = L"\textrm{%$ylabel} \, / \, \mathrm{%$y_unit}",
         label = labels,
         yscale = scale,
         framestyle = :box,
@@ -2727,16 +2779,30 @@ function mass_profile_plot(
         palette = :Set1_9,
         foreground_color_legend = nothing,
         background_color_legend = nothing,
-        xtickfontsize = 28,
-        ytickfontsize = 28,
-        xguidefontsize = 30,
-        yguidefontsize = 30,
-        legendfontsize = 25,
-        ticklabel_shift = ".1cm",
-        add = "\\node[font=\\Huge\\ttfamily] at (rel axis cs: 0.1, 0.95) {$clock\$\\,\$$time_unit};",
-        extra_kwargs = :subplot,
+        bottom_margin = 30px,
+        left_margin = 30px,
+        right_margin = 30px, 
+        fontfamily = "Computer Modern",
+        xtickfontsize = 22,
+        ytickfontsize = 22,
+        xguidefontsize = 25,
+        yguidefontsize = 25,
+        legendfontsize = 22,
     )
+    annotate!(
+        relative(figure, 0.5, 0.05, log = (false, scale == :log10))...,
+        text("$clock $time_unit", "Courier", 22, :center),
+    )
+
+    return figure
 end
+
+
+
+
+
+
+
 
 @doc raw"""
     sfr_txt_plot(
