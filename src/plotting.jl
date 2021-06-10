@@ -19,8 +19,6 @@ The result is a single figure in a 3x3 layout with its axes in the unit given by
 """
 function scatter_grid_plot(position_data::Dict{String, Any})::Plots.Plot
 
-    gr()
-
     # Get gas, dark matter and stellar coordinates
     gas_pos = position_data["gas"]
     gas_x = @view gas_pos[1, :]
@@ -222,8 +220,6 @@ function density_map_plot(
     axes_color::Symbol = :white,
     color::Symbol = :inferno,
 )::Plots.Plot
-
-    gr()
 
     # Resolution in pixels for the binning of the grid
     resolution = 1000
@@ -482,8 +478,6 @@ function star_map_plot(
     color::Symbol = :inferno,
 )::Plots.Plot
 
-    gr()
-
     # Get the position data
     pos = position_data["stars"]
     if position_data["periodic"]
@@ -673,8 +667,6 @@ function gas_star_evolution_plot(
     position_data::Dict{String, Any}, 
 )::Plots.Plot
 
-    gr()
-
     # Formatting for the axis' labels
     time_unit = time_series["units"]["time"]
     length_unit = position_data["unit"]
@@ -837,8 +829,6 @@ function cmdf_plot(
     x_norm::Bool = false,
 )::Plots.Plot
 
-    gr()
-
     # Unit consistency check
     (
         m_data["unit"] == z_data["unit"] ||
@@ -924,8 +914,6 @@ function cmdf_plot(
     bins::Int64 = 50,
     x_norm::Bool = false,
 )::Plots.Plot
-
-    gr()
 
     # Check unit consistency
     mass_units = get.(m_data, "unit", 0)
@@ -1016,8 +1004,6 @@ Make a histogram of the number of stars born at a certain radial distance.
 """
 function birth_histogram_plot(birth_data::Dict{String, Any}; bins::Int64 = 50)::Plots.Plot
 
-    gr()
-
     pos = birth_data["birth_place"]
     length_unit = birth_data["unit"]
     distances = [norm(col) for col in eachcol(pos)]
@@ -1061,8 +1047,6 @@ function time_series_plot(
     mass_factor::Int64 = 0,
     number_factor::Int64 = 0,
 )::Plots.Plot
-
-    gr()
 
     # Formatting for the axes' labels
     time_unit = time_series["units"]["time"]
@@ -1196,8 +1180,6 @@ function scale_factor_series_plot(
     number_factor::Int64 = 0,
 )::Plots.Plot
 
-    gr()
-
     # Formatting for the axes' labels
     sfr_unit = string(time_series["units"]["sfr"])
     mass_unit = string(time_series["units"]["mass"])
@@ -1328,8 +1310,6 @@ function redshift_series_plot(
     mass_factor::Int64 = 0,
     number_factor::Int64 = 0,
 )::Plots.Plot
-
-    gr()
 
     # Formatting for the axes' labels
     sfr_unit = string(time_series["units"]["sfr"])
@@ -1508,8 +1488,6 @@ function compare_simulations_plot(
     bins::Int64 = 50,
     legend_pos::Symbol = :best,
 )::Plots.Plot
-
-    gr()
 
     # Extract data and scale it by 10^factor
     x_data = collect(get.(data, x_quantity, 0)) ./ 10.0^x_factor
@@ -1779,8 +1757,6 @@ function density_histogram_plot(
     y_scale::Symbol = :identity,
 )::Plots.Plot
 
-    gr()
-
     # Get the density data
     ρ = density_data["density"]
     # Scale data by 10^factor
@@ -1868,8 +1844,6 @@ function density_profile_plot(
     factor::Int64 = 0,
     box_factor::Float64 = 1.0,
 )::Plots.Plot
-
-    gr()
 
     type = mass_data["type"]
     masses = mass_data["mass"]
@@ -2011,8 +1985,6 @@ function density_profile_plot(
     factor::Int64 = 0,
     box_factor::Float64 = 1.0,
 )::Plots.Plot
-
-    gr()
 
     # Extract data from arguments and check consistency
     types = get.(mass_data, "type", 0)
@@ -2210,8 +2182,6 @@ function metallicity_profile_plot(
     box_factor::Float64 = 1.0,
 )::Plots.Plot
 
-    gr()
-
     mass_unit = mass_data["unit"]
     z_unit = z_data["unit"]
     if mass_unit != z_unit
@@ -2334,8 +2304,6 @@ function metallicity_profile_plot(
     bins::Union{Int64, Nothing} = 100,
     box_factor::Float64 = 1.0,
 )::Plots.Plot
-
-    gr()
 
     # Extract data from arguments and check consistency
     types = get.(mass_data, "type", 0)
@@ -2511,8 +2479,6 @@ function mass_profile_plot(
     box_factor::Float64 = 1.0,
 )::Plots.Plot
 
-    gr()
-
     type = mass_data["type"]
     masses = mass_data["mass"]
     mass_unit = mass_data["unit"]
@@ -2644,8 +2610,6 @@ function mass_profile_plot(
     factor::Int64 = 0,
     box_factor::Float64 = 1.0,
 )::Plots.Plot
-
-    gr()
 
     # Extract data from arguments and check consistency
     types = get.(mass_data, "type", 0)
@@ -2846,8 +2810,6 @@ function sfr_txt_plot(
     min_filter::NTuple{2, Float64} = (-Inf, -Inf),
 )::Plots.Plot
 
-    gr()
-
     # Get the units
     mass_unit = string(data["units"]["mass"])
     time_unit = string(data["units"]["time"])
@@ -3024,8 +2986,6 @@ function sfr_txt_plot(
     y_factor::Int64 = 0,
     min_filter::NTuple{2, Float64} = (-Inf, -Inf),
 )::Plots.Plot
-
-    gr()
 
     # Get the units
     units = get.(data, "units", 0)
@@ -3239,8 +3199,6 @@ function temperature_histogram_plot(
     bins::Int64 = 20,
 )::Plots.Plot
 
-    gr()
-
     T = temperature_data["temperature"]
     temp_unit = temperature_data["unit"]
 
@@ -3303,8 +3261,6 @@ function rho_temp_plot(
     density_data::Dict{String, Any},
     time::Unitful.Quantity,
 )::Plots.Plot
-
-    gr()
 
     T = temperature_data["temperature"]
     temp_unit = temperature_data["unit"]
@@ -3416,8 +3372,6 @@ function kennicutt_schmidt_plot(
     bins::Int64 = 50,
     error_formating::String = "std_error",
 )::Union{Plots.Plot, Nothing}
-
-    gr()
 
     # Masses
     gas_mass = gas_mass_data["mass"]
@@ -3627,8 +3581,6 @@ function cpu_txt_plot(
     title::String = "",
 )::Plots.Plot
 
-    gr()
-
     # Configuration of the parameters for the plot
     figure = plot(
         xlabel = "CPU steps",
@@ -3693,8 +3645,6 @@ function cpu_txt_plot(
     labels::Array{String, 2},
     title::String = "",
 )::Plots.Plot
-
-    gr()
 
     percentages = [first(values(dict))[:, 2] for dict in data]
     cycles = [first(values(dict))[:, 1] for dict in data]
