@@ -2399,15 +2399,15 @@ function temperature_histogram_pipeline(
     end
 
     # Make the GIF
-    # gif(
-    #     animation, 
-    #     joinpath(output_path, anim_name * ".gif"), 
-    #     fps = frame_rate, 
-    #     show_msg = false,
-    # )
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
 
     # Make the video
-    # make_video(img_path, format, output_path, anim_name, frame_rate)
+    make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -2507,15 +2507,15 @@ function rho_temp_pipeline(
     end
 
     # Make the GIF
-    # gif(
-    #     animation, 
-    #     joinpath(output_path, anim_name * ".gif"), 
-    #     fps = frame_rate, 
-    #     show_msg = false,
-    # )
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
 
     # Make the video
-    # make_video(img_path, format, output_path, anim_name, frame_rate)
+    make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end

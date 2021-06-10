@@ -1696,13 +1696,14 @@ function get_cpu_txt(
     end
 
     # Data reduction
-    if step > 1
-        for (key, entry) in data
-            l_e = length(entry)
-            if step < l_e
-                data_out[key] = hcat(1:step:l_e, entry[1:step:end])
-            else
-                @warn "In some/all cases step is bigger than the amount of CPU cycles. Make it smaller!"
+    for (key, entry) in data
+        l_e = length(entry)
+        if 1 < step < l_e
+            data_out[key] = hcat(1:step:l_e, entry[1:step:end])
+        else
+            data_out[key] = hcat(1:l_e, entry)
+            if step > l_e
+                @warn "In some entry `step` is bigger than the number of CPU cycles. Make it smaller!"
             end
         end
     end
