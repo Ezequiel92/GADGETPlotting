@@ -194,7 +194,9 @@ figure = kennicutt_schmidt_plot(
     bins = 80,
     error_formating = "conf_interval",
 )
-savefig(figure, joinpath(BASE_OUT_PATH, "kennicutt_schmidt_plot.png"))
+if figure !== nothing
+    savefig(figure, joinpath(BASE_OUT_PATH, "kennicutt_schmidt_plot.png"))
+end
 
 # The cpu.txt of cosmological simulations is too heavy for GitHub, and `get_cpu_txt`
 # doesn't distinguish among different types of simulations.
