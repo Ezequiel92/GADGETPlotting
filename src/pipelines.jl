@@ -86,8 +86,7 @@ function scatter_grid_pipeline(
 
         figure = scatter_grid_plot(positions)
 
-        Base.invokelatest(
-            savefig, 
+        savefig(
             figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
@@ -193,9 +192,8 @@ function density_map_pipeline(
         hsml = get_hsml(snapshot; sim_cosmo, filter_function, length_unit)
 
         figure = density_map_plot(pos, mass, ρ, hsml; plane, axes)
-
-        Base.invokelatest(
-            savefig, 
+ 
+        savefig(
             figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
@@ -307,8 +305,7 @@ function star_map_pipeline(
 
         figure = star_map_plot(pos; plane, box_factor, axes)
 
-        Base.invokelatest(
-            savefig, 
+        savefig(
             figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
@@ -432,8 +429,7 @@ function gas_star_evolution_pipeline(
 
         figure = gas_star_evolution_plot(1 + step * (i - 1), time_series, positions)
 
-        Base.invokelatest(
-            savefig, 
+        savefig(
             figure, 
             joinpath(temp_path, base_name * "_" * number * format),
         )
@@ -556,8 +552,7 @@ function cmdf_pipeline(
                 x_norm,
             )
 
-            Base.invokelatest(
-                savefig, 
+            savefig( 
                 figure, 
                 joinpath(img_path, base_name * "_" * number * format),
             )
@@ -685,8 +680,7 @@ function cmdf_pipeline(
                 x_norm,
             )
 
-            Base.invokelatest(
-                savefig, 
+            savefig(
                 figure, 
                 joinpath(img_path, "frame_" * string(step * (i - 1)) * format),
             )
@@ -799,8 +793,7 @@ function birth_histogram_pipeline(
 
             figure = birth_histogram_plot(nursery, bins = 50)
 
-            Base.invokelatest(
-                savefig, 
+            savefig(
                 figure, 
                 joinpath(img_path, base_name * "_" * number * format),
             )
@@ -902,8 +895,8 @@ function evolution_summary_pipeline(
 
     # Parameters vs. time
     figure_t = time_series_plot(time_series; mass_factor, number_factor)
-    Base.invokelatest(
-        savefig, 
+    
+    savefig(
         figure_t, 
         joinpath(output_path, fig_name * "_vs_time" * format),
     )
@@ -912,16 +905,16 @@ function evolution_summary_pipeline(
 
         # Parameters vs. scale factor
         figure_a = scale_factor_series_plot(time_series;mass_factor, number_factor)
-        Base.invokelatest(
-            savefig, 
+        
+        savefig(
             figure_a, 
             joinpath(output_path, fig_name * "_vs_scale_factor" * format),
         )
 
         # Parameters vs. redshift
         figure_z = redshift_series_plot(time_series; mass_factor, number_factor)
-        Base.invokelatest(
-            savefig, 
+        
+        savefig(
             figure_z, 
             joinpath(output_path, fig_name * "_vs_redshift" * format),
         )
@@ -1119,8 +1112,7 @@ function compare_simulations_pipeline(
         legend_pos,
     )
 
-    Base.invokelatest(
-        savefig, 
+    savefig(
         figure, 
         joinpath(output_path, fig_name * "_" * y_quantity * "_vs_" * x_quantity * format),
     )
@@ -1229,8 +1221,7 @@ function density_histogram_pipeline(
             density_histogram_plot(ρ, t * time_unit; factor, y_scale),
         )
 
-        Base.invokelatest(
-            savefig, 
+        savefig(
             figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
@@ -1376,8 +1367,7 @@ function density_profile_pipeline(
             box_factor,
         )
 
-        Base.invokelatest(
-            savefig, 
+        savefig(
             figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
@@ -1534,8 +1524,7 @@ function density_profile_pipeline(
             box_factor,
         )
 
-        Base.invokelatest(
-            savefig, 
+        savefig(
             figure, 
             joinpath(img_path, "frame_"  * string(step * (i - 1)) * format),
         )
@@ -1672,8 +1661,7 @@ function metallicity_profile_pipeline(
             box_factor,
         )
 
-        Base.invokelatest(
-            savefig, 
+        savefig(
             figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
@@ -1825,8 +1813,7 @@ function metallicity_profile_pipeline(
             box_factor,
         )
 
-        Base.invokelatest(
-            savefig, 
+        savefig(
             figure, 
             joinpath(img_path, "frame_" * string(step * (i - 1)) * format),
         )
@@ -1972,8 +1959,7 @@ function mass_profile_pipeline(
             box_factor,
         )
 
-        Base.invokelatest(
-            savefig, 
+        savefig(
             figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
@@ -2130,8 +2116,7 @@ function mass_profile_pipeline(
             box_factor,
         )
 
-        Base.invokelatest(
-            savefig, 
+        savefig(
             figure, 
             joinpath(img_path, "frame_" * string(step * (i - 1)) * format),
         )
@@ -2273,9 +2258,8 @@ function sfr_txt_pipeline(
                 y_factor, 
                 min_filter,
             )
-
-            Base.invokelatest(
-                savefig, 
+            
+            savefig(
                 figure, 
                 joinpath(output_path, name * format),
             )
@@ -2297,8 +2281,7 @@ function sfr_txt_pipeline(
                 min_filter,
             )
 
-            Base.invokelatest(
-                savefig, 
+            savefig(
                 figure, 
                 joinpath(output_path, name * format),
             )
@@ -2388,8 +2371,7 @@ function temperature_histogram_pipeline(
 
         figure = temperature_histogram_plot(temp_data, t * time_unit, bins = 30)
 
-        Base.invokelatest(
-            savefig, 
+        savefig(
             figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
@@ -2496,8 +2478,7 @@ function rho_temp_pipeline(
 
         figure = rho_temp_plot(temp_data, density_data, t * time_unit)
 
-        Base.invokelatest(
-            savefig, 
+        savefig(
             figure, 
             joinpath(img_path, base_name * "_" * number * format),
         )
@@ -2665,8 +2646,8 @@ function kennicutt_schmidt_pipeline(
 
             if figure !== nothing
                 # If there was enough data to make a fit
-                Base.invokelatest(
-                    savefig, 
+                
+                savefig(
                     figure, 
                     joinpath(img_path, base_name * "_" * number * format),
                 )
@@ -2736,8 +2717,8 @@ function cpu_txt_pipeline(
 
         figure = cpu_txt_plot(get_cpu_txt(source, targets; step) , title)
 
-        Base.invokelatest(
-            savefig, 
+        
+        savefig(
             figure, 
             joinpath(output_path, name * format),
         )
@@ -2789,8 +2770,7 @@ function cpu_txt_pipeline(
     # Generate and save the plots
     figure = cpu_txt_plot(data, labels, title)
 
-    Base.invokelatest(
-        savefig, 
+    savefig(
         figure, 
         joinpath(output_path, "compare_cpu_txt" * format),
     )
@@ -2899,8 +2879,7 @@ end
 #             number_density_histogram_plot(nh, t * time_unit; factor, y_scale),
 #         )
 
-#         Base.invokelatest(
-#             savefig, 
+#         savefig(
 #             figure, 
 #             joinpath(img_path, base_name * "_" * number * format),
 #         )

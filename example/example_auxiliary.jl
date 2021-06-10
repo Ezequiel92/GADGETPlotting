@@ -84,7 +84,7 @@ figure = GADGETPlotting.set_vertical_flags(
     ([4.0, 6.0], ["test_1", "test_2"]), 
     plot(1:10),
 )
-Base.invokelatest(savefig, figure, joinpath(BASE_OUT_PATH, "vline_plot.png"))
+savefig(figure, joinpath(BASE_OUT_PATH, "vline_plot.png")
 
 ##############
 # Testing 
