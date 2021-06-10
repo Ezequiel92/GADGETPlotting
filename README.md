@@ -24,12 +24,8 @@ There are four tiers of functions:
 
 - Auxiliary functions (`src/auxiliary.jl`): These are only for internal use. All but `make_video` are pure functions that do soma data processing. Some of these are exported for testing purposes.
 - Data acquisition functions (`src/data_acquisition.jl`): These are only for internal use. They take the location of the data files, apply some transformation (e.g. unit conversions) and return the data inside a familiar data structure.
-- Plotting functions (`src/plotting.jl`): These are exported, but I do not recommend using them as is. If you insist in using them, read the [Plotting backends](https://github.com/Ezequiel92/GADGETPlotting#-plotting-backends) section below. These are pure functions that take data in the format outputted by the data acquisition functions and return plot objects. They do all the data processing necessary to create the plots, except unit conversions. They will plot using the units selected when the data acquisition functions were called.
-- Pipeline functions (`src/pipelines.jl`): These are exported. These functions run a whole pipeline, from raw data to the final plot. They take the location of the snapshot files with some configuration parameters, and as a result, produce a series of plots/GIFs/videos. By default, some of these functions may generate a large number of images (but it can be configured to do less), and they may take a long time to run, especially if the function uses the `pgfplotsx` backend of [Plots.jl](https://github.com/JuliaPlots/Plots.jl).
-
-## 🚨 Plotting backends
-
-The plotting functions use different backends, which are activated within each function. So, to save the figures after a plotting function call, you have to use `Base.invokelatest(savefig, figure, location)` instead of `savefig(figure, location)` (as it is done in `example/example_plotting.jl`). The pipeline functions do this internally, so you can call them directly with no extra caveats. 
+- Plotting functions (`src/plotting.jl`): These are exported, but I do not recommend using them as is. These are pure functions that take data in the format outputted by the data acquisition functions and return plot objects. They do all the data processing necessary to create the plots, except unit conversions. They will plot using the units selected when the data acquisition functions were called.
+- Pipeline functions (`src/pipelines.jl`): These are exported. These functions run a whole pipeline, from raw data to the final plot. They take the location of the snapshot files with some configuration parameters, and as a result, produce a series of plots/GIFs/videos. By default, some of these functions may generate a large number of images (but it can be configured to do less), and they may take a long time to run.
 
 ## 📘 Examples
 
