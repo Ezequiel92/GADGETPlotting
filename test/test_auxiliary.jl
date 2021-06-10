@@ -90,7 +90,7 @@ max_gas_dist = GADGETPlotting.max_length(pos_gas)
         ([4.0, 6.0], ["test_1", "test_2"]), 
         plot(1:10),
     )
-    Base.invokelatest(savefig, vline_plot, temp_img)
+    savefig(vline_plot, temp_img)
 
     jldopen(joinpath(BASE_DATA_PATH, "data_auxiliary.jld2"), "r") do file
         @test comparison(file["relative_2D"], relative_2D, rtol = 0.1)

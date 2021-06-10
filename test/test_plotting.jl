@@ -7,23 +7,23 @@
     temp_img = joinpath(@__DIR__, "test_img.png")
 
     @test_nowarn fig = scatter_grid_plot(pos)
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "scatter_grid_plot.png") load(temp_img)
 
     @test_nowarn fig = density_map_plot(pos, gas_mass, density, hsml)
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "density_map_plot.png") load(temp_img)
 
     @test_nowarn fig = star_map_plot(pos)
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "star_map_plot_All.png") load(temp_img)
 
     @test_nowarn fig = gas_star_evolution_plot(SNAP_N, time_series, pos)
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "gas_star_evolution_plot.png") load(temp_img)
 
     @test_nowarn fig = cmdf_plot(star_mass, star_z, 1UnitfulAstro.Myr)
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "cmdf_plot.png") load(temp_img)
 
     @test_nowarn fig = cmdf_plot(
@@ -32,15 +32,15 @@
         1UnitfulAstro.Myr, 
         ["sim1" "sim2"],
     )
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "compare_cmdf_plot.png") load(temp_img)
 
     @test_nowarn fig = birth_histogram_plot(birth_pos, bins = 50)
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "birth_histogram_plot.png") load(temp_img)
 
     @test_nowarn fig = time_series_plot(time_series, mass_factor = 0, number_factor = 4)
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "time_series_plot.png") load(temp_img)
 
     @test_nowarn fig = scale_factor_series_plot(
@@ -48,11 +48,11 @@
         mass_factor = 0, 
         number_factor = 4,
     )
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "scale_factor_series_plot.png") load(temp_img)
 
     @test_nowarn fig = redshift_series_plot(time_series, mass_factor = 0, number_factor = 4)
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "redshift_series_plot.png") load(temp_img)
 
     @test_nowarn fig = compare_simulations_plot(
@@ -64,11 +64,11 @@
         x_factor = 10,
         scale = (:identity, :log10),
     )
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "compare_simulations_plot.png") load(temp_img)
 
     @test_nowarn fig = density_histogram_plot(density, 1UnitfulAstro.Myr, factor = 10)
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "density_histogram_plot.png") load(temp_img)
 
     @test_nowarn fig = density_profile_plot(
@@ -79,7 +79,7 @@
         bins = 50, 
         factor = 6,
     )
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "density_profile_plot.png") load(temp_img)
     
     @test_nowarn fig = density_profile_plot(
@@ -91,7 +91,7 @@
         scale = :log10,
         factor = 6,
     )
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "compare_density_profile_plot.png") load(temp_img)
 
     @test_nowarn fig = metallicity_profile_plot(
@@ -102,7 +102,7 @@
         scale = :log10, 
         bins = 50,
     )
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "metallicity_profile_plot.png") load(temp_img)
 
     @test_nowarn fig = metallicity_profile_plot(
@@ -114,7 +114,7 @@
         scale = :log10,
         bins = 50,
     )
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "compare_metallicity_profile_plot.png") load(temp_img)
 
     @test_nowarn fig = mass_profile_plot(
@@ -125,7 +125,7 @@
         bins = 50, 
         factor = 10,
     )
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "mass_profile_plot.png") load(temp_img)
 
     @test_nowarn fig = mass_profile_plot(
@@ -137,7 +137,7 @@
         bins = 50,
         factor = 10,
     )
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "compare_mass_profile_plot.png") load(temp_img)
 
     @test_nowarn fig = sfr_txt_plot(
@@ -148,7 +148,7 @@
         bins = 50,
         scale = (:identity, :log10),
     )
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "compare_columns_sfr_txt_plot.png") load(temp_img)
 
     @test_nowarn fig = sfr_txt_plot(
@@ -160,15 +160,15 @@
         bins = 50,
         scale = (:identity, :log10),
     )
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "compare_sims_sfr_txt_plot.png") load(temp_img)
 
     @test_nowarn fig = temperature_histogram_plot(temp_data, 1UnitfulAstro.Myr, bins = 30)
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "temperature_histogram_plot.png") load(temp_img)
 
     @test_nowarn fig = rho_temp_plot(temp_data, density, 1UnitfulAstro.Myr)
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "rho_temp_plot.png") load(temp_img)
 
     @test_nowarn fig = kennicutt_schmidt_plot(
@@ -184,18 +184,18 @@
         bins = 80,
         error_formating = "conf_interval",
     )
-    # Base.invokelatest(savefig, fig, temp_img)
+    # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "kennicutt_schmidt_plot.png") load(temp_img)
 
     # The cpu.txt of cosmological simulations is too heavy for GitHub, and `get_cpu_txt`
     # doesn't distinguish among different types of simulations.
     if SIM_COSMO == 0
         @test_nowarn figure = cpu_txt_plot(cpu_txt_data)
-        # Base.invokelatest(savefig, fig, temp_img)
+        # savefig(fig, temp_img)
         # @test_reference joinpath(BASE_DATA_PATH, "cpu_txt_plot.png") load(temp_img)
 
         @test_nowarn figure = cpu_txt_plot([cpu_txt_data, cpu_txt_data], ["sim_1" "sim_2"])
-        # Base.invokelatest(savefig, fig, temp_img)
+        # savefig(fig, temp_img)
         # @test_reference joinpath(BASE_DATA_PATH, "compare_cpu_txt_plot.png") load(temp_img)
     end
     
