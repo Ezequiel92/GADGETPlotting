@@ -715,7 +715,7 @@ The rest of the parameters are define as follows
 \mathrm{P}^n = \Sigma_{\rho\mathrm{(total)}}^n\left(\Sigma_{\rho\mathrm{(total)}}^n + \Sigma_{*\mathrm{(total)}}^n\right) \, ,
 ```
 ```math
-\mathrm{Ψ/H_2}^n = \frac{\Sigma_\mathrm{SFR}^n * A_n}{M_{H_2}^n} \, ,
+\mathrm{Ψ/H_2}^n = \frac{\Sigma_\mathrm{SFR}^n \, A_n}{M_{H_2}^n} \, ,
 ```
 
 where ``\Sigma_{\rho\mathrm{(total)}}^n`` is the mass density of all the gas, 
@@ -1181,6 +1181,13 @@ function comparison(
     rtol::Float64 = 1e-5,
 )::Bool
 
+    if !(all(isapprox.(x, y; atol, rtol)))
+        println("Comparison approx!!:")
+        println(isapprox.(x, y; atol, rtol))
+        display(x)
+        display(y)
+    end
+
     return all(isapprox.(x, y; atol, rtol))
 
 end
@@ -1200,6 +1207,12 @@ Determine if two elements are equal, as per the [isequal](https://docs.julialang
 - Returns `isequal(x, y)`.
 """
 function comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
+
+    if !(isequal(x, y))
+        println("Comparison equal!!:")
+        display(x)
+        display(y)
+    end
 
     return isequal(x, y)
 
