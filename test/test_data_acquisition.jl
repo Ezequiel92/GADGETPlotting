@@ -58,7 +58,7 @@ birth_pos = GADGETPlotting.get_birth_place(
 
 sfr_txt_data = GADGETPlotting.get_sfr_txt(BASE_SRC_PATH, FIRST_SNAP; sim_cosmo)
 
-if sim_cosmo == 0
+if SIM_COSMO == 0
     
     # The file cpu.txt from a cosmological simulation is too big for GitHub, and `get_cpu_txt`
     # doesn't distinguish among different types of simulations, so there is no need to test it
@@ -76,7 +76,7 @@ end
 
 @testset "Data acquisition functions" begin 
 
-    if sim_cosmo == 0
+    if SIM_COSMO == 0
         jldopen(joinpath(BASE_DATA_PATH, "data_acquisition.jld2"), "r") do file
             @test file["snaps"]["numbers"] == snaps["numbers"]
             @test deep_comparison(file["time_series"], time_series)
