@@ -1263,7 +1263,7 @@ function comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
         display(y)
     end
 
-    return isequal.(x, y)
+    return isequal(x, y)
 
 end
 
