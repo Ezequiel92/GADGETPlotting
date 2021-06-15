@@ -1093,7 +1093,7 @@ function get_metallicity(
         # Initialize output array
         Z = similar(Array{Float64}, axes(z, 2))
         @inbounds for i in eachindex(Z)
-            # Add up all elements but the ones at position 1 and 7, i.e. H and He
+            # Add up all elements but the ones at position 1 and 7, i.e. He and H
             z_tot = sum(z[[2, 3, 4, 5, 6, 8, 9, 10, 11, 12], i])
             # Transformation from internal units to `mass_unit`
             z_tot = ustrip(Float64, mass_unit, z_tot * GU.m_msun)
@@ -1106,6 +1106,112 @@ function get_metallicity(
         # In the case that there are no particles
         Z = [Inf]
 
+    end
+
+    return Dict("Z" => Z, "unit" => mass_unit, "type" => type)
+end
+
+"""
+    get_metal_mass(snapshot::String, type::String; <keyword arguments>)::Dict{String,Any}
+
+Get the mass of several elements within each particle at a specific time step. 
+
+# Arguments
+- `snapshot::String`: Path to a given snapshot.
+- `type::String`: Particle type.
+  * "gas" ⟶ Gas particle. 
+  * "stars" ⟶ Star particle.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable `ComovingIntegrationOn`: 
+  * 0 ⟶ Newtonian simulation (static universe).
+  * 1 ⟶ Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+
+  `foo(snap_file::String, type::String)::Vector{Int64}`
+
+  See the function [`pass_all`](@ref) for an example. By default, no particles are filtered.
+- `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
+  all available mass units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
+
+# Returns
+- A dictionary with two entries.
+  - `"Z"` ⟹ Matrix where each row is an element, and each column a particle.  
+    * 01: He (Helium)
+	* 02: C (Carbon)
+	* 03: Mg (Magnesium)
+	* 04: 0 (Oxygen)
+	* 05: Fe (Iron)
+	* 06: Si (Silicon)
+	* 07: H (Hydrogen)
+	* 08: N (Nitrogen)
+	* 09: Ne (Neon)
+	* 10: S (Sulfur)
+	* 11: Ca (Calcium)
+	* 12: Zn (Zinc)
+  - `"unit"` ⟹ The unit of mass used, i.e. is a pass-through of `mass_unit`. 
+  - `"type"` ⟹ Particle type, i.e. is a pass-through of `type`. 
+"""
+function get_metal_mass(
+    snapshot::String,
+    type::String;
+    sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
+    mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
+)::Dict{String, Any}
+
+    header = read_header(snapshot)
+
+    if sim_cosmo == 1
+        
+        # Struct for unit conversion
+        GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
+
+        # Data availability check
+        (
+            block_present(GadgetIO.select_file(snapshot, 0), "Z") ||
+            error("There is no block 'Z' in snapshot located at $snapshot")
+        )
+
+    else
+
+        # Struct for unit conversion
+        # For Newtonian simulation uses the default scale factor: a = 1
+        GU = GadgetPhysicalUnits(hpar = header.h0)
+
+        # Data availability check
+        (
+            block_present(snapshot, "Z") ||
+            error("There is no block 'Z' in snapshot located at $snapshot")
+        )
+
+    end
+
+    # Select type of particle
+    if type == "gas"
+        type_num = 0
+    elseif type == "stars"
+        type_num = 4
+    else
+        error("Particle type '$type' not supported. 
+        The supported types are 'gas' and 'stars'")
+    end
+
+    if header.nall[type_num + 1] != 0
+
+        z = read_blocks_over_all_files(
+            snapshot, 
+            ["Z"];
+            filter_function = x -> filter_function(x, type), 
+            parttype = type_num, 
+            verbose = false
+        )["Z"]
+		
+		Z = @. ustrip(Float64, mass_unit, z * GU.m_msun)
+
+    else
+
+        # In the case that there are no particles
+        Z = Array{Float64}(undef, 2, 0)
+		
     end
 
     return Dict("Z" => Z, "unit" => mass_unit, "type" => type)
@@ -1742,4 +1848,80 @@ function get_cpu_txt(
 
     return get_cpu_txt(source_path, [target,]; step)
 
+end
+
+"""
+    get_fmol(
+        snapshot::String;
+        sim_cosmo::Int64 = 0,
+        filter_function::Function = pass_all,
+    )::Vector{Float64}
+
+Get the fraction of molecular gas of each particle at a specific time step. 
+
+# Arguments
+- `snapshot::String`: Path to a given snapshot.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable `ComovingIntegrationOn`: 
+  * 0 ⟶ Newtonian simulation (static universe).
+  * 1 ⟶ Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+
+  `foo(snap_file::String, type::String)::Vector{Int64}`
+
+  See the function [`pass_all`](@ref) for an example. By default, no particles are filtered.
+
+# Returns
+- Vector with fraction of molecular gas of each particle
+"""
+function get_fmol(
+    snapshot::String;
+    sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
+)::Vector{Float64}
+
+    header = read_header(snapshot)
+
+    if sim_cosmo == 1
+        
+        # Struct for unit conversion
+        GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
+
+        # Data availability check
+        (
+            block_present(GadgetIO.select_file(snapshot, 0), "FMOL") ||
+            error("There is no block 'FMOL' in snapshot located at $snapshot")
+        )
+
+    else
+
+        # Struct for unit conversion
+        # For Newtonian simulation uses the default scale factor: a = 1
+        GU = GadgetPhysicalUnits(hpar = header.h0)
+
+        # Data availability check
+        (
+            block_present(snapshot, "FMOL") ||
+            error("There is no block 'FMOL' in snapshot located at $snapshot")
+        )
+
+    end
+
+    if header.nall[1] != 0
+
+        fmol = read_blocks_over_all_files(
+            snapshot, 
+            ["FMOL"];
+            filter_function = x -> filter_function(x, "gas"), 
+            parttype = 0, 
+            verbose = false
+        )["FMOL"]
+
+    else
+
+        # In the case that there are no particles
+        fmol = Float64[]
+		
+    end
+
+    return fmol
 end

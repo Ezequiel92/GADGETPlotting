@@ -1622,6 +1622,8 @@ function compare_simulations_plot(
 
         x_unit = "10^{$y_factor}"
 
+    else
+        x_unit = nothing
     end
 
     # Unit formatting for the y axis
@@ -1690,17 +1692,31 @@ function compare_simulations_plot(
 
         y_unit = "10^{$y_factor}"
 
+    else
+        y_unit = nothing
     end
 
     # Labels for the axes
     ylabel = replace(data[1]["labels"][y_quantity], " " => " \\ ")
     xlabel = replace(data[1]["labels"][x_quantity], " " => " \\ ")
 
+    if x_unit === nothing
+        x_label = L"\mathrm{%$xlabel} \, / \, \mathrm{%$x_unit}"
+    else
+        x_label = L"\mathrm{%$xlabel}"
+    end
+
+    if y_unit === nothing
+        y_label = L"\mathrm{%$ylabel} \, / \, \mathrm{%$y_unit}"
+    else
+        y_label = L"\mathrm{%$ylabel}"
+    end
+
     return plot(
         hcat(x_data...),
         hcat(y_data...);
-        xlabel = L"\mathrm{%$xlabel} \, / \, \mathrm{%$x_unit}",
-        ylabel = L"\mathrm{%$ylabel} \, / \, \mathrm{%$y_unit}",
+        xlabel,
+        ylabel,
         xscale = xscale,
         yscale = yscale,
         title,
@@ -2888,7 +2904,7 @@ function sfr_txt_plot(
         ytickfontsize = 22,
         xguidefontsize = 24,
         yguidefontsize = 24,
-        legendfontsize = 24,
+        legendfontsize = 22,
     )
 
     for y_type in y_axis
@@ -3171,7 +3187,7 @@ function sfr_txt_plot(
         ytickfontsize = 22,
         xguidefontsize = 24,
         yguidefontsize = 24,
-        legendfontsize = 24,
+        legendfontsize = 22,
     )
 end
 
@@ -3592,6 +3608,7 @@ function cpu_txt_plot(
         size = (1200, 700),
         fontfamily = "Computer Modern",
         left_margin = 25px,
+        right_margin = 40px,
         bottom_margin = 25px,
         titlefontsize = 25,
         xtickfontsize = 20,
@@ -3665,6 +3682,7 @@ function cpu_txt_plot(
         background_color_legend = nothing,
         fontfamily = "Computer Modern",
         left_margin = 25px,
+        right_margin = 40px,
         bottom_margin = 25px,
         titlefontsize = 25,
         xtickfontsize = 20,

@@ -1067,7 +1067,8 @@ function compare_simulations_pipeline(
         # Names of the columns (one per simulation)
         names = join([" \t " * basename(path)  for path in  source_path])
         # Data to be printed out
-        columns = get.(time_series, text_quantity, 0.0) 
+        # columns = get.(time_series, text_quantity, 0.0)
+        columns = [Float64.(col) for col in get.(time_series, text_quantity, 0.0)]
         # Name of the snapshot files (first column)
         snapshots = [
             basename(snap) 
@@ -1088,6 +1089,16 @@ function compare_simulations_pipeline(
         end
 
         open(file_path, "w") do file
+
+            # Fill the datasets with NaN so all have the same length
+            max_length = maximum(length.(columns))
+            for (i, l_r) in enumerate(length.(columns))
+                if l_r < max_length
+                    @inbounds for _ in 1:(max_length - l_r)
+                        push!(columns[i], NaN)
+                    end
+                end
+            end
 
             write(file, time_series[1]["labels"][text_quantity] * " [" * unit * "]\n\n")
             write(file, "snapshot" * names * "\n")

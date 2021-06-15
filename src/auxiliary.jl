@@ -654,6 +654,232 @@ function kennicutt_schmidt_law(
     return Dict("RHO" => x_data, "SFR" => y_data, "LM" => linear_model)
 end
 
+@doc raw"""
+    quantities_2D(
+        gas_mass_data::Vector{Float64},
+        gas_distance_data::Vector{Float64},
+        temperature_data::Vector{Float64},
+        star_mass_data::Vector{Float64},
+        star_distance_data::Vector{Float64},
+        age_data::Vector{Float64},
+        metal_mass_data::Matrix{Float64},
+        fmol_data::Vector{Float64},
+        temp_filter::Float64,
+        age_filter::Float64,	
+        max_r::Float64;
+        bins::Int64 = 50,
+    )::Union{Nothing, Dict{String, Any}}
+	
+Compute the surface density of several quantities. 
+
+The area densities are calculated by projecting the positions of the stars and the 
+particles of gas to the x-y plane. Then the space is subdivided in `bins` concentric 
+rings from 0 to `max_r`, each of equal width `max_r` / `bins`. This results in an area 
+for the ``n``-th ring of
+
+```math
+A_n = π \, \mathrm{width}^2 \, (2 \, n - 1) \, .
+```
+
+So, the assigned SFR for that ring is 
+
+```math
+\Sigma_\mathrm{SFR}^n = \frac{M_*^n}{\mathrm{age\_filter}\,A_n} \, ,
+```
+
+where ``M_*^n`` is the total mass of stars younger than `age_filter` within the ring.
+
+Equivalently, the mass area density of the gas and stars is given by
+
+```math
+\Sigma_\rho^n = \frac{M_\rho^n}{A_n} \, ,
+```
+```math
+\Sigma_*^n = \frac{M_*^n}{A_n} \, ,
+```
+
+where ``M_\rho^n`` is the total mass of gas colder than `temp_filter` within the ring.
+
+`temp_filter` and `temperature_data` must be in the same temperature units, 
+and `age_filter` and `age_data` must be in the same time units.
+
+The rest of the parameters are define as follows
+
+```math
+\mathrm{SSFR}^n = \frac{\Sigma_\mathrm{SFR}^n}{\Sigma_{*\mathrm{(total)}}^n} \, ,
+```
+```math
+\mathrm{SFE}^n = \frac{\Sigma_\mathrm{SFR}^n}{\Sigma_{\rho\mathrm{(total)}}^n} \, ,
+```
+```math
+\mathrm{P}^n = \Sigma_{\rho\mathrm{(total)}}^n\left(\Sigma_{\rho\mathrm{(total)}}^n + \Sigma_{*\mathrm{(total)}}^n\right) \, ,
+```
+```math
+\mathrm{Ψ/H_2}^n = \frac{\Sigma_\mathrm{SFR}^n * A_n}{M_{H_2}^n} \, ,
+```
+
+where ``\Sigma_{\rho\mathrm{(total)}}^n`` is the mass density of all the gas, 
+``\Sigma_{*\mathrm{(total)}}^n`` is the stellar density of all the stars and
+``M_{H_2}^n`` is the total mass of molecular Hydrogen.
+
+# Arguments
+- `gas_mass_data::Vector{Float64}`: Masses of the gas particles.
+- `gas_distance_data::Vector{Float64}`: 2D radial distances of the gas particles. 
+- `temperature_data::Vector{Float64}`: Temperatures of the gas particles.
+- `star_mass_data::Vector{Float64}`: Masses of the stars.
+- `star_distance_data::Vector{Float64}`: 2D radial distances of the stars.
+- `age_data::Vector{Float64}`: Ages of the stars.
+- `metal_mass_data::Matrix{Float64}`: Masses of the individual elements (H, O, He, C, etc.)
+  within the gas particles.
+- `fmol_data::Vector{Float64}`: Fraction of molecular Hydrogen of the gas particles.
+- `temp_filter::Float64`: Maximum temperature allowed for the gas particles.
+- `age_filter::Unitful.Quantity`: Maximum age allowed for the stars.
+- `max_r::Float64`: Maximum distance up to which the parameters will be calculated.
+- `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. It has to be at 
+  least 5.
+
+# Returns
+- A dictionary with nine entries.
+  - Key "GAS" => Surface mass density of gas
+  - Key "COLD_GAS" => Surface mass density of cold gas
+  - Key "STARS" => Surface mass density of stars
+  - Key "OH" => 12 + log10(oxygen_mass / hydrogen_mass)
+  - Key "SFR" => Star formation rate surface density
+  - Key "SSFR" => Specific star formation rate surface density
+  - Key "SFE" => Star formation efficiency surface density
+  - Key "P" => Proportional to the pressure
+  - Key "Ψ_FMOL" => Star formation rate per unit of molecular gas
+"""
+function quantities_2D(
+    gas_mass_data::Vector{Float64},
+    gas_distance_data::Vector{Float64},
+    temperature_data::Vector{Float64},
+    star_mass_data::Vector{Float64},
+    star_distance_data::Vector{Float64},
+    age_data::Vector{Float64},
+	metal_mass_data::Matrix{Float64},
+    fmol_data::Vector{Float64},
+    temp_filter::Float64,
+    age_filter::Float64,	
+    max_r::Float64;
+    bins::Int64 = 50,
+)::Union{Nothing, Dict{String, Any}}
+
+    # Bin size check
+    if bins < 5
+        error("You have to use at least 5 bins.")
+    end
+	
+	# Oxygen
+	O = metal_mass_data[4, :]
+	
+	# Hydrogen
+	H = metal_mass_data[7, :]
+
+    r_width = max_r / bins
+
+    # Initialize output arrays
+	GAS = Vector{Float64}(undef, bins)
+    COLD_GAS = Vector{Float64}(undef, bins)
+	STARS = Vector{Float64}(undef, bins)
+	OH = Vector{Union{Float64, Missing}}(undef, bins)
+    SFR = Vector{Float64}(undef, bins)
+    SSFR = Vector{Union{Float64, Missing}}(undef, bins)
+	SFE = Vector{Union{Float64, Missing}}(undef, bins)
+	P = Vector{Float64}(undef, bins)
+    Ψ_FMOL = Vector{Union{Float64, Missing}}(undef, bins)
+
+    @inbounds for i in 1:bins
+
+        # Gas
+		
+		# Indices of gas particles within the window i
+		idx_gas = findall(x ->  r_width * (i - 1) <= x < r_width * i, gas_distance_data)
+		# Masses of gas particles within the window i
+		gas_masses = gas_mass_data[idx_gas]
+		# Total gas mass within the window i
+		gas_mass = sum(gas_masses)	
+		# Total cold gas mass within the window i
+		cold_gas_mass = sum(deleteat!(gas_masses, temperature_data[idx_gas] .> temp_filter))
+		
+		# Metals 
+		
+		# Total oxygen mass
+		m_O = sum(O[idx_gas])
+		# Total Hydrogen mass
+		m_H = sum(H[idx_gas])
+
+        # Molecular Hydrogen
+
+        m_H_mol = sum(H[idx_gas] .* fmol_data[idx_gas])
+		
+		# Stars
+		
+		# Indices of stellar particles within the window i
+		idx_star = findall(x ->  r_width * (i - 1) <= x < r_width * i, star_distance_data)
+		# Masses of stellar particles within the window i
+		star_masses = star_mass_data[idx_star]
+		# Total stellar mass within the window i
+		star_mass = sum(star_masses)	
+		# Total young stellar mass within the window i
+		young_star_mass = sum(deleteat!(star_masses, age_data[idx_star] .> age_filter))
+		# Star formation rate for the window i
+		sfr = young_star_mass / age_filter 
+		
+	    # Ring area
+	    a = π * r_width * r_width * (2.0 * i - 1.0)
+		
+		# Quantities
+			
+		GAS[i] = gas_mass / a                  # Surface mass density of gas
+        COLD_GAS[i] = cold_gas_mass / a        # Surface mass density of cold gas
+		STARS[i] = star_mass / a               # Surface mass density of stars
+		SFR[i] = sfr / a                       # Star formation rate surface density
+        P[i] = GAS[i] * (GAS[i] + STARS[i])    # Proportional to the pressure
+
+        # Specific star formation rate surface density
+        if STARS[i] == 0.0                     
+            SSFR[i] = missing
+        else
+		    SSFR[i] = SFR[i] / STARS[i]           
+        end
+
+        # Star formation efficiency surface density
+        if GAS[i] == 0.0                       
+            SFE[i] = missing
+        else
+		    SFE[i] = SFR[i] / GAS[i]           
+        end
+
+        # Star formation rate per unit of molecular gas
+        if m_H_mol == 0.0                      
+            Ψ_FMOL[i] = missing
+        else
+		    Ψ_FMOL[i] = sfr / m_H_mol           
+        end 
+         
+        # Oxygen-Hydrogen relation = 12 + log10(oxygen_mass / hydrogen_mass)             
+		if m_O == 0.0 || m_H == 0.0            
+			OH[i] = missing
+		else
+			OH[i] = 12 + log10(m_O / m_H)
+		end
+		
+	end
+
+    return Dict(
+		"GAS"      => GAS,	
+        "COLD_GAS" => COLD_GAS,
+		"STARS"    => STARS,
+		"OH"       => OH,
+		"SFR"      => SFR,
+		"SSFR"     => SSFR,
+		"SFE"      => SFE,
+		"P"        => P,
+        "Ψ_FMOL"   => Ψ_FMOL,
+	)
+end
+
 """
     format_error(mean::Float64, error::Float64)::String
 

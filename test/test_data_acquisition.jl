@@ -35,6 +35,10 @@ gas_z = GADGETPlotting.get_metallicity(snap_n, "gas"; sim_cosmo)
 
 star_z = GADGETPlotting.get_metallicity(snap_n, "stars"; sim_cosmo)
 
+gas_mz = GADGETPlotting.get_metal_mass(snap_n, "gas"; sim_cosmo)
+
+star_mz = GADGETPlotting.get_metal_mass(snap_n, "stars"; sim_cosmo)
+
 temp_data = GADGETPlotting.get_temperature(snap_n; sim_cosmo)
 
 age_data = GADGETPlotting.get_age(
@@ -54,10 +58,16 @@ birth_pos = GADGETPlotting.get_birth_place(
 
 sfr_txt_data = GADGETPlotting.get_sfr_txt(BASE_SRC_PATH, FIRST_SNAP; sim_cosmo)
 
-# The cpu.txt of cosmological simulations is too heavy for GitHub, and `get_cpu_txt`
-# doesn't distinguish among different types of simulations.
 if sim_cosmo == 0
+    
+    # The file cpu.txt from a cosmological simulation is too big for GitHub, and `get_cpu_txt`
+    # doesn't distinguish among different types of simulations, so there is no need to test it
+    # when `SIM_COSMO` = 1
 	cpu_txt_data = GADGETPlotting.get_cpu_txt(BASE_SRC_PATH, ["i/o", "hotngbs", "density"])
+
+    # `FMOL` is not a block present in the examples of cosmological snapshots
+    fmol = GADGETPlotting.get_fmol(snap_n; sim_cosmo)
+
 end
 
 ##############
@@ -78,16 +88,20 @@ end
             @test deep_comparison(file["star_mass"], star_mass)
             @test deep_comparison(file["gas_z"], gas_z)
             @test deep_comparison(file["star_z"], star_z)
+			@test deep_comparison(file["gas_mz"], gas_mz)
+            @test deep_comparison(file["star_mz"], star_mz)
             @test deep_comparison(file["temp_data"], temp_data)
             @test deep_comparison(file["age_data"], age_data)
             @test deep_comparison(file["birth_pos"], birth_pos)
             @test deep_comparison(file["sfr_txt_data"], sfr_txt_data)
             @test deep_comparison(file["cpu_txt_data"], cpu_txt_data)
+            @test comparison(file["fmol"], fmol)
         end
     else
 
-        # No `pos` and two files for cosmological simulations, 
-        # because of the GitHub 100MB limit per file
+        # Because of the GitHub 100MB per file limit, `pos`, `gas_mz`, `star_mz` and `cpu_txt_data`
+        # for are not included for cosmological simulations, and the rest of parameters are divided 
+        # in two files 
         
         jldopen(joinpath(BASE_DATA_PATH, "data_acquisition_01.jld2"), "r") do file
             @test file["snaps"]["numbers"] == snaps["numbers"]
@@ -95,9 +109,10 @@ end
             @test deep_comparison(file["density"], density)
             @test deep_comparison(file["hsml"], hsml)
             @test deep_comparison(file["gas_mass"], gas_mass)
+            @test deep_comparison(file["dm_mass"], dm_mass)
         end
         jldopen(joinpath(BASE_DATA_PATH, "data_acquisition_02.jld2"), "r") do file
-            @test deep_comparison(file["dm_mass"], dm_mass)
+            
             @test deep_comparison(file["star_mass"], star_mass)
             @test deep_comparison(file["gas_z"], gas_z)
             @test deep_comparison(file["star_z"], star_z)

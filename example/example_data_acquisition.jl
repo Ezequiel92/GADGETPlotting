@@ -35,6 +35,10 @@ gas_z = GADGETPlotting.get_metallicity(snap_n, "gas"; sim_cosmo)
 
 star_z = GADGETPlotting.get_metallicity(snap_n, "stars"; sim_cosmo)
 
+gas_mz = GADGETPlotting.get_metal_mass(snap_n, "gas"; sim_cosmo)
+
+star_mz = GADGETPlotting.get_metal_mass(snap_n, "stars"; sim_cosmo)
+
 temp_data = GADGETPlotting.get_temperature(snap_n; sim_cosmo)
 
 age_data = GADGETPlotting.get_age(
@@ -54,18 +58,20 @@ birth_pos = GADGETPlotting.get_birth_place(
 
 sfr_txt_data = GADGETPlotting.get_sfr_txt(BASE_SRC_PATH, FIRST_SNAP; sim_cosmo)
 
-# The cpu.txt of cosmological simulations is too heavy for GitHub, and `get_cpu_txt`
-# doesn't distinguish among different types of simulations.
 if SIM_COSMO == 0
+
+    # The file cpu.txt from a cosmological simulation is too big for GitHub, and `get_cpu_txt`
+    # doesn't distinguish among different types of simulations, so there is no need to test it
+    # when `SIM_COSMO` = 1
     cpu_txt_data = GADGETPlotting.get_cpu_txt(BASE_SRC_PATH, ["i/o", "hotngbs", "density"])
+
+    # `FMOL` is not a block present in the examples of cosmological snapshots
+    fmol = GADGETPlotting.get_fmol(snap_n; sim_cosmo)
 end
 
 ##############
 # Testing 
 ##############
-
-# No `pos` and two files for cosmological simulations, 
-# because of the GitHub 100MB limit per file
 
 if SIM_COSMO == 0
 
@@ -73,20 +79,24 @@ if SIM_COSMO == 0
         joinpath(BASE_OUT_PATH, "data_acquisition.jld2"); 
         snaps, time_series, pos, density, hsml, 
         gas_mass, dm_mass, star_mass, gas_z, star_z, 
-        temp_data, age_data, birth_pos, sfr_txt_data,
-        cpu_txt_data,
+        gas_mz, star_mz, temp_data, age_data, 
+		birth_pos, sfr_txt_data, cpu_txt_data, fmol,
     )
 
 else
 
+# Because of the GitHub 100MB per file limit, `pos`, `gas_mz`, `star_mz` and `cpu_txt_data`
+# for are not included for cosmological simulations, and the rest of parameters are divided 
+# in two files 
+
     jldsave(
         joinpath(BASE_OUT_PATH, "data_acquisition_01.jld2"); 
-        snaps, time_series, density, hsml, gas_mass, 
+        snaps, time_series, density, hsml, gas_mass, dm_mass,
     )
 
     jldsave(
         joinpath(BASE_OUT_PATH, "data_acquisition_02.jld2"); 
-        dm_mass, star_mass, gas_z, star_z, temp_data, 
+        star_mass, gas_z, star_z, temp_data, 
         age_data, birth_pos, sfr_txt_data,
     )
 

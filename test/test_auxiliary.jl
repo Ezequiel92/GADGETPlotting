@@ -59,6 +59,24 @@ ksl = GADGETPlotting.kennicutt_schmidt_law(
     bins = 80,
 )
 
+# `FMOL` is not a block present in the examples of cosmological snapshots
+if sim_cosmo == 0
+    quantities2D = GADGETPlotting.quantities_2D(
+        m_gas,
+        dist_gas_2D,
+        temp_data["temperature"],
+        star_mass["mass"],
+        dist_stars,
+        age_data["ages"],
+        gas_mz["Z"],
+        fmol,
+        ustrip(Float64, temp_data["unit"], 3e4Unitful.K),
+        ustrip(Float64, age_data["unit"], 200UnitfulAstro.Myr),	
+        ustrip(Float64, pos["unit"], BOX_SIZE),
+        bins = 80,
+    )
+end
+
 format_err_1 = GADGETPlotting.format_error(69.42069, 0.038796)
 format_err_2 = GADGETPlotting.format_error(69.42069, 0.018796)
 format_err_3 = GADGETPlotting.format_error(69.42069, 0.0)
@@ -105,6 +123,9 @@ max_gas_dist = GADGETPlotting.max_length(pos_gas)
         else
             @test comparison(file["ksl"]["RHO"], ksl["RHO"])
             @test comparison(file["ksl"]["SFR"], ksl["SFR"])
+        end
+        if sim_cosmo == 0
+            @test deep_comparison(file["quantities2D"], quantities2D)
         end
         @test file["format_err_1"] == format_err_1
         @test file["format_err_2"] == format_err_2
