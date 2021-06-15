@@ -1193,6 +1193,55 @@ function comparison(
 end
 
 """
+    comparison(
+        x::AbstractArray{Union{Missing, T}} where T <: Real, 
+        y::AbstractArray{Union{Missing, T}} where T <: Real; 
+        atol::Float64 = 1e-5, 
+        rtol::Float64 = 1e-5,
+    )::Bool
+
+Determine if two numeric arrays with missing are approximately equal.
+
+# Arguments
+- `x::AbstractArray{Union{Missing, T}} where T <: Real`: First element to be compared.
+- `y::AbstractArray{Union{Missing, T}} where T <: Real`: Second element to be compared.
+- `atol::Float64 = 1e-5`: Absolute tolerance.
+- `rtol::Float64 = 1e-5`: Relative tolerance.
+
+# Returns
+- Return `true` if every pair of numeric elements (X, Y) in (`x`, `y`) pass
+  ```julia
+  norm(X - Y) <= max(atol, rtol * max(norm(X), norm(Y)))
+  ````
+"""
+function comparison(
+    x::AbstractArray{Union{Missing, T}} where T <: Real, 
+    y::AbstractArray{Union{Missing, T}} where T <: Real; 
+    atol::Float64 = 1e-5, 
+    rtol::Float64 = 1e-5,
+)::Bool
+
+    bools = Bool[]
+    for (X, Y) in zip(x, y)
+        if X === missing || Y === missing
+            push!(bools, X === Y)
+        else
+            push!(bools, isapprox(X, Y; atol, rtol))
+        end
+    end
+
+    if !(all(all(bools)))
+        println("Comparison correct but bad :(!!:")
+        println(bools)
+        display(x)
+        display(y)
+    end
+
+    return all(bools)
+
+end
+
+"""
     comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
 
 Determine if two elements are equal, as per the [isequal](https://docs.julialang.org/en/v1/base/base/#Base.isequal) function.
@@ -1214,7 +1263,7 @@ function comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
         display(y)
     end
 
-    return isequal(x, y)
+    return isequal.(x, y)
 
 end
 
