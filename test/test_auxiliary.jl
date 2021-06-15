@@ -125,8 +125,6 @@ max_gas_dist = GADGETPlotting.max_length(pos_gas)
             @test comparison(file["ksl"]["SFR"], ksl["SFR"])
         end
         if SIM_COSMO == 0
-            display(file["quantities2D"])
-            display(quantities2D)
             @test deep_comparison(file["quantities2D"], quantities2D)
         end
         @test file["format_err_1"] == format_err_1
