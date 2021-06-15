@@ -9,7 +9,7 @@ jobs:
       matrix:
         julia-version: ['1',]
         julia-arch: [x64, x86]
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [windows-latest,]
 
     steps:
       - uses: actions/checkout@v2.3.4

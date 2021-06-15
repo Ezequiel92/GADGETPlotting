@@ -101,9 +101,7 @@ max_gas_dist = GADGETPlotting.max_length(pos_gas)
 
 @testset "Auxiliary functions" begin
 
-    temp_img = joinpath(@__DIR__, "test_img.png")
-    gr()
-    
+    temp_img = joinpath(@__DIR__, "test_img.png")   
     vline_plot = @test_nowarn GADGETPlotting.set_vertical_flags(
         ([4.0, 6.0], ["test_1", "test_2"]), 
         plot(1:10),
