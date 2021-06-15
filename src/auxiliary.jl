@@ -1181,13 +1181,6 @@ function comparison(
     rtol::Float64 = 1e-5,
 )::Bool
 
-    if !(all(isapprox.(x, y; atol, rtol)))
-        println("Comparison approx!!:")
-        println(isapprox.(x, y; atol, rtol))
-        display(x)
-        display(y)
-    end
-
     return all(isapprox.(x, y; atol, rtol))
 
 end
@@ -1230,13 +1223,6 @@ function comparison(
         end
     end
 
-    if !(all(all(bools)))
-        println("Comparison correct but bad :(!!:")
-        println(bools)
-        display(x)
-        display(y)
-    end
-
     return all(bools)
 
 end
@@ -1256,12 +1242,6 @@ Determine if two elements are equal, as per the [isequal](https://docs.julialang
 - Returns `isequal(x, y)`.
 """
 function comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
-
-    if !(isequal(x, y))
-        println("Comparison equal!!:")
-        display(x)
-        display(y)
-    end
 
     return isequal(x, y)
 
