@@ -20,6 +20,7 @@ arr1 = [1.5, 9.6, 6.4]
 arr2 = [1.5, 9.6, 6.9]
 dict1 = Dict("a" => arr1, "b" => arr1)
 dict2 = Dict("a" => arr1, "b" => arr2)
+missing_arr1 = [1.5, 9.6, 6.4, missing] 
 
 ##############
 # Functions
@@ -139,6 +140,7 @@ max_gas_dist = GADGETPlotting.max_length(pos_gas)
         @test file["max_gas_dist"] ≈ max_gas_dist
         @test !comparison("test1", "test2")
         @test comparison(arr1, arr1)
+        @test comparison(missing_arr1, missing_arr1)
         @test !deep_comparison(arr1, arr2)
         @test deep_comparison(arr1, arr1)
         @test !deep_comparison(dict1, dict2)
