@@ -27,7 +27,7 @@ BASE_SRC_PATH = joinpath(@__DIR__, "example_data/isolated")
 FIRST_SNAP = joinpath(BASE_SRC_PATH, SNAP_NAME * "_000")
 
 "Side dimension of the simulated region, for the case of vacuum boundary conditions."
-BOX_SIZE = 200UnitfulAstro.kpc
+BOX_SIZE = 200.0UnitfulAstro.kpc
 
 "Value of ComovingIntegrationOn: 0 -> Newtonian simulation, 1 -> Cosmological simulation."
 SIM_COSMO = 0

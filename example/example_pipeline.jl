@@ -272,3 +272,16 @@ if SIM_COSMO == 0
         title = "title",
     )
 end
+
+# `FMOL` is not a block present in the examples of cosmological snapshots
+if SIM_COSMO == 0
+    quantities_2D_pipeline(
+        SNAP_NAME,
+        BASE_SRC_PATH;
+        output_path = joinpath(BASE_OUT_PATH, "quantities_2D"),
+        sim_cosmo = SIM_COSMO,
+        max_r = BOX_SIZE,
+        bins = 80,
+        scale = (:log10, :log10),
+    )
+end

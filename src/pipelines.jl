@@ -2591,7 +2591,7 @@ function kennicutt_schmidt_pipeline(
     img_path = mkpath(joinpath(output_path, "images"))
 
      # Progress bar
-     prog_bar = Progress(
+    prog_bar = Progress(
         length(snap_files), 
         dt = 0.5, 
         desc = "Generating the Kennicutt-Schmidt plots... ",
@@ -2785,6 +2785,218 @@ function cpu_txt_pipeline(
         figure, 
         joinpath(output_path, "compare_cpu_txt" * format),
     )
+
+    return nothing
+end
+
+"""
+    quantities_2D_pipeline(
+        base_name::String,
+        source_path::String; 
+        <keyword arguments>
+    )
+
+Save the results of the [`quantities_2D_plot`](@ref) function as one folder per snapshot.
+
+It will produce output only for the snapshots that have stars.
+
+# Arguments
+- `base_name::String`: Base names of the snapshot files, set in the GADGET 
+  variable `SnapshotFileBase`.
+- `source_path::String`: Paths to the directories containing the snapshot files, 
+  set in the GADGET variable `OutputDir`.
+- `output_path::String = "Kennicutt_Schmidt"`: Path to the output directory. The images will 
+  be stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where XXX 
+  is the number of the snapshot. The GIF and the video will be stored in `output_path`.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable `ComovingIntegrationOn`: 
+  * `0` ⟶ Newtonian simulation (static universe).
+  * `1` ⟶ Cosmological simulation (expanding universe).
+- `title::String = ""`: Title for the figure. If an empty string is given no title is 
+  printed, which is the default.
+- `filter_function::Function = pass_all`: A function with the signature: 
+
+  `foo(snap_file::String, type::String)::Vector{Int64}`
+  
+  See the function [`pass_all`](@ref) for an example. By default, no particles are filtered.
+- `step::Int64 = 1`: Step used to traverse the list of snapshots. By default all snapshots will be plotted.
+- `temp_filter::Unitful.Quantity = Inf * Unitful.K`: Maximum temperature allowed for the 
+  gas particles.
+- `age_filter::Unitful.Quantity = 20.0UnitfulAstro.Myr`: Maximum star age allowed for the 
+  calculation of the SFR.
+- `max_r::Unitful.Quantity = 1000.0UnitfulAstro.kpc`: Maximum distance up to which the 
+  parameters will be calculated, with units.
+- `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. 
+  It has to be at least 5.
+- `scale::NTuple{2, Symbol} = (:identity, :identity)`: Scaling to be used for the x and y 
+  axes. It will apply equally to every figure produced.
+  The options are:
+  * `:identity` ⟶ no scaling.
+  * `:log10` ⟶ logarithmic scaling.
+- `x_factor::Int64 = 0`: Numerical exponent to scale the `x_quantity`, e.g. if `x_factor` = 10 
+  the corresponding axis will be scaled by ``10^{10}``. The default is no scaling.
+- `y_factor::Int64 = 0`: Numerical exponent to scale the `y_quantity`, e.g. if `y_factor` = 10 
+  the corresponding axis will be scaled by ``10^{10}``. The default is no scaling.
+- `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
+  all available time units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
+- `mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun`: Unit of mass to be used in the output, 
+  all available mass units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
+- `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
+  output, all available length units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
+- `format::String = ".png"`: File format of the output figure. All formats supported by the
+  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+"""
+function quantities_2D_pipeline(
+    base_name::String,
+    source_path::String;
+    output_path::String = "quantities_2D",
+    sim_cosmo::Int64 = 0,
+    title::String = "",
+    filter_function::Function = pass_all,
+    step::Int64 = 1,
+    temp_filter::Unitful.Quantity = Inf * Unitful.K,
+    age_filter::Unitful.Quantity = 20.0UnitfulAstro.Myr,
+    max_r::Unitful.Quantity = 1000.0UnitfulAstro.kpc,
+    bins::Int64 = 50,
+    scale::NTuple{2, Symbol} = (:identity, :identity),
+    x_factor::Int64 = 0,
+    y_factor::Int64 = 0,
+    time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
+    mass_unit::Unitful.FreeUnits = UnitfulAstro.Msun,
+    length_unit::Unitful.FreeUnits = UnitfulAstro.kpc,
+    format::String = ".png",
+)::Nothing
+
+    x_quantities = ["STARS", "P"]
+    y_quantities = ["SFR", "SSFR", "SFE", "GAS", "Psi_FMOL", "OH"]
+
+    # Get the simulation data
+    sim = get_snapshot_path(base_name, source_path)
+    time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
+
+    snap_files = @view sim["snap_files"][1:step:end] 
+    snap_numbers = @view sim["numbers"][1:step:end] 
+    times = @view time_data["clock_time"][1:step:end]
+
+    # Create a directory to save the plots, if it doesn't exist
+    img_path = mkpath(output_path)
+
+     # Progress bar
+    prog_bar = Progress(
+        length(snap_files), 
+        dt = 0.5, 
+        desc = "Generating the quantities-2D plots... ",
+        color = :blue,
+        barglyphs = BarGlyphs("|#  |"),
+    )
+
+    # Generate and save the plots
+    data_iter = zip(times, snap_numbers, snap_files)   
+    # Initial snapshot
+    snap_0 = first(snap_files)     
+    for (t, number, snapshot) in data_iter
+
+        header = read_header(snapshot)
+        if header.nall[5] != 0
+
+            # Gas masses
+            gas_mass_data = get_mass(snapshot, "gas"; sim_cosmo, filter_function, mass_unit)
+            # Gas temperatures
+            temperature_data = get_temperature(
+                snapshot; 
+                sim_cosmo, 
+                filter_function, 
+                temp_unit = unit(temp_filter),
+            )
+            # Stars masses
+            star_mass_data = get_mass(
+                snapshot, 
+                "stars"; 
+                sim_cosmo, 
+                filter_function, 
+                mass_unit,
+            )
+            # Stars ages
+            age_data = get_age(
+                snapshot, 
+                t * time_unit; 
+                sim_cosmo, 
+                snap_0, 
+                filter_function,
+            )
+            # Distances
+            pos_data = get_position(
+                snapshot; 
+                sim_cosmo, 
+                filter_function,  
+                length_unit,
+            )
+            gas_distance = [norm(col) for col in eachcol(pos_data["gas"])]
+            star_distance =  [norm(col) for col in eachcol(pos_data["stars"])]
+            # Molecular fraction
+            fmol = get_fmol(
+                snapshot; 
+                sim_cosmo, 
+                filter_function,
+            )
+            # Gas metal mass
+            gas_mz = get_metal_mass(
+                snapshot, 
+                "gas";
+                sim_cosmo,
+                filter_function,
+                mass_unit,
+            )
+
+            quantities2D = GADGETPlotting.quantities_2D(
+                gas_mass_data["mass"],
+                gas_distance,
+                temperature_data["temperature"],
+                star_mass_data["mass"],
+                star_distance,
+                age_data["ages"],
+                gas_mz["Z"],
+                fmol,
+                ustrip(temp_filter),
+                ustrip(age_filter),	
+                ustrip(max_r);
+                bins,
+            )
+
+            snap_folder = mkpath(joinpath(img_path, base_name * "_" * number))
+
+            for x_quantitie in x_quantities
+                for y_quantitie in y_quantities
+
+                    figure = quantities_2D_plot(
+                        quantities2D,
+                        x_quantitie,
+                        y_quantitie,
+                        Dict(
+                            "mass" => mass_unit, 
+                            "length" => length_unit, 
+                            "time" => time_unit,
+                        );
+                        title,
+                        x_factor,
+                        y_factor,
+                        scale,
+                    )
+                    savefig(
+                        figure, 
+                        joinpath(
+                            snap_folder, 
+                            y_quantitie * "_vs_" * x_quantitie * format,
+                        ),
+                    )
+
+                end
+            end
+
+        end
+
+        next!(prog_bar)
+
+    end
 
     return nothing
 end

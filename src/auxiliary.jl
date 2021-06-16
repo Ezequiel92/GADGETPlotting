@@ -572,7 +572,7 @@ and `age_filter` and `age_data` must be in the same time units.
 - `star_distance_data::Vector{Float64}`: 2D radial distances of the stars.
 - `age_data::Vector{Float64}`: Ages of the stars.
 - `temp_filter::Float64`: Maximum temperature allowed for the gas particles.
-- `age_filter::Unitful.Quantity`: Maximum age allowed for the stars.
+- `age_filter::Float64`: Maximum age allowed for the stars.
 - `max_r::Float64`: Maximum distance up to which the parameters will be calculated.
 - `bins::Int64 = 50`: Number of subdivisions of [0, `max_r`] to be used. It has to be at 
   least 5.
@@ -668,7 +668,7 @@ end
         age_filter::Float64,	
         max_r::Float64;
         bins::Int64 = 50,
-    )::Union{Nothing, Dict{String, Any}}
+    )::Dict{String, Vector}
 	
 Compute the surface density of several quantities. 
 
@@ -748,7 +748,7 @@ where ``\Sigma_{\rho\mathrm{(total)}}^n`` is the mass density of all the gas,
   - Key "SSFR" => Specific star formation rate surface density
   - Key "SFE" => Star formation efficiency surface density
   - Key "P" => Proportional to the pressure
-  - Key "Ψ_FMOL" => Star formation rate per unit of molecular gas
+  - Key "Psi_FMOL" => Star formation rate per unit of molecular gas
 """
 function quantities_2D(
     gas_mass_data::Vector{Float64},
@@ -763,7 +763,7 @@ function quantities_2D(
     age_filter::Float64,	
     max_r::Float64;
     bins::Int64 = 50,
-)::Union{Nothing, Dict{String, Any}}
+)::Dict{String, Vector}
 
     # Bin size check
     if bins < 5
@@ -876,7 +876,7 @@ function quantities_2D(
 		"SSFR"     => SSFR,
 		"SFE"      => SFE,
 		"P"        => P,
-        "Ψ_FMOL"   => Ψ_FMOL,
+        "Psi_FMOL"   => Ψ_FMOL,
 	)
 end
 
@@ -1152,78 +1152,169 @@ each column is a position.
 
 end
 
-"""
-    comparison(
-        x::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}, 
-        y::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}; 
-        atol::Float64 = 1e-5, 
-        rtol::Float64 = 1e-5,
-    )::Bool
+# """
+#     comparison(
+#         x::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}, 
+#         y::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}; 
+#         atol::Float64 = 1e-5, 
+#         rtol::Float64 = 1e-5,
+#     )::Bool
 
-Determine if two numbers, numeric arrays, or numeric tuples are approximately equal.
+# Determine if two numbers, numeric arrays, or numeric tuples are approximately equal.
+
+# # Arguments
+# - `x::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}`: First element to be compared.
+# - `y::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}`: Second element to be compared.
+# - `atol::Float64 = 1e-5`: Absolute tolerance.
+# - `rtol::Float64 = 1e-5`: Relative tolerance.
+
+# # Returns
+# - Return `true` if every pair of elements (X, Y) in (`x`, `y`) pass
+#   ```julia
+#   norm(X - Y) <= max(atol, rtol * max(norm(X), norm(Y)))
+#   ````
+# """
+# function comparison(
+#     x::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}, 
+#     y::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}; 
+#     atol::Float64 = 1e-5, 
+#     rtol::Float64 = 1e-5,
+# )::Bool
+
+#     return all(isapprox.(x, y; atol, rtol))
+
+# end
+
+# """
+#     comparison(
+#         x::AbstractArray{Union{Missing, T}} where T <: Real, 
+#         y::AbstractArray{Union{Missing, T}} where T <: Real; 
+#         atol::Float64 = 1e-5, 
+#         rtol::Float64 = 1e-5,
+#     )::Bool
+
+# Determine if two numeric arrays with missing are approximately equal.
+
+# # Arguments
+# - `x::AbstractArray{Union{Missing, T}} where T <: Real`: First element to be compared.
+# - `y::AbstractArray{Union{Missing, T}} where T <: Real`: Second element to be compared.
+# - `atol::Float64 = 1e-5`: Absolute tolerance.
+# - `rtol::Float64 = 1e-5`: Relative tolerance.
+
+# # Returns
+# - Return `true` if every pair of numeric elements (X, Y) in (`x`, `y`) pass
+#   ```julia
+#   norm(X - Y) <= max(atol, rtol * max(norm(X), norm(Y)))
+#   ````
+# """
+# function comparison(
+#     x::AbstractArray{Union{Missing, T}} where T <: Real, 
+#     y::AbstractArray{Union{Missing, T}} where T <: Real; 
+#     atol::Float64 = 1e-5, 
+#     rtol::Float64 = 1e-5,
+# )::Bool
+
+#     bools = Bool[]
+#     for (X, Y) in zip(x, y)
+#         if X === missing || Y === missing
+#             push!(bools, X === Y)
+#         else
+#             push!(bools, isapprox(X, Y; atol, rtol))
+#         end
+#     end
+
+#     return all(bools)
+
+# end
+
+# """
+#     comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
+
+# Determine if two elements are equal, as per the [isequal](https://docs.julialang.org/en/v1/base/base/#Base.isequal) function.
+
+# # Arguments
+# - `x`: First element to be compared.
+# - `y`: Second element to be compared.
+# - `atol::Float64 = 1e-5`: Absolute tolerance (for compatibility).
+# - `rtol::Float64 = 1e-5`: Relative tolerance (for compatibility).
+
+# # Returns
+# - Returns `isequal(x, y)`.
+# """
+# function comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
+
+#     return isequal(x, y)
+
+# end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
+    comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
+
+Determine if two elements are equal, as per the [isequal](https://docs.julialang.org/en/v1/base/base/#Base.isequal) function.
 
 # Arguments
-- `x::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}`: First element to be compared.
-- `y::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}`: Second element to be compared.
-- `atol::Float64 = 1e-5`: Absolute tolerance.
-- `rtol::Float64 = 1e-5`: Relative tolerance.
+- `x`: First element to be compared.
+- `y`: Second element to be compared.
+- `atol::Float64 = 1e-5`: Absolute tolerance (for compatibility).
+- `rtol::Float64 = 1e-5`: Relative tolerance (for compatibility).
 
 # Returns
-- Return `true` if every pair of elements (X, Y) in (`x`, `y`) pass
-  ```julia
-  norm(X - Y) <= max(atol, rtol * max(norm(X), norm(Y)))
-  ````
+- Returns `isequal(x, y)`.
 """
 function comparison(
-    x::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}, 
-    y::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}; 
+    x::Union{AbstractArray, Tuple}, 
+    y::Union{AbstractArray, Tuple}; 
     atol::Float64 = 1e-5, 
     rtol::Float64 = 1e-5,
 )::Bool
 
-    return all(isapprox.(x, y; atol, rtol))
+    return all(comparison.(x, y; atol, rtol))
 
 end
 
 """
-    comparison(
-        x::AbstractArray{Union{Missing, T}} where T <: Real, 
-        y::AbstractArray{Union{Missing, T}} where T <: Real; 
-        atol::Float64 = 1e-5, 
-        rtol::Float64 = 1e-5,
-    )::Bool
+    comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
 
-Determine if two numeric arrays with missing are approximately equal.
+Determine if two elements are equal, as per the [isequal](https://docs.julialang.org/en/v1/base/base/#Base.isequal) function.
 
 # Arguments
-- `x::AbstractArray{Union{Missing, T}} where T <: Real`: First element to be compared.
-- `y::AbstractArray{Union{Missing, T}} where T <: Real`: Second element to be compared.
-- `atol::Float64 = 1e-5`: Absolute tolerance.
-- `rtol::Float64 = 1e-5`: Relative tolerance.
+- `x`: First element to be compared.
+- `y`: Second element to be compared.
+- `atol::Float64 = 1e-5`: Absolute tolerance (for compatibility).
+- `rtol::Float64 = 1e-5`: Relative tolerance (for compatibility).
 
 # Returns
-- Return `true` if every pair of numeric elements (X, Y) in (`x`, `y`) pass
-  ```julia
-  norm(X - Y) <= max(atol, rtol * max(norm(X), norm(Y)))
-  ````
+- Returns `isequal(x, y)`.
 """
-function comparison(
-    x::AbstractArray{Union{Missing, T}} where T <: Real, 
-    y::AbstractArray{Union{Missing, T}} where T <: Real; 
-    atol::Float64 = 1e-5, 
-    rtol::Float64 = 1e-5,
-)::Bool
+function comparison(x::Number, y::Number; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
 
-    bools = Bool[]
-    for (X, Y) in zip(x, y)
-        if X === missing || Y === missing
-            push!(bools, X === Y)
-        else
-            push!(bools, isapprox(X, Y; atol, rtol))
-        end
+    if x === NaN || y === NaN
+        return isequal(x, y)
+    else 
+        return isapprox(x, y; atol, rtol)
     end
-
-    return all(bools)
 
 end
 
@@ -1246,6 +1337,17 @@ function comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
     return isequal(x, y)
 
 end
+
+
+
+
+
+
+
+
+
+
+
 
 """
     deep_comparison(

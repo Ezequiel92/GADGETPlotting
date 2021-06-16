@@ -84,7 +84,8 @@ export
     temperature_histogram_plot,
     rho_temp_plot,
     kennicutt_schmidt_plot,  
-    cpu_txt_plot,             
+    cpu_txt_plot,  
+    quantities_2D_plot,           
     # Pipeline functions ###################################################################           
     scatter_grid_pipeline,                
     density_map_pipeline,
@@ -102,7 +103,8 @@ export
     temperature_histogram_pipeline,
     rho_temp_pipeline,
     kennicutt_schmidt_pipeline,   
-    cpu_txt_pipeline,        
+    cpu_txt_pipeline,   
+    quantities_2D_pipeline,     
     # Auxiliary functions ##################################################################
     comparison,                     
     deep_comparison

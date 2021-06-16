@@ -46,7 +46,6 @@ figure = compare_simulations_plot(
     x_factor = 10,
     scale = (:identity, :log10),
 )
-
 savefig( 
     figure, 
     joinpath(BASE_OUT_PATH, "compare_simulations_plot.png"),
@@ -63,7 +62,6 @@ figure = density_profile_plot(
     bins = 50, 
     factor = 6,
 )
-
 savefig(
     figure, 
     joinpath(BASE_OUT_PATH, "density_profile_plot.png"),
@@ -78,7 +76,6 @@ figure = density_profile_plot(
     scale = :log10,
     factor = 6,
 )
-
 savefig(
     figure, 
     joinpath(BASE_OUT_PATH, "compare_density_profile_plot.png"),
@@ -92,7 +89,6 @@ figure = metallicity_profile_plot(
     scale = :log10, 
     bins = 50,
 )
-
 savefig(
     figure, 
     joinpath(BASE_OUT_PATH, "metallicity_profile_plot.png"),
@@ -107,7 +103,6 @@ figure = metallicity_profile_plot(
     scale = :log10,
     bins = 50,
 )
-
 savefig(
     figure, 
     joinpath(BASE_OUT_PATH, "compare_metallicity_profile_plot.png"),
@@ -121,7 +116,6 @@ figure = mass_profile_plot(
     bins = 50, 
     factor = 10,
 )
-
 savefig(
     figure, 
     joinpath(BASE_OUT_PATH, "mass_profile_plot.png"),
@@ -136,7 +130,6 @@ figure = mass_profile_plot(
     bins = 50,
     factor = 10,
 )
-
 savefig( 
     figure, 
     joinpath(BASE_OUT_PATH, "compare_mass_profile_plot.png"),
@@ -150,7 +143,6 @@ figure = sfr_txt_plot(
     bins = 50,
     scale = (:identity, :log10),
 )
-
 savefig(
     figure, 
     joinpath(BASE_OUT_PATH, "compare_columns_sfr_txt_plot.png"),
@@ -165,14 +157,12 @@ figure = sfr_txt_plot(
     bins = 50,
     scale = (:identity, :log10),
 )
-
 savefig(
     figure, 
     joinpath(BASE_OUT_PATH, "compare_sims_sfr_txt_plot.png"),
 )
 
 figure = temperature_histogram_plot(temp_data, 1UnitfulAstro.Myr, bins = 30)
-
 savefig( 
     figure, 
     joinpath(BASE_OUT_PATH, "temperature_histogram_plot.png"),
@@ -206,4 +196,37 @@ if SIM_COSMO == 0
 
     figure = cpu_txt_plot([cpu_txt_data, cpu_txt_data], ["sim_1" "sim_2"])
     savefig(figure, joinpath(BASE_OUT_PATH, "compare_cpu_txt_plot.png"))
+end
+
+# `FMOL` is not a block present in the examples of cosmological snapshots
+if sim_cosmo == 0
+    quantities2D = GADGETPlotting.quantities_2D(
+        gas_mass["mass"],
+        sqrt.(pos["gas"][1, :] .^ 2 + pos["gas"][2, :] .^ 2),
+        temp_data["temperature"],
+        star_mass["mass"],
+        sqrt.(pos["stars"][1, :] .^ 2 + pos["stars"][2, :] .^ 2),
+        age_data["ages"],
+        gas_mz["Z"],
+        fmol,
+        ustrip(Float64, temp_data["unit"], 3e4Unitful.K),
+        ustrip(Float64, age_data["unit"], 200UnitfulAstro.Myr),	
+        ustrip(Float64, pos["unit"], BOX_SIZE),
+        bins = 80,
+    )
+    figure = quantities_2D_plot(
+        quantities2D,
+        "SFE",
+        "OH",
+        Dict(
+            "mass" => UnitfulAstro.Msun, 
+            "length" => UnitfulAstro.Mpc, 
+            "time" => UnitfulAstro.Myr,
+        );
+        title = "OH vs. SFE",
+        x_factor = 28,
+        y_factor = 0,
+        scale = (:log10, :log10),
+    )
+    savefig(figure, joinpath(BASE_OUT_PATH, "quantities_2D_plot.png"))
 end
