@@ -113,6 +113,7 @@ end
     density_map_pipeline(
         base_name::String,
         source_path::String,
+        z_quantity::String,
         anim_name::String,
         frame_rate::Int64; 
         <keyword arguments>
@@ -126,6 +127,11 @@ and then generate a GIF and a video animating the images.
   set in the GADGET variable `SnapshotFileBase`.
 - `source_path::String`: Path to the directory containing the snapshot files, 
   set in the GADGET variable `OutputDir`.
+- `z_quantity::String`: Quantity to be mapped. The options are:
+  * `"Z"`: The metallicity (relative to solar metallicity).
+  * `"fmol"`: The fraction of molecular gas.
+  * `"fatom"`: The fraction of atomic gas.
+  * `nothing`: The density itself will be mapped.
 - `anim_name::String`: File name of the generated video and GIF, without the extension.
 - `frame_rate::Int64`: Frame rate of the output video and GIF.
 - `output_path::String = "density_map"`: Path to the output directory. The images will 
@@ -158,6 +164,7 @@ and then generate a GIF and a video animating the images.
 function density_map_pipeline(
     base_name::String,
     source_path::String,
+    z_quantity::String,
     anim_name::String,
     frame_rate::Int64;
     output_path::String = "density_map",
@@ -191,7 +198,18 @@ function density_map_pipeline(
         ρ = get_density(snapshot; sim_cosmo, filter_function, density_unit)
         hsml = get_hsml(snapshot; sim_cosmo, filter_function, length_unit)
 
-        figure = density_map_plot(pos, mass, ρ, hsml; plane, axes)
+        if z_quantity == "Z"
+            metal = get_metallicity(snapshot, "gas"; sim_cosmo, filter_function)
+            z = (metal["Z"] ./ mass["mass"]) ./ SOLAR_METALLICITY
+        elseif z_quantity == "fmol"
+            z = get_fmol(snapshot; sim_cosmo, filter_function)
+        elseif z_quantity == "fatom"
+            z = get_fatom(snapshot; sim_cosmo, filter_function)
+        else
+            z = nothing
+        end
+
+        figure = density_map_plot(z, pos, mass, ρ, hsml; plane, axes)
  
         savefig(
             figure, 
@@ -2513,6 +2531,119 @@ function rho_temp_pipeline(
 end
 
 """
+    fraction_temp_pipeline(
+        base_name::String,
+        source_path::String,
+        anim_name::String,
+        frame_rate::Int64,
+        fraction::String; 
+        <keyword arguments>
+    )::Nothing
+
+Save the results of the [`fraction_temp_plot`](@ref) function as one image per snapshot, 
+and then generate a GIF and a video animating the images. 
+
+# Arguments
+- `base_name::String`: Base names of the snapshot files, set in the GADGET 
+  variable `SnapshotFileBase`.
+- `source_path::String`: Paths to the directories containing the snapshot files, 
+  set in the GADGET variable `OutputDir`.
+- `anim_name::String`: File name of the generated video and GIF, without the extension.
+- `frame_rate::Int64`: Frame rate of the output video and GIF.
+- `fraction::String`: Which fraction to plot against the temperature. The options are
+  * `"atomic"`: Atomic fraction.
+  * `"molecular"`: Molecular fraction.
+- `output_path::String = "rho_vs_temp"`: Path to the output directory. The images will be 
+  stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where XXX is 
+  the number of the snapshot. The GIF and the video will be stored in `output_path`.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable `ComovingIntegrationOn`: 
+  * `0` ⟶ Newtonian simulation (static universe).
+  * `1` ⟶ Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+
+  `foo(snap_file::String, type::String)::Vector{Int64}`
+  
+  See the function [`pass_all`](@ref) for an example. By default, no particles are filtered.
+- `step::Int64 = 1`: Step used to traverse the list of snapshots. By default all snapshots will be plotted.
+- `temp_unit::Unitful.FreeUnits = Unitful.K`: Unit of temperature to be used in the 
+  output, all available temperature units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
+- `format::String = ".png"`: File format of the output figure. All formats supported by the
+  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+"""
+function fraction_temp_pipeline(
+    base_name::String,
+    source_path::String,
+    anim_name::String,
+    frame_rate::Int64,
+    fraction::String;
+    output_path::String = "rho_vs_temp",
+    sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
+    step::Int64 = 1,
+    temp_unit::Unitful.FreeUnits = Unitful.K,
+    format::String = ".png",
+)::Nothing
+
+    # Get the simulation data
+    sim = get_snapshot_path(base_name, source_path)
+    time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function)
+    time_unit = time_data["units"]["time"]
+
+    snap_files = @view sim["snap_files"][1:step:end] 
+    snap_numbers = @view sim["numbers"][1:step:end] 
+    times = @view time_data["clock_time"][1:step:end]
+
+    # Create a directory to save the plots, if it doesn't exist
+    img_path = mkpath(joinpath(output_path, "images"))
+    
+    # Progress bar
+    prog_bar = Progress(
+        length(snap_files), 
+        dt = 0.5, 
+        desc = "Generating the fmol/fatom vs T plots... ",
+        color = :blue,
+        barglyphs = BarGlyphs("|#  |"),
+    )
+
+    # Generate and save the plots
+    data_iter = zip(times, snap_numbers, snap_files)
+    # animation = @animate          
+    for (t, number, snapshot) in data_iter
+
+        temp_data = get_temperature(snapshot; sim_cosmo, filter_function, temp_unit)
+
+        if fraction == "molecular"
+            fmol = get_fmol(snapshot; sim_cosmo, filter_function)
+            figure = fraction_temp_plot(temp_data, fmol, t * time_unit, "Molecular fraction")
+        elseif fraction == "atomic"
+            fatom = get_fmol(snapshot; sim_cosmo, filter_function)
+            figure = fraction_temp_plot(temp_data, fatom, t * time_unit, "Atomic fraction")
+        end
+
+        savefig(
+            figure, 
+            joinpath(img_path, base_name * "_" * number * format),
+        )
+
+        next!(prog_bar)
+        
+    end
+
+    # Make the GIF
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
+
+    # Make the video
+    make_video(img_path, format, output_path, anim_name, frame_rate)
+
+    return nothing
+end
+
+"""
     kennicutt_schmidt_pipeline(
         base_name::String,
         source_path::String; 
@@ -3001,126 +3132,148 @@ function quantities_2D_pipeline(
     return nothing
 end
 
-# @doc raw"""
-#     number_density_histogram_pipeline(
-#         base_name::String,
-#         source_path::String,
-#         anim_name::String,
-#         frame_rate::Int64; 
-#         <keyword arguments>
-#     )::Nothing
+@doc raw"""
+    fraction_histogram_pipeline(
+        base_name::String,
+        source_path::String,
+        anim_name::String,
+        frame_rate::Int64,
+        fraction::String; 
+        <keyword arguments>
+    )::Nothing
 
-# Save the results of the [`number_density_histogram_plot`](@ref) function as one image per snapshot, 
-# and then generate a GIF and a video animating the images. 
+Save the results of the [`number_density_histogram_plot`](@ref) function as one image per snapshot, 
+and then generate a GIF and a video animating the images. 
 
-# Vertical lines with personalized positions and ticks can be added to the plot. By default
-# none are drawn.
+Vertical lines with personalized positions and ticks can be added to the plot. By default
+none are drawn.
 
-# # Arguments
-# - `base_name::String`: Base names of the snapshot files, set in the GADGET 
-#   variable `SnapshotFileBase`.
-# - `source_path::String`: Paths to the directories containing the snapshot files, 
-#   set in the GADGET variable `OutputDir`.
-# - `anim_name::String`: File name of the generated video and GIF, without the extension.
-# - `frame_rate::Int64`: Frame rate of the output video and GIF.
-# - `output_path::String = "density_histogram"`: Path to the output directory. The images 
-#   will be stored in `output_path`/images/ and will be named `base_name`\_XXX`format` where 
-#   XXX is the number of the snapshot. The GIF and the video will be stored in `output_path`.
-# - `sim_cosmo::Int64 = 0`: Value of the GADGET variable `ComovingIntegrationOn`: 
-#   * `0` ⟶ Newtonian simulation (static universe).
-#   * `1` ⟶ Cosmological simulation (expanding universe).
-# - `filter_function::Function = pass_all`: A function with the signature: 
+# Arguments
+- `base_name::String`: Base names of the snapshot files, set in the GADGET 
+  variable `SnapshotFileBase`.
+- `source_path::String`: Paths to the directories containing the snapshot files, 
+  set in the GADGET variable `OutputDir`.
+- `anim_name::String`: File name of the generated video and GIF, without the extension.
+- `frame_rate::Int64`: Frame rate of the output video and GIF.
+- `fraction::String`: Which fraction to plot against the temperature. The options are
+  * `"atomic"`: Atomic fraction.
+  * `"molecular"`: Molecular fraction.
+- `output_path::String = "density_histogram"`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named `base_name`\_XXX`format` where 
+  XXX is the number of the snapshot. The GIF and the video will be stored in `output_path`.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable `ComovingIntegrationOn`: 
+  * `0` ⟶ Newtonian simulation (static universe).
+  * `1` ⟶ Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
 
-#   `foo(snap_file::String, type::String)::Vector{Int64}`
+  `foo(snap_file::String, type::String)::Vector{Int64}`
   
-#   See the function [`pass_all`](@ref) for an example. By default, no particles are filtered.
-# - `flags::Union{Tuple{Vector{<:Real}, Vector{<:AbstractString}}, Nothing} = nothing`: The first 
-#   vector in the Tuple has the positions of the vetical lines. The second has the 
-#   corresponding labels. The positions should be in the correct units of density and take 
-#   into account `factor`.
-# - `step::Int64 = 1`: Step used to traverse the list of snapshots. By default all snapshots will be plotted.
-# - `factor::Int64 = 0`: Numerical exponent to scale the number density, e.g. if `factor` = 10 
-#   the x axis will be scaled by ``10^{10}``. The default is no scaling.
-# - `y_scale::Symbol = :identity`: Scaling to be used for the y axis.
-#   The two options are:
-#   * `:identity` ⟶ no scaling.
-#   * `:log10` ⟶ logarithmic scaling.
-# - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
-#   all available time units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
-# - `nh_unit::Unitful.FreeUnits = 1 / Unitful.cm^3`: Unit of number density to be used in the 
-#   output, all available length units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and 
-#   [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
-# - `format::String = ".png"`: File format of the output figure. All formats supported by the
-#   PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
-# """
-# function density_histogram_pipeline(
-#     base_name::String,
-#     source_path::String,
-#     anim_name::String,
-#     frame_rate::Int64;
-#     output_path::String = "density_histogram",
-#     sim_cosmo::Int64 = 0,
-#     filter_function::Function = pass_all,
-#     flags::Union{Tuple{Vector{<:Real}, Vector{<:AbstractString}}, Nothing} = nothing,
-#     step::Int64 = 1,
-#     factor::Int64 = 0,
-#     y_scale::Symbol = :identity,
-#     time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
-#     nh_unit::Unitful.FreeUnits = 1 / UnitfulAstro.cm^3,
-#     format::String = ".png",
-# )::Nothing
+  See the function [`pass_all`](@ref) for an example. By default, no particles are filtered.
+- `flags::Union{Tuple{Vector{<:Real}, Vector{<:AbstractString}}, Nothing} = nothing`: The first 
+  vector in the Tuple has the positions of the vetical lines. The second has the 
+  corresponding labels. The positions should be in the correct units of density and take 
+  into account `factor`.
+- `bins::Int64 = 20`: Number of subdivisions used for the histogram.
+- `step::Int64 = 1`: Step used to traverse the list of snapshots. By default all snapshots will be plotted.
+- `y_scale::Symbol = :identity`: Scaling to be used for the y axis.
+  The two options are:
+  * `:identity` ⟶ no scaling.
+  * `:log10` ⟶ logarithmic scaling.
+- `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
+  all available time units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
+- `format::String = ".png"`: File format of the output figure. All formats supported by the
+  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+"""
+function fraction_histogram_pipeline(
+    base_name::String,
+    source_path::String,
+    anim_name::String,
+    frame_rate::Int64,
+    fraction::String;
+    output_path::String = "fraction_histogram",
+    sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
+    flags::Union{Tuple{Vector{<:Real}, Vector{<:AbstractString}}, Nothing} = nothing,
+    bins::Int64 = 20,
+    step::Int64 = 1,
+    y_scale::Symbol = :identity,
+    time_unit::Unitful.FreeUnits = UnitfulAstro.Myr,
+    format::String = ".png",
+)::Nothing
 
-#     # Get the simulation data
-#     sim = get_snapshot_path(base_name, source_path)
-#     time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
+    # Get the simulation data
+    sim = get_snapshot_path(base_name, source_path)
+    time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function, time_unit)
 
-#     snap_files = @view sim["snap_files"][1:step:end]
-#     snap_numbers = @view sim["numbers"][1:step:end]
-#     times = @view time_data["clock_time"][1:step:end]
+    snap_files = @view sim["snap_files"][1:step:end]
+    snap_numbers = @view sim["numbers"][1:step:end]
+    times = @view time_data["clock_time"][1:step:end]
 
-#     # Create a directory to save the plots, if it doesn't exist
-#     img_path = mkpath(joinpath(output_path, "images"))
+    # Create a directory to save the plots, if it doesn't exist
+    img_path = mkpath(joinpath(output_path, "images"))
 
-#     # Progress bar
-#     prog_bar = Progress(
-#         length(snap_files), 
-#         dt = 0.5, 
-#         desc = "Computing the density histograms... ",
-#         color = :blue,
-#         barglyphs = BarGlyphs("|#  |"),
-#     )
+    # Progress bar
+    prog_bar = Progress(
+        length(snap_files), 
+        dt = 0.5, 
+        desc = "Computing the fmol/fatom histograms... ",
+        color = :blue,
+        barglyphs = BarGlyphs("|#  |"),
+    )
 
-#     # Generate and save the plots 
-#     data_iter = zip(times, snap_numbers, snap_files)
-#     # animation = @animate 
-#     for (t, number, snapshot) in data_iter
+    # Generate and save the plots 
+    data_iter = zip(times, snap_numbers, snap_files)
+    # animation = @animate 
+    for (t, number, snapshot) in data_iter
 
-#         nh = get_number_density(snapshot; sim_cosmo, filter_function, nh_unit)
+        if fraction == "molecular"
 
-#         figure = set_vertical_flags(
-#             flags, 
-#             number_density_histogram_plot(nh, t * time_unit; factor, y_scale),
-#         )
+            fmol = get_fmol(snapshot; sim_cosmo, filter_function)
+            figure = fraction_histogram_plot(
+                fmol, 
+                t * time_unit, 
+                "Molecular fraction";
+                bins, 
+                y_scale,
+            )
 
-#         savefig(
-#             figure, 
-#             joinpath(img_path, base_name * "_" * number * format),
-#         )
+        elseif fraction == "atomic"
 
-#         next!(prog_bar)
+            fatom = get_fmol(snapshot; sim_cosmo, filter_function)
+            figure = fraction_histogram_plot(
+                fatom, 
+                t * time_unit, 
+                "Atomic fraction"; 
+                bins, 
+                y_scale,
+            )
 
-#     end
+        end
 
-#     # Make the GIF
-#     # gif(
-#     #     animation, 
-#     #     joinpath(output_path, anim_name * ".gif"), 
-#     #     fps = frame_rate, 
-#     #     show_msg = false,
-#     # )
+        figure = set_vertical_flags(
+            flags, 
+            number_density_histogram_plot(nh, t * time_unit; factor, y_scale),
+        )
 
-#     # Make the video
-#     # make_video(img_path, format, output_path, anim_name, frame_rate)
+        savefig(
+            figure, 
+            joinpath(img_path, base_name * "_" * number * format),
+        )
 
-#     return nothing
-# end
+        next!(prog_bar)
+
+    end
+
+    # Make the GIF
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
+
+    # Make the video
+    make_video(img_path, format, output_path, anim_name, frame_rate)
+
+    return nothing
+end

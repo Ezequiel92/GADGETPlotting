@@ -747,87 +747,6 @@ function get_density(
     return Dict("density" => ρ, "unit" => density_unit)
 end
 
-# """
-#     get_number_density(snapshot::String; <keyword arguments>)::Dict{String,Any}
-
-# Get the number densities of the gas particles at a specific time step.
-
-# # Arguments
-# - `snapshot::String`: Path to the snapshot file.
-# - `sim_cosmo::Int64 = 0`: Value of the GADGET variable `ComovingIntegrationOn`: 
-#   * 0 ⟶ Newtonian simulation (static universe).
-#   * 1 ⟶ Cosmological simulation (expanding universe).
-# - `filter_function::Function = pass_all`: A function with the signature: 
-
-#   `foo(snap_file::String, type::String)::Vector{Int64}`
-  
-#   See the function [`pass_all`](@ref) for an example. By default, no particles are filtered.
-# - `nh_unit::Unitful.FreeUnits = 1 / Unitful.cm^3`: Unit of 
-#   number density to be used in the output, all available length units in [Unitful.jl](https://github.com/PainterQubits/Unitful.jl) and 
-#   [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
-
-# # Returns
-# - A dictionary with two entries.
-#   - `"nh"` ⟹ Number densities of the gas particles. 
-#   - `"unit"` ⟹ The unit used, i.e. is a pass-through of `nh_unit`. 
-# """
-# function get_number_density(
-#     snapshot::String;
-#     sim_cosmo::Int64 = 0,
-#     filter_function::Function = pass_all,
-#     nh_unit::Unitful.FreeUnits = 1 / Unitful.cm^3,
-# )::Dict{String, Any}
-
-#     header = read_header(snapshot)
-
-#     if sim_cosmo == 1
-
-#         # Struct for unit conversion
-#         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
-
-#         # Data availability check
-#         (
-#             block_present(GadgetIO.select_file(snapshot, 0), "NH") ||
-#             error("There is no block 'NH' in snapshot located at $snapshot")
-#         )
-
-#     else
-
-#         # Struct for unit conversion
-#         # For Newtonian simulation uses the default scale factor: a = 1
-#         GU = GadgetPhysicalUnits(hpar = header.h0)
-
-#         # Data availability check
-#         (
-#             block_present(snapshot, "NH") ||
-#             error("There is no block 'NH' in snapshot located at $snapshot")
-#         )
-
-#     end
-
-#     if header.nall[1] != 0
-
-#         nh = read_blocks_over_all_files(
-#             snapshot, 
-#             ["NH"];
-#             filter_function = x -> filter_function(x, "gas"), 
-#             parttype = 0, 
-#             verbose = false
-#         )["NH"]
-
-#         # Transformation from internal units to `nh_unit`
-#         nh = @. ustrip(Float64, nh_unit, nh * GU.rho_cgs)
-
-#     else
-
-#         # In the case that there are no gas particles
-#         nh = Float64[]
-
-#     end
-
-#     return Dict("nh" => nh, "unit" => nh_unit)
-# end
-
 """
     get_hsml(snapshot::String; <keyword arguments>)::Dict{String,Any}
 
@@ -1851,11 +1770,7 @@ function get_cpu_txt(
 end
 
 """
-    get_fmol(
-        snapshot::String;
-        sim_cosmo::Int64 = 0,
-        filter_function::Function = pass_all,
-    )::Vector{Float64}
+    get_fmol(snapshot::String; <keyword arguments>)::Vector{Float64}
 
 Get the fraction of molecular gas of each particle at a specific time step. 
 
@@ -1882,9 +1797,6 @@ function get_fmol(
     header = read_header(snapshot)
 
     if sim_cosmo == 1
-        
-        # Struct for unit conversion
-        GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
 
         # Data availability check
         (
@@ -1893,10 +1805,6 @@ function get_fmol(
         )
 
     else
-
-        # Struct for unit conversion
-        # For Newtonian simulation uses the default scale factor: a = 1
-        GU = GadgetPhysicalUnits(hpar = header.h0)
 
         # Data availability check
         (
@@ -1923,5 +1831,72 @@ function get_fmol(
 		
     end
 
+    replace!(fmol, -1 => 0.0)
+
     return fmol
+end
+
+"""
+    get_fatom(snapshot::String; <keyword arguments>)::Vector{Float64}
+
+Get the fraction of atomic gas of each particle at a specific time step. 
+
+# Arguments
+- `snapshot::String`: Path to a given snapshot.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable `ComovingIntegrationOn`: 
+  * 0 ⟶ Newtonian simulation (static universe).
+  * 1 ⟶ Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+
+  `foo(snap_file::String, type::String)::Vector{Int64}`
+    
+  See the function [`pass_all`](@ref) for an example. By default, no particles are filtered.
+    
+# Returns
+- Vector with fraction of atomic gas of each particle
+"""
+function get_fatom(
+    snapshot::String;
+    sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
+)::Vector{Float64}
+
+    header = read_header(snapshot)
+
+    if sim_cosmo == 1
+
+        # Data availability check
+        (
+            block_present(GadgetIO.select_file(snapshot, 0), "NH") ||
+            error("There is no block 'NH' in snapshot located at $snapshot")
+        )
+
+    else
+
+        # Data availability check
+        (
+            block_present(snapshot, "NH") ||
+            error("There is no block 'NH' in snapshot located at $snapshot")
+        )
+
+    end
+
+    if header.nall[1] != 0
+
+        nh = read_blocks_over_all_files(
+            snapshot, 
+            ["NH"];
+            filter_function = x -> filter_function(x, "gas"), 
+            parttype = 0, 
+            verbose = false
+        )["NH"]
+
+    else
+
+        # In the case that there are no gas particles
+        nh = Float64[]
+
+    end
+
+    return nh
 end

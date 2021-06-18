@@ -5,7 +5,7 @@
 figure = scatter_grid_plot(pos)
 savefig(figure, joinpath(BASE_OUT_PATH, "scatter_grid_plot.png"))
 
-figure = density_map_plot(pos, gas_mass, density, hsml)
+figure = density_map_plot(nothing, pos, gas_mass, density, hsml)
 savefig(figure, joinpath(BASE_OUT_PATH, "density_map_plot.png"))
 
 figure = star_map_plot(pos)
@@ -53,6 +53,22 @@ savefig(
 
 figure = density_histogram_plot(density, 1UnitfulAstro.Myr, factor = 10)
 savefig(figure, joinpath(BASE_OUT_PATH, "density_histogram_plot.png"))
+
+figure = fraction_histogram_plot(
+    fmol, 
+    1UnitfulAstro.Myr, 
+    "Molecular fraction", 
+    y_scale = :log10,
+)
+savefig(figure, joinpath(BASE_OUT_PATH, "fmol_histogram_plot.png"))
+
+figure = fraction_histogram_plot(
+    fatom, 
+    1UnitfulAstro.Myr, 
+    "Atomic fraction", 
+    y_scale = :log10,
+)
+savefig(figure, joinpath(BASE_OUT_PATH, "fatom_histogram_plot.png"))
 
 figure = density_profile_plot(
     pos, 
@@ -170,6 +186,12 @@ savefig(
 
 figure = rho_temp_plot(temp_data, density, 1UnitfulAstro.Myr)
 savefig(figure, joinpath(BASE_OUT_PATH, "rho_temp_plot.png"))
+
+figure = fraction_temp_plot(temp_data, fmol, 1UnitfulAstro.Myr, "Molecular fraction")
+savefig(figure, joinpath(BASE_OUT_PATH, "mol_fraction_temp_plot.png"))
+
+figure = fraction_temp_plot(temp_data, fatom, 1UnitfulAstro.Myr, "Atomic fraction")
+savefig(figure, joinpath(BASE_OUT_PATH, "atom_fraction_temp_plot.png"))
 
 figure = kennicutt_schmidt_plot(
     gas_mass,

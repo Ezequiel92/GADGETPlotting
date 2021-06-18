@@ -16,6 +16,7 @@ scatter_grid_pipeline(
 density_map_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
+    nothing,
     "density_animation",
     FPS,
     output_path = joinpath(BASE_OUT_PATH, "density_map"),
@@ -105,6 +106,16 @@ density_histogram_pipeline(
     output_path = joinpath(BASE_OUT_PATH, "density_histogram"),
     sim_cosmo = SIM_COSMO,
     factor = 10,
+)
+
+fraction_histogram_pipeline(
+    SNAP_NAME,
+    BASE_SRC_PATH,
+    "fmol_histogram_animation",
+    FPS,
+    fraction = "molecular";
+    output_path = joinpath(BASE_OUT_PATH, "molecular_histogram"),
+    sim_cosmo = SIM_COSMO,
 )
 
 density_profile_pipeline(
@@ -239,6 +250,16 @@ rho_temp_pipeline(
     "rho_vs_temp_animation",
     FPS,
     output_path = joinpath(BASE_OUT_PATH, "rho_vs_temp"),
+    sim_cosmo = SIM_COSMO,
+)
+
+fraction_temp_pipeline(
+    SNAP_NAME,
+    BASE_SRC_PATH,
+    "fmol_vs_temp_animation",
+    FPS,
+    "molecular";
+    output_path = joinpath(BASE_OUT_PATH, "fmol_vs_temp"),
     sim_cosmo = SIM_COSMO,
 )
 

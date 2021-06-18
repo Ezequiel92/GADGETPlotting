@@ -10,7 +10,7 @@
     # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "scatter_grid_plot.png") load(temp_img)
 
-    @test_nowarn fig = density_map_plot(pos, gas_mass, density, hsml)
+    @test_nowarn fig = density_map_plot(nothing, pos, gas_mass, density, hsml)
     # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "density_map_plot.png") load(temp_img)
 
@@ -70,6 +70,24 @@
     @test_nowarn fig = density_histogram_plot(density, 1UnitfulAstro.Myr, factor = 10)
     # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "density_histogram_plot.png") load(temp_img)
+
+    @test_nowarn fig = fraction_histogram_plot(
+        fmol, 
+        1UnitfulAstro.Myr, 
+        "Molecular fraction", 
+        y_scale = :log10,
+    )
+    # savefig(fig, temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "fmol_histogram_plot.png") load(temp_img)
+
+    @test_nowarn fig = fraction_histogram_plot(
+        fatom, 
+        1UnitfulAstro.Myr, 
+        "Atomic fraction", 
+        y_scale = :log10,
+    )
+    # savefig(fig, temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "fatom_histogram_plot.png") load(temp_img)
 
     @test_nowarn fig = density_profile_plot(
         pos, 
@@ -170,6 +188,14 @@
     @test_nowarn fig = rho_temp_plot(temp_data, density, 1UnitfulAstro.Myr)
     # savefig(fig, temp_img)
     # @test_reference joinpath(BASE_DATA_PATH, "rho_temp_plot.png") load(temp_img)
+
+    @test_nowarn fig = fraction_temp_plot(temp_data, fmol, 1UnitfulAstro.Myr, "Molecular fraction")
+    # savefig(fig, temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "mol_fraction_temp_plot.png") load(temp_img)
+
+    @test_nowarn fig = fraction_temp_plot(temp_data, fatom, 1UnitfulAstro.Myr, "Atomic fraction")
+    # savefig(fig, temp_img)
+    # @test_reference joinpath(BASE_DATA_PATH, "atom_fraction_temp_plot.png") load(temp_img)
 
     @test_nowarn fig = kennicutt_schmidt_plot(
         gas_mass,

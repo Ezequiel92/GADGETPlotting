@@ -67,6 +67,9 @@ if SIM_COSMO == 0
 
     # `FMOL` is not a block present in the examples of cosmological snapshots
     fmol = GADGETPlotting.get_fmol(snap_n; sim_cosmo)
+
+    # `NH` is not a block present in the examples of cosmological snapshots
+    fatom = GADGETPlotting.get_fatom(snap_n; sim_cosmo)
 end
 
 ##############
@@ -80,7 +83,8 @@ if SIM_COSMO == 0
         snaps, time_series, pos, density, hsml, 
         gas_mass, dm_mass, star_mass, gas_z, star_z, 
         gas_mz, star_mz, temp_data, age_data, 
-		birth_pos, sfr_txt_data, cpu_txt_data, fmol,
+		birth_pos, sfr_txt_data, cpu_txt_data, 
+        fmol, fatom,
     )
 
 else

@@ -1,3 +1,4 @@
+using Plots: display
 ############################################################################################
 #   Example scripts for GADGETPlotting.jl
 #
