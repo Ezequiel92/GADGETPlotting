@@ -1,10 +1,23 @@
-# 🌌 GADGET Plotting
+<div align="center">
+    <h1>🌌 GADGET Plotting</h1>
+</div>
 
-[![ForTheBadge built-with-science](http://forthebadge.com/images/badges/built-with-science.svg)](https://GitHub.com/Ezequiel92/) [![ForTheBadge made-with-julia](https://forthebadge.com/images/badges/made-with-julia.svg)](https://julialang.org)
+<p align="center">
+    <a href="https://GitHub.com/Ezequiel92/"><img src="http://forthebadge.com/images/badges/built-with-science.svg"></a>
+    <a href="https://julialang.org"><img src="https://forthebadge.com/images/badges/made-with-julia.svg"></a>
+</p>
 
-[![Codecov](https://img.shields.io/codecov/c/github/Ezequiel92/GADGETPlotting?style=flat&logo=Codecov&labelColor=2B2D2F)](https://codecov.io/github/Ezequiel92/BiblographyFormatter?branch=main) [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Ezequiel92/GADGETPlotting/Continuous%20integration?style=flat&logo=GitHub&labelColor=2B2D2F)](https://github.com/Ezequiel92/GADGETPlotting/actions) [![Documentation](https://img.shields.io/badge/docs-dev-blue.svg?style=flat&logo=GitBook&labelColor=2B2D2F)](https://Ezequiel92.github.io/GADGETPlotting/dev)
+<p align="center">
+    <a href="https://codecov.io/github/Ezequiel92/GADGETPlotting?branch=main"><img src="https://img.shields.io/codecov/c/github/Ezequiel92/GADGETPlotting?style=flat&logo=Codecov&labelColor=2B2D2F"></a>
+    <a href="https://github.com/Ezequiel92/GADGETPlotting/blob/main/LICENSE"><img src="https://img.shields.io/github/workflow/status/Ezequiel92/GADGETPlotting/Continuous%20integration?style=flat&logo=GitHub&labelColor=2B2D2F"></a>
+    <a href="mailto:elozano@df.uba.ar"><img src="https://img.shields.io/maintenance/yes/2021?style=flat&labelColor=2B2D2F"></a>
+</p>
 
-[![GitHub](https://img.shields.io/github/license/Ezequiel92/GADGETPlotting?style=flat&logo=GNU&labelColor=2B2D2F)](https://github.com/Ezequiel92/GADGETPlotting/blob/main/LICENSE) [![Maintenance](https://img.shields.io/maintenance/yes/2021?style=flat&labelColor=2B2D2F)](mailto:elozano@df.uba.ar)
+<p align="center">
+    <a href="https://Ezequiel92.github.io/GADGETPlotting/dev"><img src="https://img.shields.io/badge/docs-dev-blue.svg?style=flat&logo=GitBook&labelColor=2B2D2F"></a>
+    <a href="https://github.com/Ezequiel92/GADGETPlotting/actions"><img src="https://img.shields.io/github/license/Ezequiel92/GADGETPlotting?style=flat&logo=GNU&labelColor=2B2D2F"></a>
+    <a href="https://www.codefactor.io/repository/github/ezequiel92/gadgetplotting"><img src="https://img.shields.io/codefactor/grade/github/ezequiel92/gadgetplotting?style=flat&logo=CodeFactor&labelColor=2B2D2F"></a>
+</p>
 
 Julia module for creating plots, GIFs, and videos from the data produced by GADGET2/3/4 simulations.
 
