@@ -3142,7 +3142,7 @@ end
         <keyword arguments>
     )::Nothing
 
-Save the results of the [`number_density_histogram_plot`](@ref) function as one image per snapshot, 
+Save the results of the [`fraction_histogram_plot`](@ref) function as one image per snapshot, 
 and then generate a GIF and a video animating the images. 
 
 Vertical lines with personalized positions and ticks can be added to the plot. By default
