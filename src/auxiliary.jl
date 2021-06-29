@@ -1,4 +1,3 @@
-using Base: func_for_method_checked, Float64
 ############################################################################################
 # Auxiliary functions
 ############################################################################################
@@ -1152,123 +1151,6 @@ each column is a position.
 
 end
 
-# """
-#     comparison(
-#         x::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}, 
-#         y::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}; 
-#         atol::Float64 = 1e-5, 
-#         rtol::Float64 = 1e-5,
-#     )::Bool
-
-# Determine if two numbers, numeric arrays, or numeric tuples are approximately equal.
-
-# # Arguments
-# - `x::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}`: First element to be compared.
-# - `y::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}`: Second element to be compared.
-# - `atol::Float64 = 1e-5`: Absolute tolerance.
-# - `rtol::Float64 = 1e-5`: Relative tolerance.
-
-# # Returns
-# - Return `true` if every pair of elements (X, Y) in (`x`, `y`) pass
-#   ```julia
-#   norm(X - Y) <= max(atol, rtol * max(norm(X), norm(Y)))
-#   ````
-# """
-# function comparison(
-#     x::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}, 
-#     y::Union{Real, AbstractArray{<:Real}, Tuple{Vararg{Real}}}; 
-#     atol::Float64 = 1e-5, 
-#     rtol::Float64 = 1e-5,
-# )::Bool
-
-#     return all(isapprox.(x, y; atol, rtol))
-
-# end
-
-# """
-#     comparison(
-#         x::AbstractArray{Union{Missing, T}} where T <: Real, 
-#         y::AbstractArray{Union{Missing, T}} where T <: Real; 
-#         atol::Float64 = 1e-5, 
-#         rtol::Float64 = 1e-5,
-#     )::Bool
-
-# Determine if two numeric arrays with missing are approximately equal.
-
-# # Arguments
-# - `x::AbstractArray{Union{Missing, T}} where T <: Real`: First element to be compared.
-# - `y::AbstractArray{Union{Missing, T}} where T <: Real`: Second element to be compared.
-# - `atol::Float64 = 1e-5`: Absolute tolerance.
-# - `rtol::Float64 = 1e-5`: Relative tolerance.
-
-# # Returns
-# - Return `true` if every pair of numeric elements (X, Y) in (`x`, `y`) pass
-#   ```julia
-#   norm(X - Y) <= max(atol, rtol * max(norm(X), norm(Y)))
-#   ````
-# """
-# function comparison(
-#     x::AbstractArray{Union{Missing, T}} where T <: Real, 
-#     y::AbstractArray{Union{Missing, T}} where T <: Real; 
-#     atol::Float64 = 1e-5, 
-#     rtol::Float64 = 1e-5,
-# )::Bool
-
-#     bools = Bool[]
-#     for (X, Y) in zip(x, y)
-#         if X === missing || Y === missing
-#             push!(bools, X === Y)
-#         else
-#             push!(bools, isapprox(X, Y; atol, rtol))
-#         end
-#     end
-
-#     return all(bools)
-
-# end
-
-# """
-#     comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
-
-# Determine if two elements are equal, as per the [isequal](https://docs.julialang.org/en/v1/base/base/#Base.isequal) function.
-
-# # Arguments
-# - `x`: First element to be compared.
-# - `y`: Second element to be compared.
-# - `atol::Float64 = 1e-5`: Absolute tolerance (for compatibility).
-# - `rtol::Float64 = 1e-5`: Relative tolerance (for compatibility).
-
-# # Returns
-# - Returns `isequal(x, y)`.
-# """
-# function comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
-
-#     return isequal(x, y)
-
-# end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 """
     comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
 
@@ -1337,17 +1219,6 @@ function comparison(x, y; atol::Float64 = 1e-5, rtol::Float64 = 1e-5)::Bool
     return isequal(x, y)
 
 end
-
-
-
-
-
-
-
-
-
-
-
 
 """
     deep_comparison(

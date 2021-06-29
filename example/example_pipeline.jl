@@ -49,8 +49,6 @@ gas_star_evolution_pipeline(
 cmdf_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
-    "CMDF_animation",
-    FPS,
     output_path = joinpath(BASE_OUT_PATH, "CMDF"),
     sim_cosmo = SIM_COSMO,
 )
@@ -58,8 +56,6 @@ cmdf_pipeline(
 cmdf_pipeline(
     [SNAP_NAME, SNAP_NAME],
     [BASE_SRC_PATH, BASE_SRC_PATH],
-    "CMDF_animation",
-    FPS,
     ["sim1" "sim2"],
     output_path = joinpath(BASE_OUT_PATH, "compare_CMDF"),
     sim_cosmo = SIM_COSMO,
@@ -68,8 +64,6 @@ cmdf_pipeline(
 birth_histogram_pipeline(
     SNAP_NAME,
     BASE_SRC_PATH,
-    "birth_histogram_animation",
-    FPS,
     output_path = joinpath(BASE_OUT_PATH, "birth_histogram"),
     sim_cosmo = SIM_COSMO,
 )
@@ -113,7 +107,7 @@ fraction_histogram_pipeline(
     BASE_SRC_PATH,
     "fmol_histogram_animation",
     FPS,
-    fraction = "molecular";
+    "molecular";
     output_path = joinpath(BASE_OUT_PATH, "molecular_histogram"),
     sim_cosmo = SIM_COSMO,
 )
@@ -305,4 +299,32 @@ if SIM_COSMO == 0
         bins = 80,
         scale = (:log10, :log10),
     )
+
+    fmol_fatom_pipeline(
+        SNAP_NAME,
+        BASE_SRC_PATH,
+        "fmol_vs_ftom_animation",
+        FPS;
+        output_path = joinpath(BASE_OUT_PATH, "fmol_vs_ftom"),
+        sim_cosmo = SIM_COSMO,
+    )
+
+    fatom_rho_pipeline(
+        SNAP_NAME,
+        BASE_SRC_PATH,
+        "fatom_vs_rho_animation",
+        FPS;
+        output_path = joinpath(BASE_OUT_PATH, "fatom_vs_rho"),
+        sim_cosmo = SIM_COSMO,
+    )
+
+    fmol_Z_pipeline(
+        SNAP_NAME,
+        BASE_SRC_PATH,
+        "fmol_vs_Z_animation",
+        FPS;
+        output_path = joinpath(BASE_OUT_PATH, "fmol_vs_Z"),
+        sim_cosmo = SIM_COSMO,
+    )
+
 end

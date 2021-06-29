@@ -113,7 +113,7 @@ end
     density_map_pipeline(
         base_name::String,
         source_path::String,
-        z_quantity::String,
+        z_quantity::Union{String, Nothing},
         anim_name::String,
         frame_rate::Int64; 
         <keyword arguments>
@@ -127,7 +127,7 @@ and then generate a GIF and a video animating the images.
   set in the GADGET variable `SnapshotFileBase`.
 - `source_path::String`: Path to the directory containing the snapshot files, 
   set in the GADGET variable `OutputDir`.
-- `z_quantity::String`: Quantity to be mapped. The options are:
+- `z_quantity::Union{String, Nothing}`: Quantity to be mapped. The options are:
   * `"Z"`: The metallicity (relative to solar metallicity).
   * `"fmol"`: The fraction of molecular gas.
   * `"fatom"`: The fraction of atomic gas.
@@ -164,7 +164,7 @@ and then generate a GIF and a video animating the images.
 function density_map_pipeline(
     base_name::String,
     source_path::String,
-    z_quantity::String,
+    z_quantity::Union{String, Nothing},
     anim_name::String,
     frame_rate::Int64;
     output_path::String = "density_map",
@@ -483,22 +483,18 @@ end
 """
     cmdf_pipeline(
         base_name::String,
-        source_path::String,
-        anim_name::String,
-        frame_rate::Int64; 
+        source_path::String; 
         <keyword arguments>
     )::Nothing
 
-Save the results of the [`cmdf_plot`](@ref) function as one image per snapshot, if there are stars 
-present, and then generate a GIF and a video animating the images. 
+Save the results of the [`cmdf_plot`](@ref) function as one image per snapshot, if there are 
+stars present. 
 
 # Arguments
 - `base_name::String`: Base names of the snapshot files, set in the GADGET 
   variable `SnapshotFileBase`.
 - `source_path::String`: Paths to the directories containing the snapshot files, 
   set in the GADGET variable `OutputDir`.
-- `anim_name::String`: File name of the generated video and GIF, without the extension.
-- `frame_rate::Int64`: Frame rate of the output video and GIF.
 - `output_path::String = "CMDF"`: Path to the output directory. The images will be stored 
   in `output_path`/images/ and will be named `base_name`\\_XXX`format` where XXX is the 
   number of the snapshot. The GIF and the video will be stored in `output_path`.
@@ -515,13 +511,11 @@ present, and then generate a GIF and a video animating the images.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the time 
   stamps, all available time units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function cmdf_pipeline(
     base_name::String,
-    source_path::String,
-    anim_name::String,
-    frame_rate::Int64;
+    source_path::String;
     output_path::String = "CMDF",
     sim_cosmo::Int64 = 0,
     filter_function::Function = pass_all,
@@ -553,7 +547,6 @@ function cmdf_pipeline(
 
     # Generate and save the plots.
     data_iter = zip(times, snap_numbers, snap_files)
-    # animation = @animate          
     for (t, number, snapshot) in data_iter
 
         header = read_header(snapshot)
@@ -581,17 +574,6 @@ function cmdf_pipeline(
 
     end
 
-    # Make the GIF.
-    gif(
-        animation, 
-        joinpath(output_path, anim_name * ".gif"), 
-        fps = frame_rate, 
-        show_msg = false,
-    )
-
-    # Make the video.
-    make_video(img_path, format, output_path, anim_name, frame_rate)
-
     return nothing
 end
 
@@ -599,22 +581,18 @@ end
     cmdf_pipeline(
         base_name::Vector{String},
         source_path::Vector{String},
-        anim_name::String,
-        frame_rate::Int64,
         labels::Array{String, 2}; 
         <keyword arguments>
     )::Nothing
 
-Save the results of the [`cmdf_plot`](@ref) function for several simulations as one image per snapshot,
-if there are stars present, and then generate a GIF and a video animating the images. 
+Save the results of the [`cmdf_plot`](@ref) function for several simulations as one image 
+per snapshot, if there are stars present.
 
 # Arguments
 - `base_name::Vector{String}`: Base names of the snapshot files, set in the GADGET 
   variable `SnapshotFileBase`.
 - `source_path::Vector{String}`: Paths to the directories containing the snapshot files, 
   set in the GADGET variable `OutputDir`.
-- `anim_name::String`: File name of the generated video and GIF, without the extension.
-- `frame_rate::Int64`: Frame rate of the output video and GIF.
 - `labels::Array{String, 2}`: Labels for the different simulations.
 - `output_path::String = "CMDF"`: Path to the output directory. The images will be stored 
   in `output_path`/images/ and will be named `base_name`\\_XXX`format` where XXX is the 
@@ -633,13 +611,11 @@ if there are stars present, and then generate a GIF and a video animating the im
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the time
   stamps, all available time units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function cmdf_pipeline(
     base_name::Vector{String},
     source_path::Vector{String},
-    anim_name::String,
-    frame_rate::Int64,
     labels::Array{String, 2};
     output_path::String = "CMDF",
     sim_cosmo::Int64 = 0,
@@ -678,7 +654,6 @@ function cmdf_pipeline(
 
     # Generate and save the plots
     data_iter = enumerate(zip(times, snap_files))
-    # animation = @animate 
     for (i, (t, snapshots)) in data_iter
         
         headers = read_header.(snapshots)
@@ -709,39 +684,24 @@ function cmdf_pipeline(
 
     end
 
-    # Make the GIF
-    gif(
-        animation, 
-        joinpath(output_path, anim_name * ".gif"), 
-        fps = frame_rate, 
-        show_msg = false,
-    )
-
-    # Make the video
-    make_video(img_path, format, output_path, anim_name, frame_rate)
-
     return nothing
 end
 
 """
     birth_histogram_pipeline(
         base_name::String,
-        source_path::String,
-        anim_name::String,
-        frame_rate::Int64; 
+        source_path::String; 
         <keyword arguments>
     )::Nothing
 
-Save the results of the [`birth_histogram_plot`](@ref) function as one image per snapshot, if there are 
-stars present, and then generate a GIF and a video animating the images. 
+Save the results of the [`birth_histogram_plot`](@ref) function as one image per snapshot, 
+if there are stars present. 
 
 # Arguments
 - `base_name::String`: Base names of the snapshot files, set in the GADGET 
   variable `SnapshotFileBase`.
 - `source_path::String`: Paths to the directories containing the snapshot files, 
   set in the GADGET variable `OutputDir`.
-- `anim_name::String`: File name of the generated video and GIF, without the extension.
-- `frame_rate::Int64`: Frame rate of the output video and GIF.
 - `output_path::String = "birth_histogram"`: Path to the output directory. The images 
   will be stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where 
   XXX is the number of the snapshot. The GIF and the video will be stored in `output_path`.
@@ -757,13 +717,11 @@ stars present, and then generate a GIF and a video animating the images.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
   output, all available length units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function birth_histogram_pipeline(
     base_name::String,
-    source_path::String,
-    anim_name::String,
-    frame_rate::Int64;
+    source_path::String;
     output_path::String = "birth_histogram",
     sim_cosmo::Int64 = 0,
     filter_function::Function = pass_all,
@@ -793,7 +751,6 @@ function birth_histogram_pipeline(
 
     # Generate and save the plots
     data_iter = enumerate(zip(snap_numbers, snap_files))
-    # animation = @animate          
     for (i, (number, snapshot)) in data_iter
 
         header = read_header(snapshot)
@@ -820,17 +777,6 @@ function birth_histogram_pipeline(
         next!(prog_bar)
 
     end
-
-    # Make the GIF
-    gif(
-        animation, 
-        joinpath(output_path, anim_name * ".gif"), 
-        fps = frame_rate, 
-        show_msg = false,
-    )
-
-    # Make the video
-    make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -880,7 +826,7 @@ Args:
   be used in the output, all available time and mass units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) 
   can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function evolution_summary_pipeline(
     base_name::String,
@@ -1035,7 +981,7 @@ One column per simulation, one row per sanpshot.
   density to be used in the output, all available density units in [UnitfulAstro.jl](https://github.com/PainterQubits/Unitful.jl) and 
   [UnitfulAstro.jl](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png".  
+  GR backend can be used, namely ".pdf", ".svg" and ".png".  
 """
 function compare_simulations_pipeline(
     base_name::Vector{String},
@@ -1199,7 +1145,7 @@ none are drawn.
   density to be used in the output, all available density units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) 
   can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function density_histogram_pipeline(
     base_name::String,
@@ -1240,8 +1186,7 @@ function density_histogram_pipeline(
 
     # Generate and save the plots 
     data_iter = zip(times, snap_numbers, snap_files)
-    # animation = @animate 
-    for (t, number, snapshot) in data_iter
+    animation = @animate for (t, number, snapshot) in data_iter
 
         ρ = get_density(snapshot; sim_cosmo, filter_function, density_unit)
 
@@ -1329,7 +1274,7 @@ and then generate a GIF and a video animating the images.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
   all available time units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function density_profile_pipeline(
     base_name::String,
@@ -1374,8 +1319,7 @@ function density_profile_pipeline(
 
     # Generate and save the plots
     data_iter = zip(times, snap_numbers, snap_files)
-    # animation = @animate          
-    for (t, number, snapshot) in data_iter
+    animation = @animate for (t, number, snapshot) in data_iter
 
         positions = get_position(
             snapshot; 
@@ -1414,7 +1358,7 @@ function density_profile_pipeline(
     )
 
     # Make the video
-    make_video(img_path, format, output_path * type, anim_name, frame_rate)
+    make_video(img_path, format, output_path, anim_name, frame_rate)
 
     return nothing
 end
@@ -1477,7 +1421,7 @@ per snapshot, and then generate a GIF and a video animating the images.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
   all available time units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function density_profile_pipeline(
     base_name::Vector{String},
@@ -1530,8 +1474,7 @@ function density_profile_pipeline(
 
     # Generate and save the plots
     data_iter = enumerate(zip(times, snap_files))
-    # animation = @animate 
-    for (i, (t, snapshots)) in data_iter
+    animation = @animate for (i, (t, snapshots)) in data_iter
 
         positions = get_position.(
             snapshots; 
@@ -1624,7 +1567,7 @@ and then generate a GIF and a video animating the images.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
   all available time units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function metallicity_profile_pipeline(
     base_name::String,
@@ -1667,8 +1610,7 @@ function metallicity_profile_pipeline(
 
     # Generate and save the plots
     data_iter = zip(times, snap_numbers, snap_files)
-    # animation = @animate          
-    for (t, number, snapshot) in data_iter
+    animation = @animate for (t, number, snapshot) in data_iter
 
         positions = get_position(
             snapshot; 
@@ -1767,7 +1709,7 @@ image per snapshot, and then generate a GIF and a video animating the images.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
   all available time units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function metallicity_profile_pipeline(
     base_name::Vector{String},
@@ -1818,8 +1760,7 @@ function metallicity_profile_pipeline(
 
     # Generate and save the plots
     data_iter = enumerate(zip(times, snap_files))
-    # animation = @animate 
-    for (i, (t, snapshots)) in data_iter
+    animation = @animate for (i, (t, snapshots)) in data_iter
 
         positions = get_position.(
             snapshots; 
@@ -1921,7 +1862,7 @@ and then generate a GIF and a video animating the images.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
   all available time units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function mass_profile_pipeline(
     base_name::String,
@@ -1966,8 +1907,7 @@ function mass_profile_pipeline(
 
     # Generate and save the plots
     data_iter = zip(times, snap_numbers, snap_files)
-    # animation = @animate          
-    for (t, number, snapshot) in data_iter
+    animation = @animate for (t, number, snapshot) in data_iter
 
         positions = get_position(
             snapshot; 
@@ -2069,7 +2009,7 @@ per snapshot, and then generate a GIF and a video animating the images.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
   all available time units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png".  
+  GR backend can be used, namely ".pdf", ".svg" and ".png".  
 """
 function mass_profile_pipeline(
     base_name::Vector{String},
@@ -2122,8 +2062,7 @@ function mass_profile_pipeline(
 
     # Generate and save the plots
     data_iter = enumerate(zip(times, snap_files))
-    # animation = @animate 
-    for (i, (t, snapshots)) in data_iter
+    animation = @animate for (i, (t, snapshots)) in data_iter
 
         positions = get_position.(
             snapshots; 
@@ -2227,7 +2166,7 @@ per column depending on `comparison_type`.
   be used in the output, all available time and mass units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) 
   can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function sfr_txt_pipeline(
     snapshots::Vector{String},
@@ -2355,7 +2294,7 @@ and then generate a GIF and a video animating the images.
 - `temp_unit::Unitful.FreeUnits = Unitful.K`: Unit of temperature to be used in the 
   output, all available temperature units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function temperature_histogram_pipeline(
     base_name::String,
@@ -2393,8 +2332,7 @@ function temperature_histogram_pipeline(
 
     # Generate and save the plots
     data_iter = zip(times, snap_numbers, snap_files)
-    # animation = @animate          
-    for (t, number, snapshot) in data_iter
+    animation = @animate for (t, number, snapshot) in data_iter
 
         temp_data = get_temperature(snapshot; sim_cosmo, filter_function, temp_unit)
 
@@ -2460,7 +2398,7 @@ and then generate a GIF and a video animating the images.
   density to be used in the output, all available density units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) 
   can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function rho_temp_pipeline(
     base_name::String,
@@ -2499,8 +2437,7 @@ function rho_temp_pipeline(
 
     # Generate and save the plots
     data_iter = zip(times, snap_numbers, snap_files)
-    # animation = @animate          
-    for (t, number, snapshot) in data_iter
+    animation = @animate for (t, number, snapshot) in data_iter
 
         temp_data = get_temperature(snapshot; sim_cosmo, filter_function, temp_unit)
         density_data = get_density(snapshot; sim_cosmo, filter_function, density_unit)
@@ -2568,7 +2505,7 @@ and then generate a GIF and a video animating the images.
 - `temp_unit::Unitful.FreeUnits = Unitful.K`: Unit of temperature to be used in the 
   output, all available temperature units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function fraction_temp_pipeline(
     base_name::String,
@@ -2607,8 +2544,7 @@ function fraction_temp_pipeline(
 
     # Generate and save the plots
     data_iter = zip(times, snap_numbers, snap_files)
-    # animation = @animate          
-    for (t, number, snapshot) in data_iter
+    animation = @animate for (t, number, snapshot) in data_iter
 
         temp_data = get_temperature(snapshot; sim_cosmo, filter_function, temp_unit)
 
@@ -2690,7 +2626,7 @@ at least five data points for the linear fitting.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
   output, all available length units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function kennicutt_schmidt_pipeline(
     base_name::String,
@@ -2825,7 +2761,7 @@ Save the result of the [`cpu_txt_plot`](@ref) function as one image per simulati
 - `names::Vector{String} = String[]`: Names for the files. If an empty string is given, the 
   images will be assigned a number, starting from 0.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function cpu_txt_pipeline(
     source_path::Vector{String},
@@ -2892,7 +2828,7 @@ process among several simulations.
 - `title::String = ""`: Title for the figure. If an empty string is given no title is 
   printed, which is the default.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function cpu_txt_pipeline(
     source_path::Vector{String},
@@ -2929,7 +2865,7 @@ end
 
 Save the results of the [`quantities_2D_plot`](@ref) function as one folder per snapshot.
 
-It will produce output only for the snapshots that have stars.
+It will produce output only for snapshots that have stars.
 
 # Arguments
 - `base_name::String`: Base names of the snapshot files, set in the GADGET 
@@ -2974,7 +2910,7 @@ It will produce output only for the snapshots that have stars.
 - `length_unit::Unitful.FreeUnits = UnitfulAstro.kpc`: Unit of length to be used in the 
   output, all available length units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function quantities_2D_pipeline(
     base_name::String,
@@ -3132,7 +3068,7 @@ function quantities_2D_pipeline(
     return nothing
 end
 
-@doc raw"""
+"""
     fraction_histogram_pipeline(
         base_name::String,
         source_path::String,
@@ -3159,7 +3095,7 @@ none are drawn.
   * `"atomic"`: Atomic fraction.
   * `"molecular"`: Molecular fraction.
 - `output_path::String = "density_histogram"`: Path to the output directory. The images 
-  will be stored in `output_path`/images/ and will be named `base_name`\_XXX`format` where 
+  will be stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where 
   XXX is the number of the snapshot. The GIF and the video will be stored in `output_path`.
 - `sim_cosmo::Int64 = 0`: Value of the GADGET variable `ComovingIntegrationOn`: 
   * `0` ⟶ Newtonian simulation (static universe).
@@ -3182,7 +3118,7 @@ none are drawn.
 - `time_unit::Unitful.FreeUnits = UnitfulAstro.Myr`: Unit of time to be used in the output, 
   all available time units in [Unitful](https://github.com/PainterQubits/Unitful.jl) and [UnitfulAstro](https://github.com/JuliaAstro/UnitfulAstro.jl) can be used.
 - `format::String = ".png"`: File format of the output figure. All formats supported by the
-  PGFPlotsX backend can be used, namely ".pdf", ".tex", ".svg" and ".png". 
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
 """
 function fraction_histogram_pipeline(
     base_name::String,
@@ -3223,8 +3159,7 @@ function fraction_histogram_pipeline(
 
     # Generate and save the plots 
     data_iter = zip(times, snap_numbers, snap_files)
-    # animation = @animate 
-    for (t, number, snapshot) in data_iter
+    animation = @animate for (t, number, snapshot) in data_iter
 
         if fraction == "molecular"
 
@@ -3250,10 +3185,7 @@ function fraction_histogram_pipeline(
 
         end
 
-        figure = set_vertical_flags(
-            flags, 
-            number_density_histogram_plot(nh, t * time_unit; factor, y_scale),
-        )
+        figure = set_vertical_flags(flags, figure)
 
         savefig(
             figure, 
@@ -3262,6 +3194,307 @@ function fraction_histogram_pipeline(
 
         next!(prog_bar)
 
+    end
+
+    # Make the GIF
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
+
+    # Make the video
+    make_video(img_path, format, output_path, anim_name, frame_rate)
+
+    return nothing
+end
+
+"""
+    fmol_fatom_pipeline(
+        base_name::String,
+        source_path::String,
+        anim_name::String,
+        frame_rate::Int64; 
+        <keyword arguments>
+    )::Nothing
+
+Save the results of the [`fmol_fatom_plot`](@ref) function as one image per snapshot, 
+and then generate a GIF and a video animating the images. 
+
+# Arguments
+- `base_name::String`: Base names of the snapshot files, set in the GADGET 
+  variable `SnapshotFileBase`.
+- `source_path::String`: Paths to the directories containing the snapshot files, 
+  set in the GADGET variable `OutputDir`.
+- `anim_name::String`: File name of the generated video and GIF, without the extension.
+- `frame_rate::Int64`: Frame rate of the output video and GIF.
+- `output_path::String = "fmol_vs_ftom"`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where 
+  XXX is the number of the snapshot. The GIF and the video will be stored in `output_path`.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable `ComovingIntegrationOn`: 
+  * `0` ⟶ Newtonian simulation (static universe).
+  * `1` ⟶ Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+
+  `foo(snap_file::String, type::String)::Vector{Int64}`
+  
+  See the function [`pass_all`](@ref) for an example. By default, no particles are filtered.
+- `step::Int64 = 1`: Step used to traverse the list of snapshots. By default all snapshots will be plotted.
+- `format::String = ".png"`: File format of the output figure. All formats supported by the
+  GR backend can be used, namely ".pdf", ".svg" and ".png". 
+"""
+function fmol_fatom_pipeline(
+    base_name::String,
+    source_path::String,
+    anim_name::String,
+    frame_rate::Int64;
+    output_path::String = "fmol_vs_ftom",
+    sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
+    step::Int64 = 1,
+    format::String = ".png",
+)::Nothing
+
+    # Get the simulation data
+    sim = get_snapshot_path(base_name, source_path)
+    time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function)
+    time_unit = time_data["units"]["time"]
+
+    snap_files = @view sim["snap_files"][1:step:end] 
+    snap_numbers = @view sim["numbers"][1:step:end] 
+    times = @view time_data["clock_time"][1:step:end]
+
+    # Create a directory to save the plots, if it doesn't exist
+    img_path = mkpath(joinpath(output_path, "images"))
+    
+    # Progress bar
+    prog_bar = Progress(
+        length(snap_files), 
+        dt = 0.5, 
+        desc = "Generating the fmol vs fatom plots... ",
+        color = :blue,
+        barglyphs = BarGlyphs("|#  |"),
+    )
+
+    # Generate and save the plots
+    data_iter = zip(times, snap_numbers, snap_files)
+    animation = @animate for (t, number, snapshot) in data_iter
+
+        density = get_density(snapshot; sim_cosmo, filter_function)
+        fmol = get_fmol(snapshot; sim_cosmo, filter_function)
+        fatom = get_fmol(snapshot; sim_cosmo, filter_function)
+        mass = get_mass(snapshot, "gas"; sim_cosmo, filter_function)
+        metal = get_metallicity(snapshot, "gas"; sim_cosmo, filter_function)
+        
+        figure = fmol_fatom_plot(fmol, fatom, density, metal, mass, t * time_unit)
+
+        savefig(
+            figure, 
+            joinpath(img_path, base_name * "_" * number * format),
+        )
+
+        next!(prog_bar)
+        
+    end
+
+    # Make the GIF
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
+
+    # Make the video
+    make_video(img_path, format, output_path, anim_name, frame_rate)
+
+    return nothing
+end
+
+"""
+    fatom_rho_pipeline(
+        base_name::String,
+        source_path::String,
+        anim_name::String,
+        frame_rate::Int64; 
+        <keyword arguments>
+    )::Nothing
+
+Save the results of the [`fatom_rho_plot`](@ref) function as one image per snapshot, 
+and then generate a GIF and a video animating the images. 
+
+# Arguments
+- `base_name::String`: Base names of the snapshot files, set in the GADGET 
+  variable `SnapshotFileBase`.
+- `source_path::String`: Paths to the directories containing the snapshot files, 
+  set in the GADGET variable `OutputDir`.
+- `anim_name::String`: File name of the generated video and GIF, without the extension.
+- `frame_rate::Int64`: Frame rate of the output video and GIF.
+- `output_path::String = "fatom_vs_rho""`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where 
+  XXX is the number of the snapshot. The GIF and the video will be stored in `output_path`.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable `ComovingIntegrationOn`: 
+  * `0` ⟶ Newtonian simulation (static universe).
+  * `1` ⟶ Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+
+  `foo(snap_file::String, type::String)::Vector{Int64}`
+  
+  See the function [`pass_all`](@ref) for an example. By default, no particles are filtered.
+- `step::Int64 = 1`: Step used to traverse the list of snapshots. By default all snapshots will be plotted.
+- `format::String = ".png"`: File format of the output figure. All formats supported by the
+  GR backend can be used, namely ".pdf", ".svg" and ".png".  
+"""
+function fatom_rho_pipeline(
+    base_name::String,
+    source_path::String,
+    anim_name::String,
+    frame_rate::Int64;
+    output_path::String = "fatom_vs_rho",
+    sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
+    step::Int64 = 1,
+    format::String = ".png",
+)::Nothing
+
+    # Get the simulation data
+    sim = get_snapshot_path(base_name, source_path)
+    time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function)
+    time_unit = time_data["units"]["time"]
+
+    snap_files = @view sim["snap_files"][1:step:end] 
+    snap_numbers = @view sim["numbers"][1:step:end] 
+    times = @view time_data["clock_time"][1:step:end]
+
+    # Create a directory to save the plots, if it doesn't exist
+    img_path = mkpath(joinpath(output_path, "images"))
+    
+    # Progress bar
+    prog_bar = Progress(
+        length(snap_files), 
+        dt = 0.5, 
+        desc = "Generating the fatom vs ρ plots... ",
+        color = :blue,
+        barglyphs = BarGlyphs("|#  |"),
+    )
+
+    # Generate and save the plots
+    data_iter = zip(times, snap_numbers, snap_files)
+    animation = @animate for (t, number, snapshot) in data_iter
+
+        density = get_density(snapshot; sim_cosmo, filter_function)
+        fatom = get_fatom(snapshot; sim_cosmo, filter_function)
+        
+        figure = fatom_rho_plot(fatom, density, t * time_unit)
+
+        savefig(
+            figure, 
+            joinpath(img_path, base_name * "_" * number * format),
+        )
+
+        next!(prog_bar)
+        
+    end
+
+    # Make the GIF
+    gif(
+        animation, 
+        joinpath(output_path, anim_name * ".gif"), 
+        fps = frame_rate, 
+        show_msg = false,
+    )
+
+    # Make the video
+    make_video(img_path, format, output_path, anim_name, frame_rate)
+
+    return nothing
+end
+
+"""
+    fmol_Z_pipeline(
+        base_name::String,
+        source_path::String,
+        anim_name::String,
+        frame_rate::Int64; 
+        <keyword arguments>
+    )::Nothing
+
+Save the results of the [`fatom_rho_plot`](@ref) function as one image per snapshot, 
+and then generate a GIF and a video animating the images. 
+
+# Arguments
+- `base_name::String`: Base names of the snapshot files, set in the GADGET 
+  variable `SnapshotFileBase`.
+- `source_path::String`: Paths to the directories containing the snapshot files, 
+  set in the GADGET variable `OutputDir`.
+- `anim_name::String`: File name of the generated video and GIF, without the extension.
+- `frame_rate::Int64`: Frame rate of the output video and GIF.
+- `output_path::String = "fmol_vs_Z""`: Path to the output directory. The images 
+  will be stored in `output_path`/images/ and will be named `base_name`\\_XXX`format` where 
+  XXX is the number of the snapshot. The GIF and the video will be stored in `output_path`.
+- `sim_cosmo::Int64 = 0`: Value of the GADGET variable `ComovingIntegrationOn`: 
+  * `0` ⟶ Newtonian simulation (static universe).
+  * `1` ⟶ Cosmological simulation (expanding universe).
+- `filter_function::Function = pass_all`: A function with the signature: 
+
+  `foo(snap_file::String, type::String)::Vector{Int64}`
+  
+  See the function [`pass_all`](@ref) for an example. By default, no particles are filtered.
+- `step::Int64 = 1`: Step used to traverse the list of snapshots. By default all snapshots will be plotted.
+- `format::String = ".png"`: File format of the output figure. All formats supported by the
+  GR backend can be used, namely ".pdf", ".svg" and ".png".  
+"""
+function fmol_Z_pipeline(
+    base_name::String,
+    source_path::String,
+    anim_name::String,
+    frame_rate::Int64;
+    output_path::String = "fmol_vs_Z",
+    sim_cosmo::Int64 = 0,
+    filter_function::Function = pass_all,
+    step::Int64 = 1,
+    format::String = ".png",
+)::Nothing
+
+    # Get the simulation data
+    sim = get_snapshot_path(base_name, source_path)
+    time_data = get_time_evolution(sim["snap_files"]; sim_cosmo, filter_function)
+    time_unit = time_data["units"]["time"]
+
+    snap_files = @view sim["snap_files"][1:step:end] 
+    snap_numbers = @view sim["numbers"][1:step:end] 
+    times = @view time_data["clock_time"][1:step:end]
+
+    # Create a directory to save the plots, if it doesn't exist
+    img_path = mkpath(joinpath(output_path, "images"))
+    
+    # Progress bar
+    prog_bar = Progress(
+        length(snap_files), 
+        dt = 0.5, 
+        desc = "Generating the fmol vs Z plots... ",
+        color = :blue,
+        barglyphs = BarGlyphs("|#  |"),
+    )
+
+    # Generate and save the plots
+    data_iter = zip(times, snap_numbers, snap_files)
+    animation = @animate for (t, number, snapshot) in data_iter
+
+        mass = get_mass(snapshot, "gas"; sim_cosmo, filter_function)
+        metal = get_metallicity(snapshot, "gas"; sim_cosmo, filter_function)
+        fmol = get_fmol(snapshot; sim_cosmo, filter_function)
+        
+        figure = fmol_Z_plot(fmol, metal, mass, t * time_unit)
+
+        savefig(
+            figure, 
+            joinpath(img_path, base_name * "_" * number * format),
+        )
+
+        next!(prog_bar)
+        
     end
 
     # Make the GIF

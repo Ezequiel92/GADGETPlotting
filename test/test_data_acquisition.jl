@@ -70,6 +70,21 @@ if SIM_COSMO == 0
 
     # `NH` is not a block present in the examples of cosmological snapshots
     fatom = GADGETPlotting.get_fatom(snap_n; sim_cosmo)
+
+    quantities2D = GADGETPlotting.quantities_2D(
+        gas_mass["mass"],
+        sqrt.(pos["gas"][1, :] .^ 2 + pos["gas"][2, :] .^ 2),
+        temp_data["temperature"],
+        star_mass["mass"],
+        sqrt.(pos["stars"][1, :] .^ 2 + pos["stars"][2, :] .^ 2),
+        age_data["ages"],
+        gas_mz["Z"],
+        fmol,
+        ustrip(Float64, temp_data["unit"], 3e4Unitful.K),
+        ustrip(Float64, age_data["unit"], 200UnitfulAstro.Myr),	
+        ustrip(Float64, pos["unit"], BOX_SIZE),
+        bins = 80,
+    )
 end
 
 ##############

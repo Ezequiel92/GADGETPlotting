@@ -87,20 +87,23 @@ export
     cpu_txt_plot,  
     quantities_2D_plot, 
     fraction_temp_plot, 
-    fraction_histogram_plot,         
+    fraction_histogram_plot,
+    fmol_fatom_plot,  
+    fatom_rho_plot,
+    fmol_Z_plot,       
     # Pipeline functions ###################################################################           
     scatter_grid_pipeline,                
     density_map_pipeline,
     star_map_pipeline,
     gas_star_evolution_pipeline,
+    cmdf_pipeline,
+    birth_histogram_pipeline,
     evolution_summary_pipeline,
     compare_simulations_pipeline,
     density_histogram_pipeline,
     density_profile_pipeline,
     metallicity_profile_pipeline,
     mass_profile_pipeline,
-    cmdf_pipeline,
-    birth_histogram_pipeline,
     sfr_txt_pipeline,
     temperature_histogram_pipeline,
     rho_temp_pipeline,
@@ -109,8 +112,10 @@ export
     quantities_2D_pipeline,   
     fraction_temp_pipeline,  
     fraction_histogram_pipeline,
+    fmol_fatom_pipeline,
+    fatom_rho_pipeline,
+    fmol_Z_pipeline,
     # Auxiliary functions ##################################################################
     comparison,                     
     deep_comparison
-
 end

@@ -222,20 +222,6 @@ end
 
 # `FMOL` is not a block present in the examples of cosmological snapshots
 if sim_cosmo == 0
-    quantities2D = GADGETPlotting.quantities_2D(
-        gas_mass["mass"],
-        sqrt.(pos["gas"][1, :] .^ 2 + pos["gas"][2, :] .^ 2),
-        temp_data["temperature"],
-        star_mass["mass"],
-        sqrt.(pos["stars"][1, :] .^ 2 + pos["stars"][2, :] .^ 2),
-        age_data["ages"],
-        gas_mz["Z"],
-        fmol,
-        ustrip(Float64, temp_data["unit"], 3e4Unitful.K),
-        ustrip(Float64, age_data["unit"], 200UnitfulAstro.Myr),	
-        ustrip(Float64, pos["unit"], BOX_SIZE),
-        bins = 80,
-    )
     figure = quantities_2D_plot(
         quantities2D,
         "SFE",
@@ -251,4 +237,16 @@ if sim_cosmo == 0
         scale = (:log10, :log10),
     )
     savefig(figure, joinpath(BASE_OUT_PATH, "quantities_2D_plot.png"))
+
+    figure = fatom_rho_plot(fatom, density, 1UnitfulAstro.Myr)
+    savefig(figure, joinpath(BASE_OUT_PATH, "fatom_rho_plot.png"))
+
+    figure = fmol_Z_plot(fmol, gas_z, gas_mass, 1UnitfulAstro.Myr)
+    savefig(figure, joinpath(BASE_OUT_PATH, "fmol_Z_plot.png"))
+
+    figure = fmol_fatom_plot(fmol, fatom, density, gas_z, gas_mass, 1UnitfulAstro.Myr)
+    savefig(figure, joinpath(BASE_OUT_PATH, "fmol_fatom_plot.png"))
+
 end
+
+
