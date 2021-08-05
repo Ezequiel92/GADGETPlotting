@@ -4439,7 +4439,7 @@ function fmol_fatom_plot(
         ytickfontsize = 22,
         xguidefontsize = 25,
         yguidefontsize = 25,
-        legendfontsize = 22,
+        legendfontsize = 18,
     )
     annotate!(
         relative(figure, 0.5, 0.95, log = (scale == :log10, false))...,

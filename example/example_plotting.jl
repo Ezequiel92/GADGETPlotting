@@ -128,7 +128,7 @@ figure = mass_profile_plot(
     pos, 
     gas_mass, 
     1UnitfulAstro.Myr, 
-    scale = :log10, 
+    scale = :identity, 
     bins = 50, 
     factor = 10,
 )
@@ -142,7 +142,7 @@ figure = mass_profile_plot(
     [gas_mass, gas_mass],
     1UnitfulAstro.Myr,
     ["sim_1" "sim_2"],
-    scale = :log10,
+    scale = :identity,
     bins = 50,
     factor = 10,
 )
@@ -234,7 +234,7 @@ if sim_cosmo == 0
         title = "OH vs. SFE",
         x_factor = 28,
         y_factor = 0,
-        scale = (:log10, :log10),
+        scale = (:log10, :identity),
     )
     savefig(figure, joinpath(BASE_OUT_PATH, "quantities_2D_plot.png"))
 
