@@ -153,6 +153,12 @@ git-tree-sha1 = "9f02045d934dc030edad45944ea80dbd1f0ebea7"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.5.7"
 
+[[Cosmology]]
+deps = ["QuadGK", "Unitful", "UnitfulAstro"]
+git-tree-sha1 = "18a9bc27345c108c4317b9c18f3c7bd726f31779"
+uuid = "76746363-e552-5dba-9a5a-cef6fa9cc5ab"
+version = "1.0.0"
+
 [[Crayons]]
 git-tree-sha1 = "3f71217b538d7aaee0b69ab47d9b7724ca8afa0d"
 uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
@@ -359,10 +365,10 @@ uuid = "826b50da-1eb7-48f3-bd4b-d2350582c309"
 version = "0.5.5"
 
 [[GadgetUnits]]
-deps = ["Documenter", "DocumenterTools", "Test", "Unitful", "UnitfulAstro"]
-git-tree-sha1 = "a1b0057bb88b7596a4fdf35dde88fa79f741f76b"
+deps = ["Cosmology", "Documenter", "DocumenterTools", "Downloads", "GadgetIO", "Test", "Unitful", "UnitfulAstro"]
+git-tree-sha1 = "da971206a684d5f6d9c067deed3da64e38b717d3"
 uuid = "08630afb-492b-4c1a-9729-2a116101b53a"
-version = "0.1.4"
+version = "0.2.0"
 
 [[GeometryBasics]]
 deps = ["EarCut_jll", "IterTools", "LinearAlgebra", "StaticArrays", "StructArrays", "Tables"]
