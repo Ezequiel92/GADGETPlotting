@@ -482,7 +482,7 @@ function get_position(
         size = round(ustrip(Float64, length_unit, box_size), sigdigits = 2)
     else
         # Periodic boundary conditions
-        side_length = ustrip(Float64, length_unit, header.boxsize * GU.x_kpc)
+        side_length = ustrip(Float64, length_unit, header.boxsize * GU.x_physical)
         size = round(side_length, sigdigits = 2)
     end
 
@@ -497,7 +497,7 @@ function get_position(
         )["POS"]
 
         # Transformation from internal units to `length_unit`
-        gas_pos = @. ustrip(Float64, length_unit, gas_pos * GU.x_kpc)
+        gas_pos = @. ustrip(Float64, length_unit, gas_pos * GU.x_physical)
 
         # Masses of the gas particles, for center of mass calculation
         gas_masses = read_blocks_over_all_files(
@@ -527,7 +527,7 @@ function get_position(
         )["POS"]
 
         # Transformation from internal units to `length_unit`
-        dm_pos = @. ustrip(Float64, length_unit, dm_pos * GU.x_kpc)
+        dm_pos = @. ustrip(Float64, length_unit, dm_pos * GU.x_physical)
 
         # Masses of the dark matter particles, for center of mass calculation
         dm_masses = read_blocks_over_all_files(
@@ -557,7 +557,7 @@ function get_position(
         )["POS"]
 
         # Transformation from internal units to `length_unit`
-        star_pos = @. ustrip(Float64, length_unit, star_pos * GU.x_kpc)
+        star_pos = @. ustrip(Float64, length_unit, star_pos * GU.x_physical)
 
         # Stellar masses for center of mass calculation
         star_masses = read_blocks_over_all_files(
@@ -815,7 +815,7 @@ function get_hsml(
         )["HSML"]
 
         # Transformation from internal units to `length_unit`
-        hsml = @. ustrip(Float64, length_unit, hsml * GU.x_kpc)
+        hsml = @. ustrip(Float64, length_unit, hsml * GU.x_physical)
 
     else
 
@@ -1548,7 +1548,7 @@ function get_birth_place(
             parttype = 4, 
             verbose = false
         )["POS"][:, birth_idx]
-        nursery_pos = @. ustrip(Float64, length_unit, raw_pos * GU.x_kpc)
+        nursery_pos = @. ustrip(Float64, length_unit, raw_pos * GU.x_physical)
 
         birth_place[i] = nursery_pos
 
