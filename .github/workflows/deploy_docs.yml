@@ -16,7 +16,7 @@ jobs:
           - jlenv: 'docs/'
             makejl: 'docs/make.jl'
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
       - uses: julia-actions/setup-julia@v1.6.1
         with:
           version: '1'
