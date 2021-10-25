@@ -3283,7 +3283,7 @@ function fmol_fatom_pipeline(
 
         density = get_density(snapshot; sim_cosmo, filter_function)
         fmol = get_fmol(snapshot; sim_cosmo, filter_function)
-        fatom = get_fmol(snapshot; sim_cosmo, filter_function)
+        fatom = get_fatom(snapshot; sim_cosmo, filter_function)
         mass = get_mass(snapshot, "gas"; sim_cosmo, filter_function)
         metal = get_metallicity(snapshot, "gas"; sim_cosmo, filter_function)
         
