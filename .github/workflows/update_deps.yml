@@ -17,7 +17,7 @@ jobs:
         version:
           - '1'
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
       - uses: julia-actions/setup-julia@v1.6.1
         with:
           version: ${{ matrix.version }}
@@ -55,7 +55,7 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
       - run: rm -rf /tmp/manifest_updater
       - run: mkdir /tmp/manifest_updater
       - run: chmod 700 /tmp/manifest_updater
