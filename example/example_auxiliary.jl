@@ -23,13 +23,13 @@ max_Z = max_z[1] / star_mass["mass"][max_z[2]]
 relative_2D = GADGETPlotting.relative(plot(rand(100)), 0.5, 0.5)
 relative_3D = GADGETPlotting.relative(surface(rand(100, 100)), 0.5, 0.5, 0.5)
 
-# GADGETPlotting.make_video(
-#     joinpath(BASE_OUT_PATH, "scatter_grid/images"),
-#     ".png",
-#     BASE_OUT_PATH,
-#     "test_video",
-#     FPS,
-# )
+GADGETPlotting.make_video(
+    joinpath(BASE_OUT_PATH, "scatter_grid/images"),
+    ".png",
+    BASE_OUT_PATH,
+    "test_video",
+    FPS,
+)
 
 smooth_w = GADGETPlotting.smooth_window([1:1000...], rand(1000), 50)
 
