@@ -58,7 +58,6 @@ Refer to `examples/` for how to use the functions. Note that the scripts there e
     │    ├── run_examples.jl
     │    └── ...
     └── ...
-    
 More examples can be found in the repository [plotting_scripts](https://github.com/Ezequiel92/plotting_scripts).
 
 ## 🔗 References

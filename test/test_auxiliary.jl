@@ -15,6 +15,7 @@ dist_stars = sqrt.(pos_stars[1, :] .^ 2 + pos_stars[2, :] .^ 2)
 box_size = ustrip(Float64, pos["unit"], BOX_SIZE)
 max_z = findmax(star_z["Z"])
 max_Z = max_z[1] / star_mass["mass"][max_z[2]] 
+
 # To test comparison() and deep_comparison()
 arr1 = [1.5, 9.6, 6.4]
 arr2 = [1.5, 9.6, 6.9]
@@ -29,7 +30,7 @@ missing_arr1 = [1.5, 9.6, 6.4, missing]
 relative_2D = GADGETPlotting.relative(plot(rand(100)), 0.5, 0.5)
 relative_3D = GADGETPlotting.relative(surface(rand(100, 100)), 0.5, 0.5, 0.5)
 
-# don't know how to test make_video() yet
+# Don't know how to test make_video() yet
 
 smooth_w = GADGETPlotting.smooth_window([1:1000...], rand(1000), 50)
 
