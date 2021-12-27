@@ -1,3 +1,6 @@
+name = "GADGETPlotting"
+uuid = "b3ec988e-eca5-4e1b-ac39-46c036ff3ff5"
+
 [deps]
 Accessors = "7d9f7c33-5ae7-4f3b-8dc6-eff91059b697"
 AverageShiftedHistograms = "77b51b56-6f8f-5c3a-9cb4-d71f9594ea6e"
