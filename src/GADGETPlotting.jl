@@ -27,7 +27,7 @@ const HUBBLE_CONST = 0.102201
 Solar metallicity.
 
 M. Asplund et al. (2009). *The Chemical Composition of the Sun.* Annual Review of Astronomy 
-and Astrophysics, **47(1)**, 481–522. [https://doi.org/10.1146/annurev.astro.46.060407.145222](https://doi.org/10.1146/annurev.astro.46.060407.145222)
+and Astrophysics, **47(1)**, 481-522. [https://doi.org/10.1146/annurev.astro.46.060407.145222](https://doi.org/10.1146/annurev.astro.46.060407.145222)
 """
 const SOLAR_METALLICITY = 0.0134
 
