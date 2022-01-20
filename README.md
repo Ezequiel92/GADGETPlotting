@@ -10,7 +10,7 @@
 <p align="center">
     <a href="https://codecov.io/github/Ezequiel92/GADGETPlotting?branch=main"><img src="https://img.shields.io/codecov/c/github/Ezequiel92/GADGETPlotting?style=flat&logo=Codecov&labelColor=2B2D2F"></a>
     <a href="https://github.com/Ezequiel92/GADGETPlotting/blob/main/LICENSE"><img src="https://img.shields.io/github/workflow/status/Ezequiel92/GADGETPlotting/Continuous%20integration?style=flat&logo=GitHub&labelColor=2B2D2F"></a>
-    <a href="mailto:elozano@df.uba.ar"><img src="https://img.shields.io/maintenance/yes/2021?style=flat&labelColor=2B2D2F"></a>
+    <a href="mailto:elozano@df.uba.ar"><img src="https://img.shields.io/maintenance/yes/2022?style=flat&labelColor=2B2D2F"></a>
 </p>
 
 <p align="center">
