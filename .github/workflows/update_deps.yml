@@ -72,6 +72,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           delete-branch: true
           branch: 'update_manifests/single_pr/all_manifests'
-          commit-message: '🤖 Update one or more manifest files'
-          title: '🤖 Update one or more manifest files'
+          commit-message: '🤖 Update manifest file'
+          title: '🤖 Update manifest file'
           body: ''
