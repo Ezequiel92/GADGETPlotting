@@ -1,8 +1,8 @@
 name: Update dependencies
 on:
   schedule:
-    # Every Monday at 00:00.
-    - cron: '0 0 * * 1'
+    # On the first day of every month at 00:00.
+    - cron: '0 0 1 * *'
   workflow_dispatch:
 defaults:
   run:
@@ -17,8 +17,8 @@ jobs:
         version:
           - '1'
     steps:
-      - uses: actions/checkout@v2.4.0
-      - uses: julia-actions/setup-julia@v1.6.1
+      - uses: actions/checkout@v2
+      - uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.version }}
           arch: x64
@@ -26,7 +26,7 @@ jobs:
         shell: julia --color=yes {0}
         id: manifest_version
       - name: Cache artifacts
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v2
         env:
           cache-name: cache-artifacts
         with:
@@ -43,9 +43,9 @@ jobs:
       - run: julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate'
       - run: julia --color=yes --project=@. -e 'import Pkg; Pkg.update()'
       - run: git status
-      - uses: actions/upload-artifact@v2.3.1
+      - uses: actions/upload-artifact@v2
         with:
-          name: manifest_file_for_${{ steps.manifest_version.outputs.manifest_version }}
+          name: manifest_files
           path: Manifest.toml
           if-no-files-found: error
   make_single_pr:
@@ -55,19 +55,19 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v2
       - run: rm -rf /tmp/manifest_updater
       - run: mkdir /tmp/manifest_updater
       - run: chmod 700 /tmp/manifest_updater
-      - uses: actions/download-artifact@v2.1.0
+      - uses: actions/download-artifact@v2
         with:
           path: /tmp/manifest_updater/download_artifacts
-      - run: mv /tmp/manifest_updater/download_artifacts/manifest_file_for_*/Manifest.toml .
+      - run: mv /tmp/manifest_updater/download_artifacts/manifest_files/Manifest.toml .
       - run: rm -rf /tmp/manifest_updater
       - run: chmod 600 Project.toml
       - run: chmod 600 Manifest.toml
       - run: git status
-      - uses: peter-evans/create-pull-request@v3.12.0
+      - uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           delete-branch: true
