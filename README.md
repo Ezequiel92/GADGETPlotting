@@ -10,16 +10,12 @@
 <p align="center">
     <a href="https://codecov.io/github/Ezequiel92/GADGETPlotting?branch=main"><img src="https://img.shields.io/codecov/c/github/Ezequiel92/GADGETPlotting?style=flat&logo=Codecov&labelColor=2B2D2F"></a>
     <a href="https://github.com/Ezequiel92/GADGETPlotting/blob/main/LICENSE"><img src="https://img.shields.io/github/workflow/status/Ezequiel92/GADGETPlotting/Continuous%20integration?style=flat&logo=GitHub&labelColor=2B2D2F"></a>
-    <a href="mailto:elozano@df.uba.ar"><img src="https://img.shields.io/maintenance/yes/2022?style=flat&labelColor=2B2D2F"></a>
+    <a href="https://www.codefactor.io/repository/github/ezequiel92/gadgetplotting"><img src="https://img.shields.io/codefactor/grade/github/ezequiel92/gadgetplotting?style=flat&logo=CodeFactor&labelColor=2B2D2F"></a>
 </p>
 
 <p align="center">
     <a href="https://Ezequiel92.github.io/GADGETPlotting/dev"><img src="https://img.shields.io/badge/docs-dev-blue.svg?style=flat&logo=GitBook&labelColor=2B2D2F"></a>
     <a href="https://github.com/Ezequiel92/GADGETPlotting/actions"><img src="https://img.shields.io/github/license/Ezequiel92/GADGETPlotting?style=flat&logo=GNU&labelColor=2B2D2F"></a>
-    <a href="https://www.codefactor.io/repository/github/ezequiel92/gadgetplotting"><img src="https://img.shields.io/codefactor/grade/github/ezequiel92/gadgetplotting?style=flat&logo=CodeFactor&labelColor=2B2D2F"></a>
-</p>
-
-<p align="center">
     <a href="https://open.vscode.dev/Ezequiel92/GADGETPlotting"><img src="https://open.vscode.dev/badges/open-in-vscode.svg"></a>
 </p>
 
