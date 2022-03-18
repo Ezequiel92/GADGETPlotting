@@ -9,7 +9,7 @@ This package is no longer under development, it will only get updates for its de
 </div>
 
 <p align="center">
-    <a href="https://GitHub.com/Ezequiel92/"><img src="http://forthebadge.com/images/badges/built-with-science.svg"></a>
+    <a href="https://github1s.com/Ezequiel92/GADGETPlotting"><img src="http://forthebadge.com/images/badges/built-with-science.svg"></a>
     <a href="https://julialang.org"><img src="https://forthebadge.com/images/badges/made-with-julia.svg"></a>
 </p>
 
