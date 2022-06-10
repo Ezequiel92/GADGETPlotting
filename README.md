@@ -55,7 +55,6 @@ Refer to `examples/` for how to use the functions. Note that the scripts there e
     │    ├── run_examples.jl
     │    └── ...
     └── ...
-More examples can be found in the `archived` directory of the repo [plotting_scripts](https://github.com/ezequiel92/plotting_scripts/tree/main/archived/GADGETPlotting).
 
 ## 🔗 References
 
