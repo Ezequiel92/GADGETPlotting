@@ -434,7 +434,7 @@ function gas_star_evolution_pipeline(
     )
 
     # Generate and save the plots 
-    data_iter = enumerate(zip(snap_numbers, snap_files))                 
+    data_iter = pairs(zip(snap_numbers, snap_files))                 
     animation = @animate for (i, (number, snapshot)) in data_iter
 
         positions = get_position(
@@ -628,7 +628,7 @@ function cmdf_pipeline(
 
     # Get the simulation data
     sim_data = [get_snapshot_path(base_name[i], path)["snap_files"]
-                for (i, path) in enumerate(source_path)]
+                for (i, path) in pairs(source_path)]
     # Time stamps (they should be the same for every dataset)
     time_data = get_time_evolution(sim_data[1]; sim_cosmo, filter_function, time_unit)
     times = @view time_data["clock_time"][1:step:end]
@@ -653,7 +653,7 @@ function cmdf_pipeline(
     )
 
     # Generate and save the plots
-    data_iter = enumerate(zip(times, snap_files))
+    data_iter = pairs(zip(times, snap_files))
     for (i, (t, snapshots)) in data_iter
         
         headers = read_header.(snapshots)
@@ -750,7 +750,7 @@ function birth_histogram_pipeline(
     )
 
     # Generate and save the plots
-    data_iter = enumerate(zip(snap_numbers, snap_files))
+    data_iter = pairs(zip(snap_numbers, snap_files))
     for (i, (number, snapshot)) in data_iter
 
         header = read_header(snapshot)
@@ -1056,7 +1056,7 @@ function compare_simulations_pipeline(
 
             # Fill the datasets with NaN so all have the same length
             max_length = maximum(length.(columns))
-            for (i, l_r) in enumerate(length.(columns))
+            for (i, l_r) in pairs(length.(columns))
                 if l_r < max_length
                     @inbounds for _ in 1:(max_length - l_r)
                         push!(columns[i], NaN)
@@ -1447,7 +1447,7 @@ function density_profile_pipeline(
     
     # Get the simulation data
     sim_data = [get_snapshot_path(base_name[i], path)["snap_files"] 
-                for (i, path) in enumerate(source_path)]
+                for (i, path) in pairs(source_path)]
 
     # Time stamps (they should be the same for every dataset)
     time_data = get_time_evolution(sim_data[1]; sim_cosmo, filter_function, time_unit)
@@ -1473,7 +1473,7 @@ function density_profile_pipeline(
     )
 
     # Generate and save the plots
-    data_iter = enumerate(zip(times, snap_files))
+    data_iter = pairs(zip(times, snap_files))
     animation = @animate for (i, (t, snapshots)) in data_iter
 
         positions = get_position.(
@@ -1733,7 +1733,7 @@ function metallicity_profile_pipeline(
 
     # Get the simulation data
     sim_data = [get_snapshot_path(base_name[i], path)["snap_files"] 
-                for (i, path) in enumerate(source_path)]
+                for (i, path) in pairs(source_path)]
 
     # Time stamps (they should be the same for every dataset)
     time_data = get_time_evolution(sim_data[1]; sim_cosmo, filter_function, time_unit)
@@ -1759,7 +1759,7 @@ function metallicity_profile_pipeline(
     )
 
     # Generate and save the plots
-    data_iter = enumerate(zip(times, snap_files))
+    data_iter = pairs(zip(times, snap_files))
     animation = @animate for (i, (t, snapshots)) in data_iter
 
         positions = get_position.(
@@ -2035,7 +2035,7 @@ function mass_profile_pipeline(
 
     # Get the simulation data
     sim_data = [get_snapshot_path(base_name[i], path)["snap_files"] 
-                for (i, path) in enumerate(source_path)]
+                for (i, path) in pairs(source_path)]
 
     # Time stamps (they should be the same for every dataset)
     time_data = get_time_evolution(sim_data[1]; sim_cosmo, filter_function, time_unit)
@@ -2061,7 +2061,7 @@ function mass_profile_pipeline(
     )
 
     # Generate and save the plots
-    data_iter = enumerate(zip(times, snap_files))
+    data_iter = pairs(zip(times, snap_files))
     animation = @animate for (i, (t, snapshots)) in data_iter
 
         positions = get_position.(

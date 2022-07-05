@@ -168,7 +168,7 @@ function get_time_evolution(
         ),
     )
 
-    for (i, snapshot) in enumerate(snap_files)
+    for (i, snapshot) in pairs(snap_files)
 
         header = read_header(snapshot)
 
@@ -1509,7 +1509,7 @@ function get_birth_place(
     )["ID"]
 
     birth_place = similar(Vector{Vector{Float64}}, axes(ids, 1))
-    for (i, (id, birth_time)) in enumerate(zip(ids, birth_times))
+    for (i, (id, birth_time)) in pairs(zip(ids, birth_times))
 
         # Index of the snapshot where the target star was born
         snap_idx = findfirst(x -> x >= birth_time, time_stamps)

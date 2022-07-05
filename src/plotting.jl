@@ -1557,7 +1557,7 @@ function compare_simulations_plot(
 
     # Fill the datasets with NaN so all have the same length
     max_length = maximum(length.(x_data))
-    for (i, l_r) in enumerate(length.(x_data))
+    for (i, l_r) in pairs(length.(x_data))
         if l_r < max_length
             @inbounds for _ in 1:(max_length - l_r)
                 push!(x_data[i], NaN)
@@ -2152,7 +2152,7 @@ function density_profile_plot(
 
             # Fill the datasets with NaN so all have the same length
             max_length = maximum(length.(r))
-            for (i, l_r) in enumerate(length.(r))
+            for (i, l_r) in pairs(length.(r))
                 if l_r < max_length
                     @inbounds for _ in 1:(max_length - l_r)
                         push!(r[i], NaN)
@@ -2468,7 +2468,7 @@ function metallicity_profile_plot(
 
             # Fill the datasets with NaN so all have the same length
             max_length = maximum(length.(r))
-            for (i, l_r) in enumerate(length.(r))
+            for (i, l_r) in pairs(length.(r))
                 if l_r < max_length
                     @inbounds for _ in 1:(max_length - l_r)
                         push!(r[i], NaN)
@@ -2775,7 +2775,7 @@ function mass_profile_plot(
 
             # Fill the datasets with NaN so all have the same length
             max_length = maximum(length.(r))
-            for (i, l_r) in enumerate(length.(r))
+            for (i, l_r) in pairs(length.(r))
                 if l_r < max_length
                     @inbounds for _ in 1:(max_length - l_r)
                         push!(r[i], NaN)
@@ -3222,7 +3222,7 @@ function sfr_txt_plot(
 
     # Fill the datasets with NaN so all have the same length
     max_length = maximum(length.(x))
-    for (i, l_r) in enumerate(length.(x))
+    for (i, l_r) in pairs(length.(x))
         if l_r < max_length
             @inbounds for _ in 1:(max_length - l_r)
                 push!(x[i], NaN)
@@ -4402,7 +4402,7 @@ function fmol_fatom_plot(
     x_data = [nh0_01, nh0_02, nh0_03]
     y_data = [fmol_01, fmol_02, fmol_03]
     max_length = maximum(length.(x_data))
-    for (i, l_r) in enumerate(length.(x_data))
+    for (i, l_r) in pairs(length.(x_data))
         if l_r < max_length
             @inbounds for _ in 1:(max_length - l_r)
                 push!(x_data[i], NaN)
