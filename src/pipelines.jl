@@ -434,7 +434,7 @@ function gas_star_evolution_pipeline(
     )
 
     # Generate and save the plots 
-    data_iter = pairs(zip(snap_numbers, snap_files))                 
+    data_iter = enumerate(zip(snap_numbers, snap_files))                 
     animation = @animate for (i, (number, snapshot)) in data_iter
 
         positions = get_position(
@@ -653,7 +653,7 @@ function cmdf_pipeline(
     )
 
     # Generate and save the plots
-    data_iter = pairs(zip(times, snap_files))
+    data_iter = enumerate(zip(times, snap_files))
     for (i, (t, snapshots)) in data_iter
         
         headers = read_header.(snapshots)
@@ -750,7 +750,7 @@ function birth_histogram_pipeline(
     )
 
     # Generate and save the plots
-    data_iter = pairs(zip(snap_numbers, snap_files))
+    data_iter = enumerate(zip(snap_numbers, snap_files))
     for (i, (number, snapshot)) in data_iter
 
         header = read_header(snapshot)
@@ -1473,7 +1473,7 @@ function density_profile_pipeline(
     )
 
     # Generate and save the plots
-    data_iter = pairs(zip(times, snap_files))
+    data_iter = enumerate(zip(times, snap_files))
     animation = @animate for (i, (t, snapshots)) in data_iter
 
         positions = get_position.(
@@ -1759,7 +1759,7 @@ function metallicity_profile_pipeline(
     )
 
     # Generate and save the plots
-    data_iter = pairs(zip(times, snap_files))
+    data_iter = enumerate(zip(times, snap_files))
     animation = @animate for (i, (t, snapshots)) in data_iter
 
         positions = get_position.(
@@ -2061,7 +2061,7 @@ function mass_profile_pipeline(
     )
 
     # Generate and save the plots
-    data_iter = pairs(zip(times, snap_files))
+    data_iter = enumerate(zip(times, snap_files))
     animation = @animate for (i, (t, snapshots)) in data_iter
 
         positions = get_position.(
