@@ -955,7 +955,7 @@ end
 """
     pass_all(snap_file::String, type::String)::Vector{Int64}
 
-Default filter function for the [read\\_blocks\\_over\\_all\\_files](https://ludwigboess.github.io/GadgetIO.jl/stable/api/#GadgetIO.read_blocks_over_all_files-Tuple{String,%20Array{String,%20N}%20where%20N}) function.
+Default filter function for the [read\\_blocks\\_filtered](https://ludwigboess.github.io/GadgetIO.jl/stable/read_snapshots/#Filter-functions) function.
 
 It does not filter out any particles, allowing the data acquisition functions to gather 
 all the data. 

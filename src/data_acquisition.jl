@@ -244,7 +244,7 @@ function get_time_evolution(
                 masses = fill(header.massarr[1], (gas_number))
                 gas_mass = masses[1] * gas_number
             else
-                masses = read_blocks_over_all_files(
+                masses = read_blocks_filtered(
                     snapshot, 
                     ["MASS"];
                     filter_function = x -> filter_function(x, "gas"), 
@@ -276,7 +276,7 @@ function get_time_evolution(
                 # If all dark matter particles have the same mass
                 dm_mass = header.massarr[2] * dm_number
             else
-                dm_mass = sum(read_blocks_over_all_files(
+                dm_mass = sum(read_blocks_filtered(
                     snapshot, 
                     ["MASS"];
                     filter_function = x -> filter_function(x, "dark_matter"), 
@@ -296,7 +296,7 @@ function get_time_evolution(
                 # If all star particles have the same mass
                 star_mass = header.massarr[5] * star_number
             else
-                star_mass = sum(read_blocks_over_all_files(
+                star_mass = sum(read_blocks_filtered(
                     snapshot, 
                     ["MASS"];
                     filter_function = x -> filter_function(x, "stars"), 
@@ -334,7 +334,7 @@ function get_time_evolution(
         # SFR given by the classic prescription of GADGET in `sfr_unit`
         if header.nall[1] != 0
 
-            sfr_prob = sum(read_blocks_over_all_files(
+            sfr_prob = sum(read_blocks_filtered(
                 snapshot, 
                 ["SFR"];
                 filter_function = x -> filter_function(x, "gas"), 
@@ -488,7 +488,7 @@ function get_position(
 
     if header.nall[1] != 0
         
-        gas_pos = read_blocks_over_all_files(
+        gas_pos = read_blocks_filtered(
             snapshot, 
             ["POS"];
             filter_function = x -> filter_function(x, "gas"), 
@@ -500,7 +500,7 @@ function get_position(
         gas_pos = @. ustrip(Float64, length_unit, gas_pos * GU.x_physical)
 
         # Masses of the gas particles, for center of mass calculation
-        gas_masses = read_blocks_over_all_files(
+        gas_masses = read_blocks_filtered(
             snapshot, 
             ["MASS"];
             filter_function = x -> filter_function(x, "gas"), 
@@ -518,7 +518,7 @@ function get_position(
 
     if header.nall[2] != 0
         
-        dm_pos = read_blocks_over_all_files(
+        dm_pos = read_blocks_filtered(
             snapshot, 
             ["POS"];
             filter_function = x -> filter_function(x, "dark_matter"), 
@@ -530,7 +530,7 @@ function get_position(
         dm_pos = @. ustrip(Float64, length_unit, dm_pos * GU.x_physical)
 
         # Masses of the dark matter particles, for center of mass calculation
-        dm_masses = read_blocks_over_all_files(
+        dm_masses = read_blocks_filtered(
             snapshot, 
             ["MASS"];
             filter_function = x -> filter_function(x, "dark_matter"), 
@@ -548,7 +548,7 @@ function get_position(
 
     if header.nall[5] != 0
         
-        star_pos = read_blocks_over_all_files(
+        star_pos = read_blocks_filtered(
             snapshot, 
             ["POS"];
             filter_function = x -> filter_function(x, "stars"), 
@@ -560,7 +560,7 @@ function get_position(
         star_pos = @. ustrip(Float64, length_unit, star_pos * GU.x_physical)
 
         # Stellar masses for center of mass calculation
-        star_masses = read_blocks_over_all_files(
+        star_masses = read_blocks_filtered(
             snapshot, 
             ["MASS"];
             filter_function = x -> filter_function(x, "stars"), 
@@ -725,7 +725,7 @@ function get_density(
 
     if header.nall[1] != 0
 
-        ρ = read_blocks_over_all_files(
+        ρ = read_blocks_filtered(
             snapshot, 
             ["RHO"];
             filter_function = x -> filter_function(x, "gas"), 
@@ -806,7 +806,7 @@ function get_hsml(
 
     if header.nall[1] != 0
 
-        hsml = read_blocks_over_all_files(
+        hsml = read_blocks_filtered(
             snapshot, 
             ["HSML"];
             filter_function = x -> filter_function(x, "gas"), 
@@ -904,7 +904,7 @@ function get_mass(
 
     if header.nall[type_num + 1] != 0
 
-        m = read_blocks_over_all_files(
+        m = read_blocks_filtered(
             snapshot, 
             ["MASS"];
             filter_function = x -> filter_function(x, type), 
@@ -1000,7 +1000,7 @@ function get_metallicity(
 
     if header.nall[type_num + 1] != 0
 
-        z = read_blocks_over_all_files(
+        z = read_blocks_filtered(
             snapshot, 
             ["Z"];
             filter_function = x -> filter_function(x, type), 
@@ -1115,7 +1115,7 @@ function get_metal_mass(
 
     if header.nall[type_num + 1] != 0
 
-        z = read_blocks_over_all_files(
+        z = read_blocks_filtered(
             snapshot, 
             ["Z"];
             filter_function = x -> filter_function(x, type), 
@@ -1227,7 +1227,7 @@ function get_temperature(
         mass_unit = m_data["unit"]
 
         # Metallicity
-        z = read_blocks_over_all_files(
+        z = read_blocks_filtered(
             snapshot, 
             ["Z"];
             filter_function = x -> filter_function(x, "gas"), 
@@ -1237,7 +1237,7 @@ function get_temperature(
         Z = @. ustrip(Float64, mass_unit, z * GU.m_msun)
 
         # Internal energy per unit mass
-        u = read_blocks_over_all_files(
+        u = read_blocks_filtered(
             snapshot, 
             ["U"];
             filter_function = x -> filter_function(x, "gas"), 
@@ -1247,7 +1247,7 @@ function get_temperature(
         U = @. uconvert(Unitful.J / mass_unit, u * (GU.E_cgs / GU.m_msun))
 
         # ne := number_of_electrons / number_of_Hydrogen_atoms
-        ne = read_blocks_over_all_files(
+        ne = read_blocks_filtered(
             snapshot, 
             ["NE"];
             filter_function = x -> filter_function(x, "gas"), 
@@ -1330,7 +1330,7 @@ function get_age(
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
 
         # Time of birth for the stars
-        birth_a = read_blocks_over_all_files(
+        birth_a = read_blocks_filtered(
             snapshot, 
             ["AGE"];
             filter_function = x -> filter_function(x, "stars"), 
@@ -1359,7 +1359,7 @@ function get_age(
         GU = GadgetPhysicalUnits(hpar = header.h0)     
 
         # Time of birth for the stars
-        birth_time = read_blocks_over_all_files(
+        birth_time = read_blocks_filtered(
             snapshot, 
             ["AGE"];
             filter_function = x -> filter_function(x, "stars"), 
@@ -1453,7 +1453,7 @@ function get_birth_place(
         GU = GadgetPhysicalUnits(a_scale = header.time, hpar = header.h0)
 
         # Time of birth for the stars
-        birth_a = read_blocks_over_all_files(
+        birth_a = read_blocks_filtered(
             snapshot, 
             ["AGE"];
             filter_function = x -> filter_function(x, "stars"), 
@@ -1486,7 +1486,7 @@ function get_birth_place(
         GU = GadgetPhysicalUnits(hpar = header.h0)     
 
         # Time of birth for the stars
-        birth_times = read_blocks_over_all_files(
+        birth_times = read_blocks_filtered(
             snapshot, 
             ["AGE"];
             filter_function = x -> filter_function(x, "stars"), 
@@ -1500,7 +1500,7 @@ function get_birth_place(
     end
 
     # Stars IDs
-    ids = read_blocks_over_all_files(
+    ids = read_blocks_filtered(
         snapshot, 
         ["ID"];
         filter_function = x -> filter_function(x, "stars"), 
@@ -1517,7 +1517,7 @@ function get_birth_place(
         birth_idx = 0
         while true
             # IDs of the stars in the snapshot where the target star was born
-            nursery_ids = read_blocks_over_all_files(
+            nursery_ids = read_blocks_filtered(
                 snap_files[snap_idx], 
                 ["ID"];
                 filter_function = x -> filter_function(x, "stars"), 
@@ -1541,7 +1541,7 @@ function get_birth_place(
         end
 
         # Position of the target star, in the snapshot where it was born
-        raw_pos = read_blocks_over_all_files(
+        raw_pos = read_blocks_filtered(
             snap_files[snap_idx], 
             ["POS"];
             filter_function = x -> filter_function(x, "stars"), 
@@ -1815,7 +1815,7 @@ function get_fmol(
 
     if header.nall[1] != 0
 
-        fmol = read_blocks_over_all_files(
+        fmol = read_blocks_filtered(
             snapshot, 
             ["FMOL"];
             filter_function = x -> filter_function(x, "gas"), 
@@ -1882,7 +1882,7 @@ function get_fatom(
 
     if header.nall[1] != 0
 
-        nh = read_blocks_over_all_files(
+        nh = read_blocks_filtered(
             snapshot, 
             ["NH"];
             filter_function = x -> filter_function(x, "gas"), 
