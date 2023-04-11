@@ -2,7 +2,7 @@
     <h1>🚨 DEPRECATED 🚨</h1>
 </div>
 
-This package is no longer under development, it will only get updates for its dependecies. Use [GadgetInspector](https://github.com/Ezequiel92/GadgetInspector) instead.
+This package is no longer under development, it will only get updates for its dependecies.
 
 <div align="center">
     <h1>🌌 GADGET Plotting</h1>
