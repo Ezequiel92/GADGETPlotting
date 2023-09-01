@@ -2,7 +2,7 @@
     <h1>🚨 DEPRECATED 🚨</h1>
 </div>
 
-This package is no longer under development, it will only get updates for its dependecies.
+This package is no longer under development, it will only get its dependecies updated, see [GalaxyInspector](https://github.com/Ezequiel92/GalaxyInspector) instead.
 
 <div align="center">
     <h1>🌌 GADGET Plotting</h1>
