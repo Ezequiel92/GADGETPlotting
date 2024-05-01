@@ -22,9 +22,6 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: x64
-      - run: println("::set-output name=manifest_version::$(VERSION.major).$(VERSION.minor)")
-        shell: julia --color=yes {0}
-        id: manifest_version
       - name: Cache artifacts
         uses: actions/cache@v4
         env:
