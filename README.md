@@ -13,8 +13,6 @@ This package is no longer under development, it will only get its dependecies up
 </p>
 
 <p align="center">
-    <a href="https://codecov.io/github/ezequiel92/GADGETPlotting?branch=main"><img src="https://img.shields.io/codecov/c/github/ezequiel92/GADGETPlotting?style=flat&logo=Codecov&labelColor=2B2D2F"></a>
-    <a href="https://github.com/ezequiel92/GADGETPlotting/actions"><img src="https://img.shields.io/github/actions/workflow/status/ezequiel92/GADGETPlotting/run_tests.yml?logo=GitHub&labelColor=2B2D2F"></a>
     <a href="https://github.com/ezequiel92/GADGETPlotting/blob/main/LICENSE"><img src="https://img.shields.io/github/license/ezequiel92/GADGETPlotting?style=flat&logo=GNU&labelColor=2B2D2F"></a>
     <a href="https://ezequiel92.github.io/GADGETPlotting/dev"><img src="https://img.shields.io/badge/docs-dev-blue.svg?style=flat&logo=GitBook&labelColor=2B2D2F"></a>
 </p>
