@@ -18,7 +18,7 @@ jobs:
           - '1'
     steps:
       - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
           arch: x64
@@ -64,7 +64,7 @@ jobs:
       - run: chmod 600 Project.toml
       - run: chmod 600 Manifest.toml
       - run: git status
-      - uses: peter-evans/create-pull-request@v6
+      - uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           delete-branch: true
