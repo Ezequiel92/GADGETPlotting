@@ -17,13 +17,13 @@ jobs:
         version:
           - '1'
     steps:
-      - uses: actions/checkout@v5
-      - uses: julia-actions/setup-julia@v2
+      - uses: actions/checkout@v6
+      - uses: julia-actions/setup-julia@v3
         with:
           version: ${{ matrix.version }}
           arch: x64
       - name: Cache artifacts
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-artifacts
         with:
@@ -40,7 +40,7 @@ jobs:
       - run: julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate'
       - run: julia --color=yes --project=@. -e 'import Pkg; Pkg.update()'
       - run: git status
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: manifest_files
           path: Manifest.toml
@@ -52,11 +52,11 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - run: rm -rf /tmp/manifest_updater
       - run: mkdir /tmp/manifest_updater
       - run: chmod 700 /tmp/manifest_updater
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: /tmp/manifest_updater/download_artifacts
       - run: mv /tmp/manifest_updater/download_artifacts/manifest_files/Manifest.toml .
@@ -64,7 +64,7 @@ jobs:
       - run: chmod 600 Project.toml
       - run: chmod 600 Manifest.toml
       - run: git status
-      - uses: peter-evans/create-pull-request@v7
+      - uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           delete-branch: true
