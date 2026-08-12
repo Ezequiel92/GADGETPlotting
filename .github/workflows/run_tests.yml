@@ -12,7 +12,7 @@ jobs:
         os: [windows-latest, macOS-latest]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup Julia environment
         uses: julia-actions/setup-julia@v3
         with:
